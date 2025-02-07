@@ -2,24 +2,21 @@
   "name": "user_management",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/FT-Transcendence-February-2025/user_management.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/FT-Transcendence-February-2025/user_management/issues"
+  "dependencies": {
+    "fastify": "^5.2.1"
   },
-  "homepage": "https://github.com/FT-Transcendence-February-2025/user_management#readme",
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "eslint": "^9.19.0",
-    "globals": "^15.14.0"
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.23.0"
   }
 }

@@ -1,14 +1,17 @@
+import registrationService from '../services/registration_service.js';
+
 const createAccountRoute = {
-  method: 'GET',
+  method: 'POST',
   url: '/create_account',
   schema: {
-    querystring: {
+    body: {
       type: 'object',
       properties: {
         email: { type: 'string' },
         displayName: { type: 'string' },
         password: { type: 'string' }
-      } 
+      },
+      required: ['email', 'displayName', 'password']
     },
     response: {
       200: {
@@ -19,9 +22,7 @@ const createAccountRoute = {
       }
     }
   },
-  handler: function (request, reply) {
-    reply.send({ success: 'Registration successfull' })
-  }
+  handler: registrationService
 };
 
 export default createAccountRoute;

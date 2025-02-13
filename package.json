@@ -1,0 +1,38 @@
+{
+  "name": "matchmaking-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prepare": "husky",
+    "lint": "eslint . --fix",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FT-Transcendence-February-2025/matchmaking-service.git"
+  },
+  "author": "Memo C Sales",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FT-Transcendence-February-2025/matchmaking-service/issues"
+  },
+  "homepage": "https://github.com/FT-Transcendence-February-2025/matchmaking-service#readme",
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/env": "^5.0.2",
+    "@fastify/sensible": "^6.0.3",
+    "@fastify/swagger": "^9.4.2",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-config-standard": "^17.1.0",
+    "husky": "^9.1.7",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.1"
+  }
+}

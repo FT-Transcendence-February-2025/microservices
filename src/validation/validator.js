@@ -31,9 +31,12 @@ export const displayNameValidator = async (displayName) => {
     return { valid: false, error: 'Display name contains profane words' };
   }
 
-  const regex = /^[a-zA-Z0-9_-]+$/;
-  if (!regex.test(displayName)) {
+  if (!/^[a-zA-Z0-9_-]+$/.test(displayName)) {
     return { valid: false, error: 'Display name contains invalid characters' };
+  }
+
+  if (!/[a-zA-Z]/.test(displayName)) {
+    return {valid: false, error: 'Display name must contain at least one letter' };
   }
 
   const existingUser = await getUserByDisplayName(displayName);

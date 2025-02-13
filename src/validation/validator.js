@@ -1,5 +1,8 @@
 import validator from 'validator'
-import { getUserByEmail, getUserByDisplayName } from '../services/user_service';
+import { Filter } from 'bad-words'
+import { getUserByEmail, getUserByDisplayName } from '../services/user_service.js';
+
+const filter = new Filter();
 
 export const emailValidator = async (email) => {
 
@@ -10,6 +13,32 @@ export const emailValidator = async (email) => {
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
     return { valid: false, error: 'Email already in use' };
+  }
+
+  return { valid: true };
+};
+
+export const displayNameValidator = async (displayName) => {
+  if (displayName.length < 4) {
+    return { valid: false, error: 'Display name too short (min 4 characters)' };
+  }
+
+  if (displayName.length > 25) {
+    return { valid: false, error: 'Display name too long (max 25 characters)' };
+  }
+
+  if (filter.isProfane(displayName)) {
+    return { valid: false, error: 'Display name contains profane words' };
+  }
+
+  const regex = /^[a-zA-Z0-9_-]+$/;
+  if (!regex.test(displayName)) {
+    return { valid: false, error: 'Display name contains invalid characters' };
+  }
+
+  const existingUser = await getUserByDisplayName(displayName);
+  if (existingUser) {
+    return { valid: false, error: 'Display name already in use' };
   }
 
   return { valid: true };

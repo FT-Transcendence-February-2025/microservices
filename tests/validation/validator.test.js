@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { emailValidator } from '../../src/validation/validator.js';
-import { getUserByEmail } from '../../src/services/user_service.js';
+import { emailValidator, displayNameValidator } from '../../src/validation/validator.js';
+import { getUserByEmail, getUserByDisplayName } from '../../src/services/user_service.js';
 
 // Mock the getUserByEmail function
 vi.mock('../../src/services/user_service.js', () => ({
   getUserByEmail: vi.fn(),
+  getUserByDisplayName: vi.fn()
 }));
 
 const testEmails = {
@@ -83,7 +84,78 @@ const testEmails = {
   ]
 };
 
+const testDisplayNames = {
+  valid: [
+    "validname",
+    "valid_name",
+    "valid-name",
+    "ValidName123",
+    "validname123",
+    "validname_123",
+    "valid-name-123",
+    "Valid_Name-123",
+    "VALIDNAME",
+    "validnamevalidnamevalidna", // exactly 25 characters
+    "abcde", // min valid length
+    "A123",
+    "user_001",
+    "test-case",
+    "USERNAME_2025",
+    "john_doe",
+    "hello123",
+    "coding_guy",
+    "my-nickname",
+    "validValid_valid"
+  ],
+  invalid: [
+    "a", // too short
+    "ab", // too short
+    "abc", // too short
+    "abcd@", // contains invalid character
+    "ab cd", // contains space
+    "longlonglonglonglonglonglonglonglonglong", // too long
+    "name!", // contains invalid character
+    "user#", // contains invalid character
+    "name with space", // contains space
+    "special&char", // contains invalid character
+    "invalid$name", // contains invalid character
+    "invalid%name", // contains invalid character
+    "invalid^name", // contains invalid character
+    "invalid*name", // contains invalid character
+    "invalid(name)", // contains invalid character
+    "invalid+name", // contains invalid character
+    "invalid=name", // contains invalid character
+    "invalid{name}", // contains invalid character
+    "invalid[name]", // contains invalid character
+    "invalid|name", // contains invalid character
+    "invalid\\name", // contains invalid character
+    "invalid/name", // contains invalid character
+    "invalid?name", // contains invalid character
+    "invalid<name>", // contains invalid character
+    "invalid,name", // contains invalid character
+    "invalid.name", // contains invalid character
+    "invalid;name", // contains invalid character
+    "invalid:name", // contains invalid character
+    "invalid'name", // contains invalid character
+    "invalid\"name", // contains invalid character
+    "invalid!name", // contains invalid character
+    "invalid~name", // contains invalid character
+    "invalid`name", // contains invalid character
+    "invalidnameinvalidnameinvalidnameinvalidname", // 36 characters (too long)
+    "n@me123",
+    "valid_name&",
+    "space test",
+    "two  spaces",
+    "super-long-username-thatiswaytoolong",
+    "______",
+    "------",
+    "---___",
+    "_-_---_"
+  ]
+};
+
 describe('emailValidator', () => {
+  console.log('######### EMAIL TEST START ########');
   beforeEach(() => {
     vi.clearAllMocks(); // Clear mocks before each test
   });
@@ -110,4 +182,36 @@ describe('emailValidator', () => {
     const result = await emailValidator('test@example.com');
     expect(result).toEqual({ valid: false, error: 'Email already in use' });
   });
+  console.log('######### EMAIL TEST STOP ########');
+});
+
+describe('displayNameValidator', () => {
+  console.log('######### DISPLAY NAME TEST START ########')
+  beforeEach(() => {
+    vi.clearAllMocks(); // Clear mocks before each test
+  });
+
+  // Test valid display names
+  testDisplayNames.valid.forEach(displayName => {
+    it(`should return valid: true for a valid display name: ${displayName}`, async () => {
+      const result = await displayNameValidator(displayName);
+      expect(result).toEqual({ valid: true });
+    });
+  });
+
+  // Test invalid display names
+  testDisplayNames.invalid.forEach(displayName => {
+    it(`should return valid: false and error for an invalid display name: ${displayName}`, async () => {
+      const result = await displayNameValidator(displayName);
+      expect(result).toEqual({ valid: false, error: expect.any(String) });
+    });
+  });
+
+  // Test existing display name
+  it('should return valid: false and error for an existing display name', async () => {
+    getUserByDisplayName.mockResolvedValueOnce({ id: 1, displayName: 'testuser' });
+    const result = await displayNameValidator('testuser');
+    expect(result).toEqual({ valid: false, error: 'Display name already in use' });
+  });
+  console.log('######### DISPLAY NAME TEST STOP ########')
 });

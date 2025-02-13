@@ -1,4 +1,4 @@
-import registrationService from '../services/registration_service.js';
+import { registrationService } from '../services/registration_service.js';
 
 const createAccountRoute = {
   method: 'POST',

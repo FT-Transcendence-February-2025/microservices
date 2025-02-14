@@ -28,3 +28,12 @@ Thumbs.db
 # Build output
 dist/
 build/
+
+# SQLite database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Knex migration files' temporary data
+.knex_migrations
+.knex_migrations_lock

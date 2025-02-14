@@ -27,11 +27,13 @@ In `package.json` file:
 This scripts simplify the process of managing database migrations.
 
 ## Example usage
+
 Run `npm migrate:make <tablename>
 
-Inside the  file created you can modify it, it would look something like this:
+Inside the file created you can modify it, it would look something like this:
+
 ```javascript
-exports.up = function(knex) {
+exports.up = function (knex) {
   return knex.schema.createTable('users', (table) => {
     table.increments('id').primary();
     table.string('username').notNullable().unique();
@@ -40,12 +42,13 @@ exports.up = function(knex) {
   });
 };
 
-exports.down = function(knex) {
+exports.down = function (knex) {
   return knex.schema.dropTable('users');
 };
 ```
 
 Then run the migrations with:
+
 ```bash
 npm run migrate
 ```

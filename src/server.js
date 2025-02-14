@@ -5,7 +5,7 @@ import { userRoutes } from './routes/users.js';
 const PORT = 3000;
 
 const fastify = Fastify({
-  logger: true
+  logger: true,
 });
 
 // Test get route to send reply message

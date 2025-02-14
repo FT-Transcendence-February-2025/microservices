@@ -25,7 +25,6 @@ let downPressed = false;
 function sendPaddlePosition(direction) {
     const data = {
         type: "paddleMove",
-        player: 1, // Assuming this is Player 1; adjust as needed
         dir: direction,
     };
 
@@ -90,7 +89,7 @@ function drawScore(score1, score2) {
 
 // Render game state received from the server
 function renderGame(state) {
-    const { ball, player1, player2 } = state;
+    const { ball, paddle1, paddle2 } = state;
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -99,12 +98,12 @@ function renderGame(state) {
     drawNet();
 
     // Draw paddles and ball
-    drawPaddle(0, player1.paddleY); // Player's paddle on the left side
-    drawPaddle(canvas.width - 10, player2.paddleY); // Opponent's paddle on the right side
+    drawPaddle(0, paddle1.y); // Player's paddle on the left side
+    drawPaddle(canvas.width - 10, paddle2.y); // Opponent's paddle on the right side
     drawBall(ball.x, ball.y); // Ball position
 
     // Draw scores
-    drawScore(player1.score, player2.score);
+    drawScore(paddle1.score, paddle2.score);
 }
 
 // Listen for game state updates from the server

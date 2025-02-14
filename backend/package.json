@@ -1,17 +1,18 @@
 {
-  "name": "backend",
+  "name": "pong-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-      "fastify": "^4.x.x",
-      "@fastify/websocket": "^7.1.1"
+    "@fastify/static": "^7.0.0",
+    "@fastify/websocket": "^7.1.1",
+    "fastify": "^4.x.x"
   }
 }

@@ -22,5 +22,10 @@ export async function seed(knex) {
       email: 'user3@example.com',
       password: 'password123',
     },
+    {
+      username: 'user4',
+      email: 'user4@example.com',
+      password: 'password123',
+    }
   ]);
 }

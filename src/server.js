@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyWebsocket from '@fastify/websocket';
 import { db } from './db/connection.js';
 import { userRoutes } from './routes/users.js';
 
@@ -7,6 +8,9 @@ const PORT = 3000;
 const fastify = Fastify({
   logger: true,
 });
+
+// Register WebSocket
+await fastify.register(fastifyWebsocket);
 
 // Test get route to send reply message
 fastify.get('/', (request, reply) => {

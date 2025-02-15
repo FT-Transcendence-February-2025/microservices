@@ -1,6 +1,6 @@
 /**
  * @param { import("knex").Knex } knex
- * @returns { Promise<void> } 
+ * @returns { Promise<void> }
  */
 export async function seed(knex) {
   // Deletes ALL existing entries
@@ -26,4 +26,4 @@ export async function seed(knex) {
       room_code: 'MATCH002',
     },
   ]);
-};
+}

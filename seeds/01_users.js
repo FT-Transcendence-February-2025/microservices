@@ -26,6 +26,6 @@ export async function seed(knex) {
       username: 'user4',
       email: 'user4@example.com',
       password: 'password123',
-    }
+    },
   ]);
 }

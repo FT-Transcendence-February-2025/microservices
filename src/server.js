@@ -1,8 +1,13 @@
 import Fastify from 'fastify';
 import createAccountRoute from './routes/create_account.js';
+import fastifyBcrypt from "fastify-bcrypt";
 
 const fastify = Fastify({
 //  logger: true
+});
+
+fastify.register(fastifyBcrypt, {
+  saltWorkFactor: 12
 });
 
 fastify.route(createAccountRoute);
@@ -17,3 +22,5 @@ try {
   fastify.log.error(error);
   process.exit(1);
 }
+
+export { fastify };

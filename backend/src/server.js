@@ -106,3 +106,7 @@ try {
     fastify.log.error(err);
     process.exit(1);
 };
+
+// TO DO:
+
+// - fastify schema for route

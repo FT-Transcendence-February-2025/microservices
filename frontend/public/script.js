@@ -1,6 +1,19 @@
 const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
 
+canvas.width = canvas.clientWidth;
+canvas.height = canvas.clientHeight;
+
+const PLAY_FIELD_HEIGHT = 1080;
+const PLAY_FIELD_WIDTH = 1920;
+
+const PADDLE_WIDTH = 27;
+const PADDLE_HEIGHT = 162;
+const PADDLE_SPEED = 8;
+
+const BALL_SPEED = 7;
+const BALL_RADIUS = 10;
+
 // WebSocket setup
 const socket = new WebSocket("ws://localhost:3000/game");
 
@@ -17,7 +30,6 @@ socket.onclose = () => {
 };
 
 // Paddle movement
-let playerPaddleY = (canvas.height - 100) / 2; // Initial paddle position
 let upPressed = false;
 let downPressed = false;
 
@@ -28,19 +40,19 @@ function sendPaddlePosition(direction) {
         dir: direction,
     };
 
-    if (socket.readyState === WebSocket.OPEN) {
+    if (socket.readyState === WebSocket.OPEN)
         socket.send(JSON.stringify(data));
-    }
 }
 
 // Event listeners for paddle control
 document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowUp" && upPressed === false) {
-        sendPaddlePosition(-1);
+        sendPaddlePosition("up");
         upPressed = true;
         downPressed = false;
-    } else if (event.key === "ArrowDown" && downPressed === false) {
-        sendPaddlePosition(1);
+    } 
+    else if (event.key === "ArrowDown" && downPressed === false) {
+        sendPaddlePosition("down");
         downPressed = true;
         upPressed = false;
     }
@@ -48,10 +60,11 @@ document.addEventListener("keydown", (event) => {
 
 document.addEventListener("keyup", (event) => {
     if (event.key === "ArrowUp" && upPressed === true) {
-        sendPaddlePosition(0);
+        sendPaddlePosition("none");
         upPressed = false;
-    } else if (event.key === "ArrowDown" && downPressed === true) {
-        sendPaddlePosition(0);
+    }
+    else if (event.key === "ArrowDown" && downPressed === true) {
+        sendPaddlePosition("none");
         downPressed = false;
     }
 });
@@ -59,19 +72,19 @@ document.addEventListener("keyup", (event) => {
 // Draw elements on the canvas
 function drawPaddle(x, y) {
     ctx.fillStyle = "#fff";
-    ctx.fillRect(x, y, 10, 100);
+    ctx.fillRect(x, y/PLAY_FIELD_HEIGHT * canvas.height, PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, PADDLE_HEIGHT/PLAY_FIELD_HEIGHT * canvas.height);
 }
 
 function drawBall(x, y) {
     ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.arc(x/PLAY_FIELD_WIDTH * canvas.width, y/PLAY_FIELD_HEIGHT * canvas.height, BALL_RADIUS/PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
     ctx.fillStyle = "#fff";
     ctx.fill();
     ctx.closePath();
 }
 
 function drawNet() {
-    ctx.setLineDash([5, 15]);
+    ctx.setLineDash([canvas.width/27, canvas.height/27]);
     ctx.strokeStyle = "#fff";
     ctx.beginPath();
     ctx.moveTo(canvas.width / 2, 0);
@@ -99,7 +112,7 @@ function renderGame(state) {
 
     // Draw paddles and ball
     drawPaddle(0, paddle1.y); // Player's paddle on the left side
-    drawPaddle(canvas.width - 10, paddle2.y); // Opponent's paddle on the right side
+    drawPaddle(canvas.width - PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, paddle2.y); // Opponent's paddle on the right side
     drawBall(ball.x, ball.y); // Ball position
 
     // Draw scores
@@ -116,6 +129,7 @@ socket.onmessage = (message) => {
 
 // Main game loop
 function gameLoop() {
+    console.log(`w: ${canvas.width} h: ${canvas.height}`);
     requestAnimationFrame(gameLoop); // Continue the loop
 }
 

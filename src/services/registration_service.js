@@ -24,7 +24,6 @@ export const registrationService = async (request, reply) => {
   }
 
   const hashedPassword = await fastify.bcrypt.hash(password);
-  console.log(hashedPassword);
 
   await createUser(email, displayName, password);
   reply.send({ success: 'You have successfully registered' });

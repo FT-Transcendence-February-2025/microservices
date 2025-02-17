@@ -1,5 +1,6 @@
 import validator from 'validator'
 import { Filter } from 'bad-words'
+import zxcvbn from 'zxcvbn'
 import { getUserByEmail, getUserByDisplayName } from '../services/user_service.js';
 
 const filter = new Filter();
@@ -42,6 +43,36 @@ export const displayNameValidator = async (displayName) => {
   const existingUser = await getUserByDisplayName(displayName);
   if (existingUser) {
     return { valid: false, error: 'Display name already in use' };
+  }
+
+  return { valid: true };
+};
+
+export const passwordValidator = async (password, email, displayName) => {
+  if (password.length < 8) {
+    return { valid: false, error: 'Password too short (min 8 characters)' };
+  }
+
+  if (password.length > 64) {
+    return { valid: false, error: 'Password too long (max 64 characters)' };
+  }
+
+  if (!/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return { valid: false, error: 'Password must contain at least one lowercase letter, one uppercase letter, ' +
+          'one digit, and one special character' };
+  }
+
+  if (password.toLowerCase().includes(email.toLowerCase()) ||
+      password.toLowerCase().includes(displayName.toLowerCase())) {
+    return { valid: false, error: 'Password should not contain your email or display name' };
+  }
+
+  const strengthValidator = zxcvbn(password);
+  if (strengthValidator.score < 3) {
+    return { valid: false, error: 'Password too weak' };
   }
 
   return { valid: true };

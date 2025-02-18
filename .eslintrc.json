@@ -2,7 +2,7 @@
   "extends": ["standard", "prettier"],
   "env": {
     "node": true,
-    "browser": false,
+    "browser": true,
     "es6": true
   },
   "rules": {

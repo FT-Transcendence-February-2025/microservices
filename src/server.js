@@ -1,12 +1,17 @@
 import Fastify from 'fastify';
+import fastifyWebsocket from '@fastify/websocket';
 import { db } from './db/connection.js';
 import { userRoutes } from './routes/users.js';
+import { websocketHandler } from './websocket/index.js';
 
 const PORT = 3000;
 
 const fastify = Fastify({
   logger: true,
 });
+
+// Register WebSocket
+await fastify.register(fastifyWebsocket);
 
 // Test get route to send reply message
 fastify.get('/', (request, reply) => {
@@ -32,6 +37,7 @@ fastify.get('/db-test', async (request, reply) => {
 
 // Routes
 fastify.register(userRoutes);
+fastify.register(websocketHandler);
 
 // Server
 const start = async () => {

@@ -28,4 +28,3 @@ export const registrationService = async (request, reply) => {
   await createUser(email, displayName, password);
   reply.send({ success: 'You have successfully registered' });
 };
-

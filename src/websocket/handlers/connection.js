@@ -128,6 +128,11 @@ const messageHandler = async (message, connection) => {
       break;
     case 'matchAccept':
       try {
+        console.log('Received matchAccept:', {
+          userId: data.userId,
+          matchId: data.matchId,
+        });
+
         const match = await db('matchmaking')
           .where({
             match_status: 'pending',
@@ -140,6 +145,8 @@ const messageHandler = async (message, connection) => {
             );
           })
           .first();
+
+        console.log('Found match:', match);
 
         if (!match) {
           connection.socket.send(
@@ -173,14 +180,22 @@ const messageHandler = async (message, connection) => {
             : match.player1_id;
 
         // Store the acceptance in memory
-        if (!match.acceptedPlayers) match.acceptedPlayers = new Set();
+        if (!match.acceptedPlayers) {
+          console.log('Initializing acceptedPlayers set');
+          match.acceptedPlayers = new Set();
+        }
         match.acceptedPlayers.add(data.userId);
+        console.log(
+          'Current acceptedPlayers:',
+          Array.from(match.acceptedPlayers)
+        );
 
         // Check if both players have accepted
         if (
           match.acceptedPlayers.has(match.player1_id) &&
           match.acceptedPlayers.has(match.player2_id)
         ) {
+          console.log('Both players accepted, starting match');
           await db('matchmaking')
             .where({ id: match.id })
             .update({ match_status: 'active' });

@@ -1,0 +1,51 @@
+<mxfile host="65bd71144e">
+    <diagram id="KTKZi1nK_jONpHMOqJys" name="Page-1">
+        <mxGraphModel dx="607" dy="545" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="45" style="edgeStyle=none;html=1;exitX=0.15;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="130" y="160" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="50" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="2" target="47" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="SQLite3 DB" style="shape=datastore;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="40" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="40" y="160" width="170" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="registration_table" style="swimlane;whiteSpace=wrap;html=1;container=0;" parent="44" vertex="1">
+                    <mxGeometry width="170" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="&lt;ol&gt;&lt;li&gt;ID (primary key - unique&lt;/li&gt;&lt;li&gt;displayName (unique)&lt;/li&gt;&lt;li&gt;email (unique)&lt;/li&gt;&lt;li&gt;password (hashed)&lt;/li&gt;&lt;/ol&gt;" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=wrap;verticalAlign=middle;overflow=hidden;" parent="44" vertex="1">
+                    <mxGeometry y="36" width="170" height="132" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="290" y="160" width="260" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="match_sessions_table" style="swimlane;whiteSpace=wrap;html=1;container=1;" parent="46" vertex="1">
+                    <mxGeometry width="260" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="&lt;ol&gt;&lt;li&gt;ID (primary key)&lt;/li&gt;&lt;li&gt;player_1_id&lt;/li&gt;&lt;li&gt;player_2_id&lt;/li&gt;&lt;li&gt;match_status (pending, in_progress, completed, cancelled)&lt;/li&gt;&lt;li&gt;created at (timestamp)&lt;/li&gt;&lt;li&gt;started at&lt;/li&gt;&lt;li&gt;endend_at&lt;/li&gt;&lt;li&gt;winner_id&lt;/li&gt;&lt;li&gt;player_1_score&lt;/li&gt;&lt;li&gt;player_2_score&lt;/li&gt;&lt;li&gt;room_code (WebSocket identifier) (?)&lt;/li&gt;&lt;/ol&gt;" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=wrap;verticalAlign=middle;overflow=hidden;" parent="47" vertex="1">
+                    <mxGeometry x="6.19" y="29.996086956521744" width="247.61904761904762" height="236.17391304347828" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" style="edgeStyle=none;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="28" target="47" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="40" y="360" width="170" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="password-change_table" style="swimlane;whiteSpace=wrap;html=1;container=0;" vertex="1" parent="51">
+                    <mxGeometry width="170" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="&lt;ol&gt;&lt;li&gt;ID (primary key - unique&lt;/li&gt;&lt;li&gt;displayName (unique)&lt;/li&gt;&lt;li&gt;password (hashed)&lt;/li&gt;&lt;li&gt;created at (timestamp)&lt;/li&gt;&lt;/ol&gt;" style="text;strokeColor=none;fillColor=none;html=1;whiteSpace=wrap;verticalAlign=middle;overflow=hidden;" vertex="1" parent="51">
+                    <mxGeometry y="36" width="170" height="132" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

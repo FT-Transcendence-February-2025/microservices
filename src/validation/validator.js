@@ -1,12 +1,11 @@
 import validator from 'validator'
 import { Filter } from 'bad-words'
 import zxcvbn from 'zxcvbn'
-import { getUserByEmail, getUserByDisplayName } from '../services/user_service.js';
+import { getUserByEmail, getUserByDisplayName } from '../services/database-service.js';
 
 const filter = new Filter();
 
 export const emailValidator = async (email) => {
-
   if (!validator.isEmail(email)) {
     return { valid: false, error: 'Invalid email address' };
   }

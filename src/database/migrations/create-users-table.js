@@ -16,4 +16,6 @@ const createUsersTable = async () => {
   }
 };
 
-createUsersTable();
+(async () => {
+  await createUsersTable();
+})();

@@ -5,9 +5,9 @@ export const createUser = async (email, displayName, password) => {
 };
 
 export const getUserByEmail = async (email) => {
-  await database('users').where({ email }).first();
+  return await database('users').where({ email }).first();
 };
 
 export const getUserByDisplayName = async (displayName) => {
-  await database('users').where({ displayName }).first();
+  return await database('users').where({ displayName }).first();
 };

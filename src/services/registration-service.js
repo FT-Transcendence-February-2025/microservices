@@ -1,4 +1,4 @@
-import { createUser } from './user_service.js';
+import { createUser } from './database-service.js';
 import { emailValidator, displayNameValidator, passwordValidator } from '../validation/validator.js';
 import { fastify } from '../server.js';
 
@@ -25,6 +25,6 @@ export const registrationService = async (request, reply) => {
 
   const hashedPassword = await fastify.bcrypt.hash(password);
 
-  await createUser(email, displayName, password);
+  await createUser(email, displayName, hashedPassword);
   reply.send({ success: 'You have successfully registered' });
 };

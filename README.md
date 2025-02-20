@@ -1,1 +1,1 @@
-# database-service
+# tournament-service

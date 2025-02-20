@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import fastifyCors from '@fastify/cors';
 import fastifyWebsocket from '@fastify/websocket';
 import { db } from './db/connection.js';
 import { userRoutes } from './routes/users.js';
@@ -8,6 +9,12 @@ const PORT = 3000;
 
 const fastify = Fastify({
   logger: true,
+});
+
+await fastify.register(fastifyCors, {
+  origin: ['http://authentication:3000', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
 });
 
 // Register WebSocket

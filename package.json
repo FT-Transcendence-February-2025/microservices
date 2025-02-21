@@ -13,9 +13,10 @@
     "prepare": "husky",
     "lint": "eslint . --fix",
     "format": "prettier --write .",
-    "migrate": "knex migrate:latest",
-    "migrate:make": "knex migrate:make",
-    "migrate:rollback": "knex migrate:rollback",
+    "migrate": "NODE_ENV=development knex migrate:latest",
+    "migrate:make": "NODE_ENV=development knex migrate:make",
+    "migrate:rollback": "NODE_ENV=development knex migrate:rollback",
+    "migrate:prod": "NODE_ENV=production knex migrate:latest",
     "knex": "knex",
     "knex:seed:make": "knex seed:make",
     "knex:seed:run": "knex seed:run"

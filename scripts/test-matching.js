@@ -1,7 +1,9 @@
 import WebSocket from 'ws';
 
-const ws1 = new WebSocket('ws://localhost:3000/ws');
-const ws2 = new WebSocket('ws://localhost:3000/ws');
+const token = '$2a$12$po5KeyhOn71ZhIzzAIWkouAslkUTWqJBINGEAcIJcaF7f8MdHJTPS';
+const token2 = '$2a$12$68zuVnGHkB8uZ7BVpNEsH.emyUeG72NeHQcg4JxK5q4FtDbgyTj2q';
+const ws1 = new WebSocket('ws://localhost:3001/ws');
+const ws2 = new WebSocket('ws://localhost:3001/ws');
 
 ws1.on('open', () => {
   console.log('Player 1 connected');
@@ -10,7 +12,8 @@ ws1.on('open', () => {
   ws1.send(
     JSON.stringify({
       type: 'joinQueue',
-      userId: 1,
+      userId: 7,
+      token,
     })
   );
 });
@@ -22,7 +25,8 @@ ws2.on('open', () => {
   ws2.send(
     JSON.stringify({
       type: 'joinQueue',
-      userId: 2,
+      userId: 8,
+      token: token2,
     })
   );
 });
@@ -41,7 +45,7 @@ ws1.on('message', (data) => {
       ws1.send(
         JSON.stringify({
           type: 'matchAccept',
-          userId: 1,
+          userId: 7,
           matchId: message.matchId,
         })
       );
@@ -64,10 +68,10 @@ ws2.on('message', (data) => {
     case 'matchCreated':
       console.log('Match created for player 2');
       // Accept the match
-      ws1.send(
+      ws2.send(
         JSON.stringify({
           type: 'matchAccept',
-          userId: 2,
+          userId: 8,
           matchId: message.matchId,
         })
       );

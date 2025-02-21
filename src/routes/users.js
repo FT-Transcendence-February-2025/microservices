@@ -1,11 +1,11 @@
-import { db } from '../db/connection.js';
+import { authDb } from '../db/connection.js';
 import { User } from '../models/User.js';
 
 export const userRoutes = async (fastify) => {
   // GET endpoint to retrieve all users
   fastify.get('/users', async (request, reply) => {
     try {
-      const users = await db('users').select('*');
+      const users = await authDb('users').select('*');
       reply.send(users);
     } catch (error) {
       reply.code(500).send({

@@ -9,10 +9,10 @@ const dropUsersTable = async () => {
     } else {
       console.log('Users table does not exist');
     }
-  } catch (err) {
-    console.error('Error dropping users table:', err);
+  } catch (error) {
+    console.error('Error dropping users table:', error);
   } finally {
-    await database.destroy(); // Close the database connection
+    await database.destroy();
   }
 };
 

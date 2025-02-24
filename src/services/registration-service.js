@@ -7,24 +7,27 @@ export const registrationService = async (request, reply) => {
 
   const emailValidationResult = await emailValidator(email);
   if (!emailValidationResult.valid) {
-    reply.status(400).send({ error: emailValidationResult.error });
-    return;
+    return reply.status(emailValidationResult.code).send({ error: emailValidationResult.error });
   }
 
   const displayNameValidationResult = await displayNameValidator(displayName);
   if (!displayNameValidationResult.valid) {
-    reply.status(400).send({ error: displayNameValidationResult.error });
-    return;
+    return reply.status(displayNameValidationResult.code).send({ error: displayNameValidationResult.error });
   }
 
   const passwordValidationResult = await passwordValidator(password, email, displayName);
   if (!passwordValidationResult.valid) {
-    reply.status(400).send({ error: passwordValidationResult.error });
-    return;
+    return reply.status(passwordValidationResult.code).send({ error: passwordValidationResult.error });
   }
 
   const hashedPassword = await fastify.bcrypt.hash(password);
 
-  await createUser(email, displayName, hashedPassword);
-  reply.send({ success: 'You have successfully registered' });
+	try {
+		await createUser(email, displayName, hashedPassword);
+	} catch (error) {
+		console.error('sqlite3: ' + error);
+		return reply.status(500).send({ error: 'Internal Server Error' });
+	}
+
+  return reply.send({ success: 'You have successfully registered' });
 };

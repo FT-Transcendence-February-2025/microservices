@@ -38,7 +38,7 @@ fastify.get('/auth-db-test', async (request, reply) => {
     });
   } catch (error) {
     reply.send({
-      error: 'Database conenction failed!',
+      error: 'Database connection failed!',
     });
   }
 });

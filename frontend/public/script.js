@@ -1,63 +1,82 @@
+"use strict";
 const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
-
-canvas.width = canvas.clientWidth;
-canvas.height = canvas.clientHeight;
-
 const PLAY_FIELD_HEIGHT = 1080;
 const PLAY_FIELD_WIDTH = 1920;
-
-const PADDLE_WIDTH = 27;
-const PADDLE_HEIGHT = 162;
-const PADDLE_SPEED = 8;
-
-const BALL_SPEED = 7;
-const BALL_RADIUS = 10;
-
-// WebSocket setup
-const socket = new WebSocket("ws://localhost:3000/game");
-
+const PADDLE_WIDTH = 30;
+const PADDLE_HEIGHT = 180;
+const BALL_RADIUS = 15;
+const COLOR = '#B026FF';
+canvas.width = canvas.clientWidth;
+canvas.height = canvas.clientHeight;
+const socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
+function isGameState(obj) {
+    return (typeof obj === 'object' &&
+        obj !== null &&
+        'ball' in obj &&
+        'paddle1' in obj &&
+        'paddle2' in obj &&
+        typeof obj.ball.x === 'number' &&
+        typeof obj.ball.y === 'number' &&
+        typeof obj.paddle1.y === 'number' &&
+        typeof obj.paddle1.score === 'number' &&
+        typeof obj.paddle2.y === 'number' &&
+        typeof obj.paddle2.score === 'number');
+}
+socket.onmessage = (message) => {
+    try {
+        const parsedData = JSON.parse(message.data);
+        if (isGameState(parsedData))
+            renderGame(parsedData);
+    }
+    catch (error) {
+        console.error('Failed to parse received data:', error);
+    }
+};
 socket.onopen = () => {
     console.log("Connected to WebSocket server.");
 };
-
 socket.onerror = (error) => {
     console.error("WebSocket error:", error);
 };
-
 socket.onclose = () => {
     console.log("WebSocket connection closed.");
 };
-
-// Paddle movement
 let upPressed = false;
 let downPressed = false;
-
-// Send paddle position to the server via WebSocket
 function sendPaddlePosition(direction) {
     const data = {
         type: "paddleMove",
         dir: direction,
     };
-
     if (socket.readyState === WebSocket.OPEN)
         socket.send(JSON.stringify(data));
 }
-
-// Event listeners for paddle control
-document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowUp" && upPressed === false) {
+document.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+    const screenHeight = window.innerHeight;
+    const halfHeight = screenHeight / 2;
+    const touch = event.touches[event.touches.length - 1];
+    const touchY = touch.clientY;
+    if (touchY < halfHeight && upPressed === false) {
         sendPaddlePosition("up");
         upPressed = true;
         downPressed = false;
-    } 
-    else if (event.key === "ArrowDown" && downPressed === false) {
+    }
+    else if (downPressed === false) {
         sendPaddlePosition("down");
         downPressed = true;
         upPressed = false;
     }
 });
-
+document.addEventListener("touchend", (event) => {
+    event.preventDefault();
+    if (event.touches.length === 0) {
+        sendPaddlePosition("none");
+        upPressed = false;
+        downPressed = false;
+    }
+});
 document.addEventListener("keyup", (event) => {
     if (event.key === "ArrowUp" && upPressed === true) {
         sendPaddlePosition("none");
@@ -68,70 +87,82 @@ document.addEventListener("keyup", (event) => {
         downPressed = false;
     }
 });
-
-// Draw elements on the canvas
+document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp" && upPressed === false) {
+        sendPaddlePosition("up");
+        upPressed = true;
+        downPressed = false;
+    }
+    else if (event.key === "ArrowDown" && downPressed === false) {
+        sendPaddlePosition("down");
+        downPressed = true;
+        upPressed = false;
+    }
+});
 function drawPaddle(x, y) {
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(x, y/PLAY_FIELD_HEIGHT * canvas.height, PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, PADDLE_HEIGHT/PLAY_FIELD_HEIGHT * canvas.height);
+    ctx.fillStyle = COLOR;
+    ctx.fillRect(x, y / PLAY_FIELD_HEIGHT * canvas.height, PADDLE_WIDTH / PLAY_FIELD_WIDTH * canvas.width, PADDLE_HEIGHT / PLAY_FIELD_HEIGHT * canvas.height);
 }
-
 function drawBall(x, y) {
     ctx.beginPath();
-    ctx.arc(x/PLAY_FIELD_WIDTH * canvas.width, y/PLAY_FIELD_HEIGHT * canvas.height, BALL_RADIUS/PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff";
+    ctx.arc(x / PLAY_FIELD_WIDTH * canvas.width, y / PLAY_FIELD_HEIGHT * canvas.height, BALL_RADIUS / PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
+    ctx.fillStyle = COLOR;
     ctx.fill();
     ctx.closePath();
 }
-
 function drawNet() {
-    ctx.setLineDash([canvas.width/27, canvas.height/27]);
-    ctx.strokeStyle = "#fff";
+    ctx.setLineDash([canvas.width / 27, canvas.height / 27]);
+    ctx.strokeStyle = COLOR;
     ctx.beginPath();
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.stroke();
 }
-
 function drawScore(score1, score2) {
     ctx.font = "48px Arial";
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = COLOR;
     ctx.textAlign = "center";
-    ctx.fillText(score1, canvas.width / 4, 50);
-    ctx.fillText(score2, 3 * canvas.width / 4, 50);
+    ctx.fillText(score1.toString(), canvas.width / 4, 50);
+    ctx.fillText(score2.toString(), 3 * canvas.width / 4, 50);
 }
-
-// Render game state received from the server
+const trailLength = 35; // Adjust for longer/shorter trail
+const trail = [];
+function drawTrail() {
+    ctx.save();
+    for (let i = 0; i < trail.length; i++) {
+        const age = trail.length - i;
+        const alpha = Math.max(1 - age / trail.length, 0);
+        const radius = 8 * (0.5 + alpha * 0.5);
+        ctx.beginPath();
+        ctx.globalAlpha = alpha * 0.3;
+        ctx.fillStyle = COLOR;
+        ctx.arc(trail[i].x / PLAY_FIELD_WIDTH * canvas.width, trail[i].y / PLAY_FIELD_HEIGHT * canvas.height, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+function drawBorder() {
+    ctx.setLineDash([]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLOR;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+}
 function renderGame(state) {
     const { ball, paddle1, paddle2 } = state;
-
-    // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw net
+    trail.push({ x: ball.x, y: ball.y });
+    // Keep trail at desired length
+    if (trail.length > trailLength)
+        trail.shift();
+    drawBorder();
     drawNet();
-
-    // Draw paddles and ball
-    drawPaddle(0, paddle1.y); // Player's paddle on the left side
-    drawPaddle(canvas.width - PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, paddle2.y); // Opponent's paddle on the right side
-    drawBall(ball.x, ball.y); // Ball position
-
-    // Draw scores
+    drawPaddle(0, paddle1.y);
+    drawPaddle(canvas.width - PADDLE_WIDTH / PLAY_FIELD_WIDTH * canvas.width, paddle2.y);
+    drawBall(ball.x, ball.y);
+    drawTrail();
     drawScore(paddle1.score, paddle2.score);
 }
-
-// Listen for game state updates from the server
-socket.onmessage = (message) => {
-    const gameState = JSON.parse(message.data);
-
-    // Render the updated game state on the canvas
-    renderGame(gameState);
-};
-
-// Main game loop
 function gameLoop() {
-    console.log(`w: ${canvas.width} h: ${canvas.height}`);
-    requestAnimationFrame(gameLoop); // Continue the loop
+    requestAnimationFrame(gameLoop);
 }
-
-// Start the game loop when everything is loaded.
 gameLoop();

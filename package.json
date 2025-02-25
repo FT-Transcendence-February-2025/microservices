@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@fastify/multipart": "^9.0.3",
-    "fastify": "^5.2.1"
+    "fastify": "^5.2.1",
+    "fs-extra": "^11.3.0"
   }
 }

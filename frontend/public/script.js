@@ -77,6 +77,7 @@ document.addEventListener("touchend", (event) => {
         downPressed = false;
     }
 });
+const audio = new Audio('/uhh.mp3');
 document.addEventListener("keyup", (event) => {
     if (event.key === "ArrowUp" && upPressed === true) {
         sendPaddlePosition("none");
@@ -147,8 +148,13 @@ function drawBorder() {
     ctx.strokeStyle = COLOR;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
+let old_scores = 0;
 function renderGame(state) {
     const { ball, paddle1, paddle2 } = state;
+    if (old_scores < paddle1.score + paddle2.score) {
+        audio.play();
+        old_scores = paddle1.score + paddle2.score;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     trail.push({ x: ball.x, y: ball.y });
     // Keep trail at desired length

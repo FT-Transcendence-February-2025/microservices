@@ -200,12 +200,11 @@ function drawBorder() {
 function renderGame(state: GameState) {
     const { ball, paddle1, paddle2 } = state;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     trail.push({ x: ball.x, y: ball.y });
-    // Keep trail at desired length
     if (trail.length > trailLength)
         trail.shift();
-    
+
     drawBorder();
     drawNet();
     drawPaddle(0, paddle1.y);

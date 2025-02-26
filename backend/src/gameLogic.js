@@ -105,12 +105,10 @@ const pongGame = {
         const PI_5_4 = 5 * Math.PI / 4;  // 225 degrees
         const PI_7_4 = 7 * Math.PI / 4;  // 315 degrees
     
-        if (newAngle < PI_4)
-            return PI_4;
-        else if (newAngle > PI_3_4 && newAngle < PI_5_4)
-            return (newAngle < Math.PI) ? PI_3_4 : PI_5_4;
-        else if (newAngle > PI_7_4)
-            return PI_7_4;
+        if (newAngle > PI_4 && newAngle < PI_3_4)
+            return newAngle > Math.PI/2 ? PI_3_4 : PI_4;
+        else if (newAngle > PI_5_4 && newAngle < PI_7_4)
+            return newAngle < 3 * Math.PI / 2 ? PI_5_4 : PI_7_4;
         return newAngle;
     },
     

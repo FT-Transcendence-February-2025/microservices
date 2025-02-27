@@ -7,7 +7,7 @@ const PADDLE_SPEED = 15;
 
 const BALL_START_SPEED = 8;
 const BALL_ACCELERATION = 2;
-const BALL_MAX_SPEED = 20;
+const BALL_MAX_SPEED = 25;
 const BALL_RADIUS = 15;
 
 const WINNING_SCORE = 11;

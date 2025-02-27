@@ -35,5 +35,5 @@ export const passwordChangeService = async (request, reply) => {
 		return reply.status(500).send({ error: 'Internal Server Error' });
 	}
 
-	return reply.send({ success: 'Password has been changed' });
+	return reply.send({ message: 'Password has been changed' });
 };

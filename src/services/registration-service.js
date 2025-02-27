@@ -29,5 +29,5 @@ export const registrationService = async (request, reply) => {
 		return reply.status(500).send({ error: 'Internal Server Error' });
 	}
 
-  return reply.send({ success: 'You have successfully registered' });
+  return reply.send({ message: 'You have successfully registered' });
 };

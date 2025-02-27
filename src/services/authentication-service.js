@@ -25,11 +25,10 @@ export const authenticationService = async (request, reply) => {
 		const token = jwt.sign(
 			{ userId: user.id },
 			process.env.SECRET_KEY,
-			// TODO: this option is not working. Token is not expiring.
 			 { expiresIn: 10 }
 		);
 		console.log(token);
-		reply.send({ success: 'You have successfully logged in', token });
+		reply.send({ message: 'You have successfully logged in', token });
 	} catch (error) {
 		console.error(error);
 		return reply.status(500).send({ error: 'Internal Server Error' });

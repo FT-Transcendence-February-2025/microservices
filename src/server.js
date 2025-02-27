@@ -17,7 +17,7 @@ fastify.register(fastifyBcrypt, {
 });
 
 fastify.addHook('preHandler', async (request, reply) => {
-	if (request.raw.url !== '/login' && request.raw.url !== '/create-account') {
+	if (request.raw.url !== '/' && request.raw.url !== '/login' && request.raw.url !== '/create-account') {
 		await verifyToken(request, reply);
 	}
 });
@@ -27,7 +27,7 @@ fastify.route(createAuthenticationRoute);
 fastify.route(createChangePasswordRoute);
 
 fastify.get('/', (request, reply) => {
-  return { message: 'Fastify server running' };
+  return { message: 'Fastify server of authentication-service running' };
 });
 
 try {

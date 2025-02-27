@@ -16,7 +16,8 @@ export const createAuthenticationRoute = {
 			200: {
 				type: 'object',
 				properties: {
-					success: { type: 'string' }
+					message: { type: 'string' },
+					token: { type: 'string' }
 				}
 			}
 		}

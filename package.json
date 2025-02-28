@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.0.0",
     "bad-words": "^4.0.0",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",

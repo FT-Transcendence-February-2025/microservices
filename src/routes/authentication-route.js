@@ -1,6 +1,6 @@
 import { authenticationService } from '../services/authentication-service.js';
 
-export const createAuthenticationRoute = {
+export const createLoginRoute = {
 	method: 'POST',
 	url: '/login',
 	schema: {
@@ -16,7 +16,8 @@ export const createAuthenticationRoute = {
 			200: {
 				type: 'object',
 				properties: {
-					success: { type: 'string' }
+					success: { type: 'string' },
+					token: { type: 'string' }
 				}
 			}
 		}

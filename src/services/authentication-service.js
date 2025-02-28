@@ -22,14 +22,27 @@ export const authenticationService = async (request, reply) => {
 	}
 
 	try {
-		const token = jwt.sign(
+		const refreshToken = jwt.sign(
 			{ userId: user.id },
 			process.env.SECRET_KEY,
-			// TODO: this option is not working. Token is not expiring.
-			 { expiresIn: 10 }
+			{ expiresIn: '7d' }
 		);
-		console.log(token);
-		reply.send({ success: 'You have successfully logged in', token });
+		const shortToken = jwt.sign(
+			{ userId: user.id },
+			process.env.SECRET_KEY,
+			 { expiresIn: '5m' }
+		);
+
+		reply.setCookie('refreshToken', refreshToken, {
+			signed: true,
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+			path: '/',
+			maxAge: 7 * 24 * 60 * 60
+		});
+
+		reply.send({ success: 'You have successfully logged in', token: shortToken });
 	} catch (error) {
 		console.error(error);
 		return reply.status(500).send({ error: 'Internal Server Error' });

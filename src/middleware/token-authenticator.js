@@ -8,8 +8,6 @@ export const verifyToken = async (request, reply) => {
 		}
 
 		const token = authorizationHeader.split(' ')[1];
-		const decodedTest = jwt.decode(token);
-		console.log(decodedTest);
 		const decoded = jwt.verify(token, process.env.SECRET_KEY);
 		request.user = { id: decoded.userId };
 	} catch (error) {

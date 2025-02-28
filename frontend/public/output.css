@@ -179,8 +179,8 @@
   .h-full {
     height: 100%;
   }
-  .max-h-\[56\.25vw\] {
-    max-height: 56.25vw;
+  .max-h-\[56\.25dvw\] {
+    max-height: 56.25dvw;
   }
   .w-dvw {
     width: 100dvw;
@@ -188,8 +188,8 @@
   .w-full {
     width: 100%;
   }
-  .max-w-\[177\.78vh\] {
-    max-width: 177.78vh;
+  .max-w-\[177\.78dvh\] {
+    max-width: 177.78dvh;
   }
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);

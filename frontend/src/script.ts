@@ -66,6 +66,7 @@ socket.onerror = (error) => {
 socket.onclose = () => {
     console.log("WebSocket connection closed.");
 };
+
 let upPressed = false;
 let downPressed = false;
 

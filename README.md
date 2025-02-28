@@ -1,4 +1,4 @@
 # game-logic
 
-TO DO:
-- frontend w-dvw h-dvh
+TO DO
+- local game with one keyboard

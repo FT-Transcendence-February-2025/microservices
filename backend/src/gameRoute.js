@@ -26,7 +26,7 @@ export default async function gameRoute(fastify, options) {
                 const message = JSON.parse(data.toString());
 
                 if (isValidMessage(message)) {
-                    const paddle = socket.playerId === 1 ? PongGame.paddle1 : PongGame.paddle2;
+                    const paddle = socket.playerId === 1 ? PongGame.paddleLeft : PongGame.paddleRight;
                     const directionMap = {
                         'up': -1,
                         'down': 1,

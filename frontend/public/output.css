@@ -7,6 +7,7 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
     --color-black: #000;
+    --aspect-video: 16 / 9;
     --default-font-family: var(--font-sans);
     --default-font-feature-settings: var(--font-sans--font-feature-settings);
     --default-font-variation-settings: var(
@@ -169,20 +170,26 @@
   .flex {
     display: flex;
   }
-  .h-\[360px\] {
-    height: 360px;
+  .aspect-video {
+    aspect-ratio: var(--aspect-video);
   }
-  .h-screen {
-    height: 100vh;
+  .h-dvh {
+    height: 100dvh;
   }
-  .w-\[640px\] {
-    width: 640px;
+  .h-full {
+    height: 100%;
   }
-  .w-screen {
-    width: 100vw;
+  .max-h-\[56\.25vw\] {
+    max-height: 56.25vw;
   }
-  .rotate-90 {
-    rotate: 90deg;
+  .w-dvw {
+    width: 100dvw;
+  }
+  .w-full {
+    width: 100%;
+  }
+  .max-w-\[177\.78vh\] {
+    max-width: 177.78vh;
   }
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
@@ -198,31 +205,6 @@
   }
   .bg-black {
     background-color: var(--color-black);
-  }
-  .lg\:h-\[540px\] {
-    @media (width >= 64rem) {
-      height: 540px;
-    }
-  }
-  .lg\:w-\[960px\] {
-    @media (width >= 64rem) {
-      width: 960px;
-    }
-  }
-  .lg\:rotate-0 {
-    @media (width >= 64rem) {
-      rotate: 0deg;
-    }
-  }
-  .\32 xl\:h-\[768px\] {
-    @media (width >= 96rem) {
-      height: 768px;
-    }
-  }
-  .\32 xl\:w-\[1366px\] {
-    @media (width >= 96rem) {
-      width: 1366px;
-    }
   }
 }
 @property --tw-rotate-x {

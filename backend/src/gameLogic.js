@@ -22,12 +22,12 @@ const pongGame = {
         spin: 0,
         lastCollision: null
     },
-    paddle1: {
+    paddleLeft: {
         y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
         dir: 0, 
         score: 0 
     },
-    paddle2: {
+    paddleRight: {
         y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
         dir: 0, 
         score: 0 
@@ -40,7 +40,7 @@ const pongGame = {
         this.ball.speed = BALL_START_SPEED;
         if (this.ball.lastCollision === null)
             this.ball.angle = Math.PI / 4 * (1 + 2 * Math.floor(Math.random() * 4));
-        else if (this.ball.lastCollision === this.paddle1)
+        else if (this.ball.lastCollision === this.paddleLeft)
             this.ball.angle = Math.random() < 0.5 ? (5 * Math.PI) / 4 : (7 * Math.PI) / 4;
         else
             this.ball.angle = Math.random() < 0.5 ? Math.PI / 4 : (3 * Math.PI) / 4;
@@ -54,13 +54,13 @@ const pongGame = {
                 x: this.ball.x,
                 y: this.ball.y
             },
-            paddle1: {
-                y: this.paddle1.y,
-                score: this.paddle1.score
+            paddleLeft: {
+                y: this.paddleLeft.y,
+                score: this.paddleLeft.score
             },
-            paddle2: {
-                y: this.paddle2.y,
-                score: this.paddle2.score
+            paddleRight: {
+                y: this.paddleRight.y,
+                score: this.paddleRight.score
             }
         };
     },
@@ -80,13 +80,13 @@ const pongGame = {
 
     ballHitsPaddles() {
         if (this.ball.x - BALL_RADIUS <= PADDLE_WIDTH && 
-            this.ball.y >= this.paddle1.y && 
-            this.ball.y <= this.paddle1.y + PADDLE_HEIGHT)
-            return this.paddle1;
+            this.ball.y >= this.paddleLeft.y && 
+            this.ball.y <= this.paddleLeft.y + PADDLE_HEIGHT)
+            return this.paddleLeft;
         else if (this.ball.x + BALL_RADIUS >= PLAY_FIELD_WIDTH - PADDLE_WIDTH &&
-            this.ball.y >= this.paddle2.y &&
-            this.ball.y <= this.paddle2.y + PADDLE_HEIGHT)
-            return this.paddle2;
+            this.ball.y >= this.paddleRight.y &&
+            this.ball.y <= this.paddleRight.y + PADDLE_HEIGHT)
+            return this.paddleRight;
         else
             return false;
     },
@@ -129,8 +129,8 @@ const pongGame = {
     },
 
     checkWin() {
-        if ((this.paddle1.score >= WINNING_SCORE && this.paddle1.score >= this.paddle2.score + SCORE_DIFFERENCE) 
-            || (this.paddle2.score >= WINNING_SCORE && this.paddle2.score >= this.paddle1.score + SCORE_DIFFERENCE))
+        if ((this.paddleLeft.score >= WINNING_SCORE && this.paddleLeft.score >= this.paddleRight.score + SCORE_DIFFERENCE) 
+            || (this.paddleRight.score >= WINNING_SCORE && this.paddleRight.score >= this.paddleLeft.score + SCORE_DIFFERENCE))
             this.isGameOver = true;
     },
 
@@ -140,9 +140,9 @@ const pongGame = {
 
         if (isLeftSideScore || isRightSideScore) {
             if (isLeftSideScore)
-                this.paddle2.score++;
+                this.paddleRight.score++;
             else
-                this.paddle1.score++;
+                this.paddleLeft.score++;
             this.resetBall();
             this.checkWin();
         }
@@ -151,8 +151,8 @@ const pongGame = {
     update(gameLoop) {
         if (this.isGameOver)
             clearInterval(gameLoop);
-        this.updatePaddle(this.paddle1);
-        this.updatePaddle(this.paddle2);
+        this.updatePaddle(this.paddleLeft);
+        this.updatePaddle(this.paddleRight);
         this.updateBall();
         this.checkCollisions();
         this.checkScoring();

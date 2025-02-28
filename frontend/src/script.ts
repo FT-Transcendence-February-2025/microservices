@@ -1,57 +1,55 @@
 const canvas = document.getElementById("pongCanvas") as HTMLCanvasElement;
+if (canvas === null) throw new Error("Could not find canvas element");
+
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+if (ctx === null) throw new Error("Could not get 2d context");
 
-const PLAY_FIELD_HEIGHT = 1080;
-const PLAY_FIELD_WIDTH = 1920;
+const SERVER_PLAY_FIELD_HEIGHT = 1080;
+const SERVER_PLAY_FIELD_WIDTH = 1920;
+const SERVER_PADDLE_WIDTH = 30;
+const SERVER_PADDLE_HEIGHT = 180;
+const SERVER_BALL_RADIUS = 15;
 
-const PADDLE_WIDTH = 30;
-const PADDLE_HEIGHT = 180;
-
-const BALL_RADIUS = 15;
 const COLOR = '#B026FF';
+const TRAIL_LENGTH = 30;
+
+const gameState = {
+    ball: {
+      x: 0,
+      y: 0
+    },
+    paddleLeft: {
+        y: 0,
+        score: 0
+    },
+    paddleRight: {
+        y: 0,
+        score: 0
+    }
+};
 
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
 
-interface GameState {
-    ball: {
-      x: number;
-      y: number;
-    };
-    paddle1: {
-      y: number;
-      score: number;
-    };
-    paddle2: {
-      y: number;
-      score: number;
-    };
-}
-
 const socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
 
-function isGameState(obj: any): obj is GameState {
-    return (
-      typeof obj === 'object' &&
-      obj !== null &&
-      'ball' in obj &&
-      'paddle1' in obj &&
-      'paddle2' in obj &&
-      typeof obj.ball.x === 'number' &&
-      typeof obj.ball.y === 'number' &&
-      typeof obj.paddle1.y === 'number' &&
-      typeof obj.paddle1.score === 'number' &&
-      typeof obj.paddle2.y === 'number' &&
-      typeof obj.paddle2.score === 'number'
-    );
+function updateGameState(parsedData: any) {
+    if (!isGameState(parsedData))
+        return ;
+    gameState.ball.x = parsedData.ball.x / SERVER_PLAY_FIELD_WIDTH * canvas.width;
+    gameState.ball.y = parsedData.ball.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleLeft.y = parsedData.paddleLeft.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleRight.y = parsedData.paddleRight.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleLeft.score = parsedData.paddleLeft.score;
+    gameState.paddleRight.score = parsedData.paddleRight.score;
+    renderGame();
 }
 
 socket.onmessage = (message) => {
 
     try {
-        const parsedData = JSON.parse(message.data) as GameState;
-        if (isGameState(parsedData))
-            renderGame(parsedData);
+        const parsedData = JSON.parse(message.data);
+            updateGameState(parsedData);
     } catch (error) {
         console.error('Failed to parse received data:', error);
     }
@@ -68,29 +66,14 @@ socket.onerror = (error) => {
 socket.onclose = () => {
     console.log("WebSocket connection closed.");
 };
-
 let upPressed = false;
 let downPressed = false;
 
-function sendPaddlePosition(direction: string) {
-    const data = {
-        type: "paddleMove",
-        dir: direction,
-    };
-    if (socket.readyState === WebSocket.OPEN)
-        socket.send(JSON.stringify(data));
-}
-
 document.addEventListener("touchstart", (event) => {
     event.preventDefault();
-    
-    const screenHeight = window.innerHeight;
-    const halfHeight = screenHeight / 2;
+    const touchX = event.touches[event.touches.length - 1].clientX;
 
-    const touch = event.touches[event.touches.length - 1];
-    const touchY = touch.clientY;
-
-    if (touchY < halfHeight && upPressed === false) {
+    if (touchX < window.innerWidth / 2 && upPressed === false) {
         sendPaddlePosition("up");
         upPressed = true;
         downPressed = false;
@@ -135,87 +118,100 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-function drawPaddle(x: number, y: number) {
+function isGameState(obj: any){
+    return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'ball' in obj &&
+        'paddleLeft' in obj &&
+        'paddleRight' in obj &&
+        typeof obj.ball.x === 'number' &&
+        typeof obj.ball.y === 'number' &&
+        typeof obj.paddleLeft.y === 'number' &&
+        typeof obj.paddleLeft.score === 'number' &&
+        typeof obj.paddleRight.y === 'number' &&
+        typeof obj.paddleRight.score === 'number'
+    );
+}
+
+function sendPaddlePosition(direction: string) {
+    const data = {
+        type: "paddleMove",
+        dir: direction,
+    };
+    if (socket.readyState === WebSocket.OPEN)
+        socket.send(JSON.stringify(data));
+}
+
+function drawPaddle (x: number, y: number) {
     ctx.fillStyle = COLOR;
-    ctx.fillRect(x, y/PLAY_FIELD_HEIGHT * canvas.height, PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, PADDLE_HEIGHT/PLAY_FIELD_HEIGHT * canvas.height);
+    ctx.fillRect(x, y, SERVER_PADDLE_WIDTH/SERVER_PLAY_FIELD_WIDTH * canvas.width, SERVER_PADDLE_HEIGHT/SERVER_PLAY_FIELD_HEIGHT * canvas.height);
 }
 
 function drawBall(x: number, y: number) {
     ctx.beginPath();
-    ctx.arc(x/PLAY_FIELD_WIDTH * canvas.width, y/PLAY_FIELD_HEIGHT * canvas.height, BALL_RADIUS/PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
+    ctx.arc(x, y, SERVER_BALL_RADIUS/SERVER_PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
     ctx.fillStyle = COLOR;
     ctx.fill();
     ctx.closePath();
 }
 
-function drawNet() {
-    ctx.setLineDash([canvas.width/27, canvas.height/27]);
-    ctx.strokeStyle = COLOR;
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
-}
+const trail: any = [];
 
-function drawScore(score1: number, score2: number) {
-    ctx.font = "48px Arial";
-    ctx.fillStyle = COLOR;
-    ctx.textAlign = "center";
-    ctx.fillText(score1.toString(), canvas.width / 4, 50);
-    ctx.fillText(score2.toString(), 3 * canvas.width / 4, 50);
-}
-
-const trailLength = 35; // Adjust for longer/shorter trail
-const trail:any = [];
-
-function drawTrail() {
+function drawTrail(x: number, y: number) {
+    trail.push({ x, y });
+    if (trail.length > TRAIL_LENGTH)
+        trail.shift();
     ctx.save();
     for (let i = 0; i < trail.length; i++) {
         const age = trail.length - i;
         const alpha = Math.max(1 - age / trail.length, 0);
-        const radius = 8 * (0.5 + alpha * 0.5);
-        
+        const radius = SERVER_BALL_RADIUS/SERVER_PLAY_FIELD_HEIGHT * canvas.height * (0.5 + alpha * 0.5);
+
         ctx.beginPath();
         ctx.globalAlpha = alpha * 0.3;
         ctx.fillStyle = COLOR;
-        ctx.arc(
-            trail[i].x / PLAY_FIELD_WIDTH * canvas.width,
-            trail[i].y / PLAY_FIELD_HEIGHT * canvas.height,
-            radius,
-            0,
-            Math.PI * 2
-        );
+        ctx.arc(trail[i].x, trail[i].y, radius, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.restore();
 }
 
-function drawBorder() {
-    ctx.setLineDash([]);
+function drawScore(score1: number, score2: number) {
+    ctx.font = `${canvas.height/15}px Arial`;
+    ctx.fillStyle = COLOR;
+    ctx.textAlign = "center";
+    ctx.fillText(score1.toString(), canvas.width / 4, canvas.height/15);
+    ctx.fillText(score2.toString(), 3 * canvas.width / 4, canvas.height/15);
+}
+
+function drawNet() {
+    ctx.setLineDash([canvas.height/25, canvas.height/25]);
     ctx.lineWidth = 2;
+    ctx.strokeStyle = COLOR;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawBorder() {
+    ctx.lineWidth = 4;
     ctx.strokeStyle = COLOR;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
 
-function renderGame(state: GameState) {
-    const { ball, paddle1, paddle2 } = state;
+
+function renderGame() {
+    const { ball, paddleLeft, paddleRight } = gameState;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    trail.push({ x: ball.x, y: ball.y });
-    if (trail.length > trailLength)
-        trail.shift();
-
     drawBorder();
     drawNet();
-    drawPaddle(0, paddle1.y);
-    drawPaddle(canvas.width - PADDLE_WIDTH/PLAY_FIELD_WIDTH * canvas.width, paddle2.y);
+    drawPaddle(0, paddleLeft.y);
+    drawPaddle(canvas.width - SERVER_PADDLE_WIDTH/SERVER_PLAY_FIELD_WIDTH * canvas.width, paddleRight.y);
     drawBall(ball.x, ball.y);
-    drawTrail();
-    drawScore(paddle1.score, paddle2.score);
+    drawTrail(ball.x, ball.y);
+    drawScore(paddleLeft.score, paddleRight.score);
 }
-
-function gameLoop() {
-    requestAnimationFrame(gameLoop);
-}
-
-gameLoop();

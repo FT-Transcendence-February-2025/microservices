@@ -1,33 +1,49 @@
 "use strict";
 const canvas = document.getElementById("pongCanvas");
+if (canvas === null)
+    throw new Error("Could not find canvas element");
 const ctx = canvas.getContext("2d");
-const PLAY_FIELD_HEIGHT = 1080;
-const PLAY_FIELD_WIDTH = 1920;
-const PADDLE_WIDTH = 30;
-const PADDLE_HEIGHT = 180;
-const BALL_RADIUS = 15;
+if (ctx === null)
+    throw new Error("Could not get 2d context");
+const SERVER_PLAY_FIELD_HEIGHT = 1080;
+const SERVER_PLAY_FIELD_WIDTH = 1920;
+const SERVER_PADDLE_WIDTH = 30;
+const SERVER_PADDLE_HEIGHT = 180;
+const SERVER_BALL_RADIUS = 15;
 const COLOR = '#B026FF';
+const TRAIL_LENGTH = 30;
+const gameState = {
+    ball: {
+        x: 0,
+        y: 0
+    },
+    paddleLeft: {
+        y: 0,
+        score: 0
+    },
+    paddleRight: {
+        y: 0,
+        score: 0
+    }
+};
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
 const socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
-function isGameState(obj) {
-    return (typeof obj === 'object' &&
-        obj !== null &&
-        'ball' in obj &&
-        'paddle1' in obj &&
-        'paddle2' in obj &&
-        typeof obj.ball.x === 'number' &&
-        typeof obj.ball.y === 'number' &&
-        typeof obj.paddle1.y === 'number' &&
-        typeof obj.paddle1.score === 'number' &&
-        typeof obj.paddle2.y === 'number' &&
-        typeof obj.paddle2.score === 'number');
+function updateGameState(parsedData) {
+    if (!isGameState(parsedData))
+        return;
+    gameState.ball.x = parsedData.ball.x / SERVER_PLAY_FIELD_WIDTH * canvas.width;
+    gameState.ball.y = parsedData.ball.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleLeft.y = parsedData.paddleLeft.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleRight.y = parsedData.paddleRight.y / SERVER_PLAY_FIELD_HEIGHT * canvas.height;
+    gameState.paddleLeft.score = parsedData.paddleLeft.score;
+    gameState.paddleRight.score = parsedData.paddleRight.score;
+    renderGame();
 }
 socket.onmessage = (message) => {
     try {
         const parsedData = JSON.parse(message.data);
-        if (isGameState(parsedData))
-            renderGame(parsedData);
+        updateGameState(parsedData);
     }
     catch (error) {
         console.error('Failed to parse received data:', error);
@@ -44,21 +60,10 @@ socket.onclose = () => {
 };
 let upPressed = false;
 let downPressed = false;
-function sendPaddlePosition(direction) {
-    const data = {
-        type: "paddleMove",
-        dir: direction,
-    };
-    if (socket.readyState === WebSocket.OPEN)
-        socket.send(JSON.stringify(data));
-}
 document.addEventListener("touchstart", (event) => {
     event.preventDefault();
-    const screenHeight = window.innerHeight;
-    const halfHeight = screenHeight / 2;
-    const touch = event.touches[event.touches.length - 1];
-    const touchY = touch.clientY;
-    if (touchY < halfHeight && upPressed === false) {
+    const touchX = event.touches[event.touches.length - 1].clientX;
+    if (touchX < window.innerWidth / 2 && upPressed === false) {
         sendPaddlePosition("up");
         upPressed = true;
         downPressed = false;
@@ -77,7 +82,6 @@ document.addEventListener("touchend", (event) => {
         downPressed = false;
     }
 });
-const audio = new Audio('/uhh.mp3');
 document.addEventListener("keyup", (event) => {
     if (event.key === "ArrowUp" && upPressed === true) {
         sendPaddlePosition("none");
@@ -100,75 +104,86 @@ document.addEventListener("keydown", (event) => {
         upPressed = false;
     }
 });
+function isGameState(obj) {
+    return (typeof obj === 'object' &&
+        obj !== null &&
+        'ball' in obj &&
+        'paddleLeft' in obj &&
+        'paddleRight' in obj &&
+        typeof obj.ball.x === 'number' &&
+        typeof obj.ball.y === 'number' &&
+        typeof obj.paddleLeft.y === 'number' &&
+        typeof obj.paddleLeft.score === 'number' &&
+        typeof obj.paddleRight.y === 'number' &&
+        typeof obj.paddleRight.score === 'number');
+}
+function sendPaddlePosition(direction) {
+    const data = {
+        type: "paddleMove",
+        dir: direction,
+    };
+    if (socket.readyState === WebSocket.OPEN)
+        socket.send(JSON.stringify(data));
+}
 function drawPaddle(x, y) {
     ctx.fillStyle = COLOR;
-    ctx.fillRect(x, y / PLAY_FIELD_HEIGHT * canvas.height, PADDLE_WIDTH / PLAY_FIELD_WIDTH * canvas.width, PADDLE_HEIGHT / PLAY_FIELD_HEIGHT * canvas.height);
+    ctx.fillRect(x, y, SERVER_PADDLE_WIDTH / SERVER_PLAY_FIELD_WIDTH * canvas.width, SERVER_PADDLE_HEIGHT / SERVER_PLAY_FIELD_HEIGHT * canvas.height);
 }
 function drawBall(x, y) {
     ctx.beginPath();
-    ctx.arc(x / PLAY_FIELD_WIDTH * canvas.width, y / PLAY_FIELD_HEIGHT * canvas.height, BALL_RADIUS / PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
+    ctx.arc(x, y, SERVER_BALL_RADIUS / SERVER_PLAY_FIELD_HEIGHT * canvas.height, 0, Math.PI * 2);
     ctx.fillStyle = COLOR;
     ctx.fill();
     ctx.closePath();
 }
+const trail = [];
+function drawTrail(x, y) {
+    trail.push({ x, y });
+    if (trail.length > TRAIL_LENGTH)
+        trail.shift();
+    ctx.save();
+    for (let i = 0; i < trail.length; i++) {
+        const age = trail.length - i;
+        const alpha = Math.max(1 - age / trail.length, 0);
+        const radius = SERVER_BALL_RADIUS / SERVER_PLAY_FIELD_HEIGHT * canvas.height * (0.5 + alpha * 0.5);
+        ctx.beginPath();
+        ctx.globalAlpha = alpha * 0.3;
+        ctx.fillStyle = COLOR;
+        ctx.arc(trail[i].x, trail[i].y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+function drawScore(score1, score2) {
+    ctx.font = `${canvas.height / 15}px Arial`;
+    ctx.fillStyle = COLOR;
+    ctx.textAlign = "center";
+    ctx.fillText(score1.toString(), canvas.width / 4, canvas.height / 15);
+    ctx.fillText(score2.toString(), 3 * canvas.width / 4, canvas.height / 15);
+}
 function drawNet() {
-    ctx.setLineDash([canvas.width / 27, canvas.height / 27]);
+    ctx.setLineDash([canvas.height / 25, canvas.height / 25]);
+    ctx.lineWidth = 2;
     ctx.strokeStyle = COLOR;
     ctx.beginPath();
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.stroke();
-}
-function drawScore(score1, score2) {
-    ctx.font = "48px Arial";
-    ctx.fillStyle = COLOR;
-    ctx.textAlign = "center";
-    ctx.fillText(score1.toString(), canvas.width / 4, 50);
-    ctx.fillText(score2.toString(), 3 * canvas.width / 4, 50);
-}
-const trailLength = 35; // Adjust for longer/shorter trail
-const trail = [];
-function drawTrail() {
-    ctx.save();
-    for (let i = 0; i < trail.length; i++) {
-        const age = trail.length - i;
-        const alpha = Math.max(1 - age / trail.length, 0);
-        const radius = 8 * (0.5 + alpha * 0.5);
-        ctx.beginPath();
-        ctx.globalAlpha = alpha * 0.3;
-        ctx.fillStyle = COLOR;
-        ctx.arc(trail[i].x / PLAY_FIELD_WIDTH * canvas.width, trail[i].y / PLAY_FIELD_HEIGHT * canvas.height, radius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    ctx.restore();
+    ctx.setLineDash([]);
 }
 function drawBorder() {
-    ctx.setLineDash([]);
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = COLOR;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
-let old_scores = 0;
-function renderGame(state) {
-    const { ball, paddle1, paddle2 } = state;
-    if (old_scores < paddle1.score + paddle2.score) {
-        audio.play();
-        old_scores = paddle1.score + paddle2.score;
-    }
+function renderGame() {
+    const { ball, paddleLeft, paddleRight } = gameState;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    trail.push({ x: ball.x, y: ball.y });
-    // Keep trail at desired length
-    if (trail.length > trailLength)
-        trail.shift();
     drawBorder();
     drawNet();
-    drawPaddle(0, paddle1.y);
-    drawPaddle(canvas.width - PADDLE_WIDTH / PLAY_FIELD_WIDTH * canvas.width, paddle2.y);
+    drawPaddle(0, paddleLeft.y);
+    drawPaddle(canvas.width - SERVER_PADDLE_WIDTH / SERVER_PLAY_FIELD_WIDTH * canvas.width, paddleRight.y);
     drawBall(ball.x, ball.y);
-    drawTrail();
-    drawScore(paddle1.score, paddle2.score);
+    drawTrail(ball.x, ball.y);
+    drawScore(paddleLeft.score, paddleRight.score);
 }
-function gameLoop() {
-    requestAnimationFrame(gameLoop);
-}
-gameLoop();

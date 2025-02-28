@@ -1,49 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<head>
-		<title>Matchmaking Service Test Client</title>
-		<style>
-			.player {
-				border: 1px solid #ccc;
-				padding: 10px;
-				margin: 10px;
-				display: inline-block;
-			}
-			#matchStatus {
-				margin-top: 20px;
-				padding: 10px;
-				background-color: #f0f0f0;
-			}
-			.message {
-				margin: 5px 0;
-				padding: 5px;
-			}
-			.error { color: red; }
-			.success { color: green; }
-		</style>
-	</head>
-	<body>
-		<div class="player" id="player1">
-			<h3>Player 1</h3>
-			<button onclick="joinQueue(1)">Join Queue</button>
-			<button onclick="leaveQueue(1)">Leave Queue</button>
-			<button id="acceptButton1" onclick="acceptMatch(1)" style="display: none;">Accept Match</button>
-			<div id="messages1"></div>
-		</div>
+  <head>
+    <title>Matchmaking Service Test Client</title>
+    <style>
+      .player {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px;
+        display: inline-block;
+      }
+      #matchStatus {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f0f0f0;
+      }
+      .message {
+        margin: 5px 0;
+        padding: 5px;
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="player" id="player1">
+      <h3>Player 1</h3>
+      <button onclick="joinQueue(1)">Join Queue</button>
+      <button onclick="leaveQueue(1)">Leave Queue</button>
+      <button id="acceptButton1" onclick="acceptMatch(1)" style="display: none">
+        Accept Match
+      </button>
+      <div id="messages1"></div>
+    </div>
 
-		<div class="player" id="player2">
-			<h3>Player 2</h3>
-			<button onclick="joinQueue(2)">Join Queue</button>
-			<button onclick="leaveQueue(2)">Leave Queue</button>
-			<button id="acceptButton2" onclick="acceptMatch(2)" style="display: none;">Accept Match</button>
-			<div id="messages2"></div>
-		</div>
+    <div class="player" id="player2">
+      <h3>Player 2</h3>
+      <button onclick="joinQueue(2)">Join Queue</button>
+      <button onclick="leaveQueue(2)">Leave Queue</button>
+      <button id="acceptButton2" onclick="acceptMatch(2)" style="display: none">
+        Accept Match
+      </button>
+      <div id="messages2"></div>
+    </div>
 
-		<div id="matchStatus">
-			<h3>Match Status</h3>
-			<div id="matchMessages"></div>
-		</div>
+    <div id="matchStatus">
+      <h3>Match Status</h3>
+      <div id="matchMessages"></div>
+    </div>
 
-		<script src="client.js"></script>
-	</body>
+    <script src="client.js"></script>
+  </body>
 </html>

@@ -153,18 +153,18 @@ class MatchmakingClient {
 let client1, client2;
 
 function initializeClients() {
-    client1 = new MatchmakingClient(1);
-    client2 = new MatchmakingClient(2);
+  client1 = new MatchmakingClient(1);
+  client2 = new MatchmakingClient(2);
 }
 
 function joinQueue(playerId) {
-    const client = playerId === 1 ? client1 : client2;
-    client.joinQueue();
+  const client = playerId === 1 ? client1 : client2;
+  client.joinQueue();
 }
 
 function leaveQueue(playerId) {
-    const client = playerId === 1 ? client1 : client2;
-    client.leaveQueue();
+  const client = playerId === 1 ? client1 : client2;
+  client.leaveQueue();
 }
 
 function acceptMatch(playerId) {

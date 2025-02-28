@@ -38,13 +38,16 @@ class MockWebSocket {
   // Helper method to simulate receiving a message
   simulateMessage(messageData) {
     // Don't stringify if it's already a string
-    const messageString = typeof messageData === 'string' ? messageData : JSON.stringify(messageData);
-    
+    const messageString =
+      typeof messageData === 'string'
+        ? messageData
+        : JSON.stringify(messageData);
+
     const message = {
-      toString: () => messageString
+      toString: () => messageString,
     };
 
-    this.messageHandlers.forEach(handler => handler(message));
+    this.messageHandlers.forEach((handler) => handler(message));
   }
 }
 
@@ -79,9 +82,9 @@ test('messageHandler - joinQueue with valid user', async (t) => {
 
   // Simulate joining queue
   mockSocket.simulateMessage({
-      type: 'joinQueue',
-      userId: 1,
-    });
+    type: 'joinQueue',
+    userId: 1,
+  });
 
   // Wait for async operations
   await new Promise((resolve) => setTimeout(resolve, 100));
@@ -103,9 +106,9 @@ test('messageHandler - matchmaking with two players', async (t) => {
 
   // Simulate both players joining queue
   mockSocket1.simulateMessage({
-      type: 'joinQueue',
-      userId: 1,
- 	});
+    type: 'joinQueue',
+    userId: 1,
+  });
 
   // Wait for first player to join
   await new Promise((resolve) => setTimeout(resolve, 100));
@@ -114,9 +117,9 @@ test('messageHandler - matchmaking with two players', async (t) => {
   console.log('Player 1 messages after joining:', mockSocket1.sentMessages);
 
   mockSocket2.simulateMessage({
-      type: 'joinQueue',
-      userId: 2,
-    });
+    type: 'joinQueue',
+    userId: 2,
+  });
 
   // Wait for match creation
   await new Promise((resolve) => setTimeout(resolve, 100));
@@ -134,7 +137,7 @@ test('messageHandler - matchmaking with two players', async (t) => {
     })
     .first();
 
-   assert.ok(match, 'Match was not created');
+  assert.ok(match, 'Match was not created');
   // Check sent messages
   assert.ok(
     mockSocket1.sentMessages.length >= 2,
@@ -146,20 +149,8 @@ test('messageHandler - matchmaking with two players', async (t) => {
   );
 
   // Verify message types
-  assert.equal(
-    mockSocket1.sentMessages[0].type,
-    'queueJoined'
-  );
-  assert.equal(
-    mockSocket1.sentMessages[1].type,
-    'matchCreated'
-  );
-  assert.equal(
-    mockSocket2.sentMessages[0].type,
-    'queueJoined'
-  );
-  assert.equal(
-    mockSocket2.sentMessages[1].type,
-    'matchCreated'
-  );
+  assert.equal(mockSocket1.sentMessages[0].type, 'queueJoined');
+  assert.equal(mockSocket1.sentMessages[1].type, 'matchCreated');
+  assert.equal(mockSocket2.sentMessages[0].type, 'queueJoined');
+  assert.equal(mockSocket2.sentMessages[1].type, 'matchCreated');
 });

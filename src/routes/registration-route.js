@@ -2,7 +2,7 @@ import { registrationService } from '../services/registration-service.js';
 
 export const createAccountRoute = {
   method: 'POST',
-  url: '/create-account',
+  url: '/register',
   schema: {
     body: {
       type: 'object',

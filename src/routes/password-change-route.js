@@ -16,7 +16,7 @@ export const createChangePasswordRoute = {
 			200: {
 				type: 'object',
 				properties: {
-					success: {type: 'string'}
+					success: { type: 'string' }
 				}
 			}
 		}

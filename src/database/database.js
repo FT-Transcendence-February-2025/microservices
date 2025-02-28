@@ -4,7 +4,8 @@ import path from 'path';
 const database = knex({
   client: 'sqlite3',
   connection: {
-    filename: path.resolve('/home/sfrankie/user_management/src/database/database.sqlite')
+		// TODO: change this hardcoded path - use 'url' package
+    filename: path.resolve('/home/sfrankie/ft_transcendence/authentication/src/database/database.sqlite')
   },
   useNullAsDefault: true
 });

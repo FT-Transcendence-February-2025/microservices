@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyBcrypt from 'fastify-bcrypt';
 import dotenv from 'dotenv';
-import { verifyToken } from './middleware/token-authenticator.js';
+import verifyToken from 'jwt-validator-tr';
 import fastifyCors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import { createAccountRoute } from './routes/registration-route.js';

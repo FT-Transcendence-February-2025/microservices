@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 
-const ws = new WebSocket('ws://localhost:3000/ws');
+const token = '$2a$12$po5KeyhOn71ZhIzzAIWkouAslkUTWqJBINGEAcIJcaF7f8MdHJTPS';
+const ws = new WebSocket('ws://localhost:3001/ws');
 
 ws.on('open', () => {
   console.log('Connected to WebSocker server');
@@ -9,7 +10,8 @@ ws.on('open', () => {
   ws.send(
     JSON.stringify({
       type: 'joinQueue',
-      userId: 1,
+      userId: 7,
+      token,
     })
   );
 });

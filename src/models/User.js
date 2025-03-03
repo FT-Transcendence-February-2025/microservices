@@ -1,18 +1,31 @@
-import { db } from '../db/connection.js';
+import fetch from 'node-fetch';
+
+const AUTH_SERVICE_URL = 'http://authentication:3000';
 
 export class User {
-  static async create(userData) {
-    // Insert new user into database and Return the created user record
-    return db('users').insert(userData).returning();
-  }
-
   static async findById(id) {
-    // Queries user by ID. Returns first matching
-    return db('users').where({ id }).first();
+    try {
+      const response = await fetch(`${AUTH_SERVICE_URL}/api/users/${id}`);
+      if (!response.ok) return null;
+      const userData = await response.json();
+      return userData;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
   }
 
   static async findByEmail(email) {
-    // Queries user by email. Return first mathing user or undefined
-    return db('users').where({ email }).first();
+    try {
+      const response = await fetch(
+        `${AUTH_SERVICE_URL}/api/users/email/${email}`
+      );
+      if (!response.ok) return null;
+      const userData = await response.json();
+      return userData;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
   }
 }

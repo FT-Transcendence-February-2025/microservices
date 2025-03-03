@@ -1,7 +1,7 @@
 import knex from 'knex';
 import config from '../../knexfile.js';
 
-export const db = knex(config);
+export const matchmakingDb = knex(config.matchmaking);
 
 /* 
 - db can be reusable later in the code

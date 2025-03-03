@@ -38,5 +38,3 @@ build/
 # Knex migration files' temporary data
 .knex_migrations
 .knex_migrations_lock
-
-tests

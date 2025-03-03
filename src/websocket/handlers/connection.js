@@ -1,4 +1,6 @@
-import { db } from '../../db/connection.js';
+import { matchmakingDb } from '../../db/connection.js';
+
+const AUTH_SERVICE_URL = 'http://authentication:3000';
 
 // Queue to store waiting players
 const matchmakingQueue = [];
@@ -11,8 +13,11 @@ const messageHandler = async (message, connection) => {
     case 'joinQueue':
       try {
         // Verify user exists
-        const user = await db('users').where({ id: data.userId }).first();
-        if (!user) {
+        const response = await fetch(
+          `${AUTH_SERVICE_URL}/api/users/${data.userId}`
+        );
+        const user = await response.json();
+        if (!user || !response.ok) {
           connection.socket.send(
             JSON.stringify({
               type: 'error',
@@ -47,7 +52,7 @@ const messageHandler = async (message, connection) => {
             try {
               const roomCode = `MATCH_${Date.now()}`;
               // Create match record
-              const [{ id: matchId }] = await db('matchmaking')
+              const [{ id: matchId }] = await matchmakingDb('matchmaking')
                 .insert({
                   player1_id: player1.id,
                   player2_id: player2.id,
@@ -133,7 +138,7 @@ const messageHandler = async (message, connection) => {
           matchId: data.matchId,
         });
 
-        const match = await db('matchmaking')
+        const match = await matchmakingDb('matchmaking')
           .where({
             match_status: 'pending',
             id: data.matchId,
@@ -159,7 +164,7 @@ const messageHandler = async (message, connection) => {
         }
 
         // Check if match wasn't cancelled while processing
-        const matchStatus = await db('matchmaking')
+        const matchStatus = await matchmakingDb('matchmaking')
           .where({ id: match.id })
           .select('match_status')
           .first();
@@ -196,7 +201,7 @@ const messageHandler = async (message, connection) => {
           match.acceptedPlayers.has(match.player2_id)
         ) {
           console.log('Both players accepted, starting match');
-          await db('matchmaking')
+          await matchmakingDb('matchmaking')
             .where({ id: match.id })
             .update({ match_status: 'active' });
 
@@ -243,7 +248,7 @@ const messageHandler = async (message, connection) => {
 
     case 'matchDecline':
       try {
-        const match = await db('matchmaking')
+        const match = await matchmakingDb('matchmaking')
           .where({
             match_status: 'pending',
             id: data.matchId,
@@ -267,7 +272,7 @@ const messageHandler = async (message, connection) => {
         }
 
         // Update match status to cancelled
-        await db('matchmaking').where({ id: match.id }).update({
+        await matchmakingDb('matchmaking').where({ id: match.id }).update({
           match_status: 'cancelled',
           enden_at: new Date(),
         });
@@ -336,7 +341,7 @@ const closeHandler = async (connection) => {
 
     // Check if player is in active match
     if (player) {
-      const match = await db('matchmaking')
+      const match = await matchmakingDb('matchmaking')
         .where({ match_status: 'pending' })
         .where(function () {
           this.where('player1_id', player.id).orWhere('player2_id', player.id);
@@ -349,7 +354,7 @@ const closeHandler = async (connection) => {
           match.player1_id === player.id ? match.player2_id : match.player1_id;
 
         // Cancelled the match
-        await db('matchmaking').where({ id: match.id }).update({
+        await matchmakingDb('matchmaking').where({ id: match.id }).update({
           match_status: 'cancelled',
           endend_at: new Date(),
         });

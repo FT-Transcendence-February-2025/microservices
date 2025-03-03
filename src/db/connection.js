@@ -1,7 +1,6 @@
 import knex from 'knex';
 import config from '../../knexfile.js';
 
-export const authDb = knex(config.authentication);
 export const matchmakingDb = knex(config.matchmaking);
 
 /* 

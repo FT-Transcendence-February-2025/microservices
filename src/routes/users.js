@@ -1,19 +1,6 @@
-import { authDb } from '../db/connection.js';
 import { User } from '../models/User.js';
 
 export const userRoutes = async (fastify) => {
-  // GET endpoint to retrieve all users
-  fastify.get('/users', async (request, reply) => {
-    try {
-      const users = await authDb('users').select('*');
-      reply.send(users);
-    } catch (error) {
-      reply.code(500).send({
-        error: 'Failed to fetch users',
-      });
-    }
-  });
-
   // POST endpoint
   fastify.post('/users', async (request, reply) => {
     // Query

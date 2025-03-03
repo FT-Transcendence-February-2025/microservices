@@ -1,23 +1,4 @@
-import { authDb, matchmakingDb } from '../db/connection.js';
-
-export const authDbRoute = (fastify) => {
-  fastify.get('/test-auth-db', async (request, reply) => {
-    try {
-      const users = await authDb('users').select('*');
-      reply.send({
-        message: 'Successfully accessed authentication database',
-        userCount: users.length,
-        users,
-      });
-    } catch (error) {
-      console.error('Database error:', error);
-      reply.status(500).send({
-        error: 'Failed to access authentication database',
-        details: error.message,
-      });
-    }
-  });
-};
+import { matchmakingDb } from '../db/connection.js';
 
 export const matchmakingDbRoute = (fastify) => {
   fastify.get('/test-matchmaking-db', async (request, reply) => {

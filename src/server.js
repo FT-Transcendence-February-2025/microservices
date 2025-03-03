@@ -1,9 +1,8 @@
 import Fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyWebsocket from '@fastify/websocket';
-import { authDb } from './db/connection.js';
 import { userRoutes } from './routes/users.js';
-import { authDbRoute, matchmakingDbRoute } from './routes/database_route.js';
+import { matchmakingDbRoute } from './routes/database_route.js';
 import { websocketHandler } from './websocket/index.js';
 
 const PORT = 3000;
@@ -28,25 +27,9 @@ fastify.get('/', (request, reply) => {
   });
 });
 
-// Example of using knex in a route
-fastify.get('/auth-db-test', async (request, reply) => {
-  try {
-    // Test database connection
-    await authDb.raw('SELECT 1');
-    reply.send({
-      message: 'Database connection successful!',
-    });
-  } catch (error) {
-    reply.send({
-      error: 'Database connection failed!',
-    });
-  }
-});
-
 // Routes
 fastify.register(userRoutes);
 fastify.register(websocketHandler);
-fastify.register(authDbRoute);
 fastify.register(matchmakingDbRoute);
 
 // Server

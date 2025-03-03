@@ -10,7 +10,7 @@ const SERVER_PADDLE_WIDTH = 30;
 const SERVER_PADDLE_HEIGHT = 180;
 const SERVER_BALL_RADIUS = 15;
 
-const COLOR = '#B026FF';
+const COLOR = '#f74fe6';
 const TRAIL_LENGTH = 30;
 
 const gameState = {
@@ -202,7 +202,6 @@ function drawBorder() {
     ctx.strokeStyle = COLOR;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
-
 
 function renderGame() {
     const { ball, paddleLeft, paddleRight } = gameState;

@@ -1,14 +1,13 @@
-import { fastify } from "../server.js";
-import { getUserById } from './database-service.js';
-import { passwordValidator } from '../validation/validator.js';
-import { updatePassword } from './database-service.js';
+import fastify from "../server.js";
+import userDataValidator from '../validation/validator.js';
+import db from './database-service.js';
 
-export const passwordChangeService = async (request, reply) => {
+const passwordChangeService = async (request, reply) => {
 	const { currentPassword, newPassword } = request.body;
 
 	let user = {};
 	try {
-		user = await getUserById(request.user.id);
+		user = await db.getUserById(request.user.id);
 	} catch (error) {
 		console.error(error);
 		return reply.status(500).send({ error: 'Internal Server Error' });
@@ -22,14 +21,15 @@ export const passwordChangeService = async (request, reply) => {
 		return reply.status(400).send({ error: 'Current password invalid' });
 	}
 
-	const passwordValidationResult = await passwordValidator(newPassword, user.email, user.displayName, currentPassword);
+	const passwordValidationResult =
+		await userDataValidator.password(newPassword, user.email, user.displayName, currentPassword);
 	if (!passwordValidationResult.valid) {
 		return reply.status(passwordValidationResult.code).send({ error: passwordValidationResult.error });
 	}
 
 	const hashedNewPassword = await fastify.bcrypt.hash(newPassword);
 	try {
-		await updatePassword(request.user.id, hashedNewPassword);
+		await db.updatePassword(request.user.id, hashedNewPassword);
 	} catch (error) {
 		console.error('sqlite3: ' + error);
 		return reply.status(500).send({ error: 'Internal Server Error' });
@@ -37,3 +37,5 @@ export const passwordChangeService = async (request, reply) => {
 
 	return reply.send({ success: 'Password has been changed' });
 };
+
+export default passwordChangeService;

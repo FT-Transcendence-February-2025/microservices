@@ -27,7 +27,7 @@ const authenticationService = async (request, reply) => {
 			process.env.SECRET_KEY,
 			{ expiresIn: '7d' }
 		);
-		const expiresInSeconds = 7 * 24 * 60 * 60; // 7 days in seconds
+		const expiresInSeconds = 7 * 24 * 60 * 60;
 		reply.setCookie('refreshToken', refreshToken, {
 			signed: true,
 			httpOnly: true,

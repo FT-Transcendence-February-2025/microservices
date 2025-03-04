@@ -1,6 +1,6 @@
 import refreshTokenService from '../services/refresh-token-service.js';
 
-const createRefreshTokenRoute = {
+const refreshTokenRoute = {
 	method: 'POST',
 	url: '/refresh',
 	response: {
@@ -14,4 +14,4 @@ const createRefreshTokenRoute = {
 	handler: refreshTokenService
 }
 
-export default createRefreshTokenRoute;
+export default refreshTokenRoute;

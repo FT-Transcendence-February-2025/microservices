@@ -60,8 +60,17 @@ const db = {
 	},
 
 	deleteExpiredTokens: async () => {
-		const currentDate = Math.floor(Date.now() / 1000);
-		
+		console.log('Running scheduled expired token removal...');
+		try {
+			const currentDate = Math.floor(Date.now() / 1000);
+			const deletedRows = await database('refreshTokens')
+				.where('expiresAt', '<', currentDate)
+				.del();
+
+			console.log(`Deleted ${deletedRows} expired tokens.`);
+    } catch (error) {
+        console.error('Error deleting expired tokens:', error);
+    }
 	}
 };
 

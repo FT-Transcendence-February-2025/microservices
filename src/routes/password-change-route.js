@@ -1,7 +1,7 @@
 import passwordChangeService from '../services/password-change-service.js';
 import verifyToken from 'jwt-validator-tr';
 
-const createChangePasswordRoute = {
+const changePasswordRoute = {
 	method: 'POST',
 	url: '/password',
 	schema: {
@@ -26,4 +26,4 @@ const createChangePasswordRoute = {
 	handler: passwordChangeService
 };
 
-export default createChangePasswordRoute;
+export default changePasswordRoute;

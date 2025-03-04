@@ -1,6 +1,6 @@
 import authenticationService from '../services/authentication-service.js';
 
-const createLoginRoute = {
+const loginRoute = {
 	method: 'POST',
 	url: '/login',
 	schema: {
@@ -25,4 +25,4 @@ const createLoginRoute = {
 	handler: authenticationService
 };
 
-export default createLoginRoute;
+export default loginRoute;

@@ -4,10 +4,12 @@ import dotenv from 'dotenv';
 import fastifyCors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import cron from 'node-cron';
-import createAccountRoute from './routes/registration-route.js';
-import createLoginRoute from './routes/authentication-route.js';
-import createChangePasswordRoute from './routes/password-change-route.js';
-import createRefreshTokenRoute from './routes/refresh-token-route.js';
+import db from './services/database-service.js';
+import registrationRoute from './routes/registration-route.js';
+import loginRoute from './routes/authentication-route.js';
+import changePasswordRoute from './routes/password-change-route.js';
+import refreshTokenRoute from './routes/refresh-token-route.js';
+import logoutRoute from './routes/logout-route.js';
 
 dotenv.config();
 
@@ -29,13 +31,14 @@ fastify.register(fastifyCookie, {
 	parseOptions: {}
 })
 
-fastify.route(createAccountRoute);
-fastify.route(createLoginRoute);
-fastify.route(createChangePasswordRoute);
-fastify.route(createRefreshTokenRoute);
+fastify.route(registrationRoute);
+fastify.route(loginRoute);
+fastify.route(changePasswordRoute);
+fastify.route(refreshTokenRoute);
+fastify.route(logoutRoute);
 
-cron.schedule('* */12 * * *', () => {
-
+cron.schedule('* * * * *', async () => {
+	await db.deleteExpiredTokens();
 });
 
 fastify.get('/', (request, reply) => {

@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
+import { tournamentRoutes } from './routes/tournaments.js'
 
 dotenv.config()
 
@@ -9,7 +10,10 @@ const fastify = Fastify({
 	logger: true
 })
 
-fastify.get('/', (request, reply) => {
+// Routes
+fastify.register(tournamentRoutes, {prefix: '/tournaments' })
+
+fastify.get('/', (_request, reply) => {
 	reply.send({
 		message: 'Hello Fastify. Server is running'
 	})

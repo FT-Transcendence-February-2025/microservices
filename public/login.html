@@ -19,13 +19,12 @@
 			headers: {
 				'Content-Type': 'application/json'
 			},
+            credentials: 'include',
 			body: JSON.stringify({ email, password })
 		});
 
 		const data = await response.json();
-		console.log(data);
 		if (data.token) {
-			console.log(data.token);
 			localStorage.setItem('token', data.token);
 			alert('Login successful');
 			loadPage('index.html');

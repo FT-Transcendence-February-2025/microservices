@@ -1,8 +1,8 @@
 import Fastify from 'fastify';
-import { verifyToken } from './middleware/token-authenticator.js';
+import verifyToken from 'jwt-validator-tr';
 import fastifyMultipart from '@fastify/multipart';
 import dotenv from 'dotenv';
-import { createAvatarUploadRoute } from './routes/avatar-upload-route.js';
+import { avatarUploadRoute } from './routes/avatar-upload-route.js';
 
 dotenv.config();
 
@@ -14,20 +14,20 @@ const fastify = Fastify({
 fastify.register(fastifyMultipart);
 
 // Register routes:
-fastify.route(createAvatarUploadRoute);
+fastify.route(avatarUploadRoute);
 
 fastify.addHook('preHandler', async (request, reply) => {
-		await verifyToken(request, reply);
+	await verifyToken(request, reply);
 });
 
-// fastify.route(createAccountRoute);
+// fastify.route(registrationRoute);
 
 fastify.get('/', (request, reply) => {
-	return { message: 'Fastify server running' };
+	return { message: 'Fastify server of user-management service running' };
 });
 
 try {
-	await fastify.listen({ port: 3001 });
+	await fastify.listen({ port: 3002 });
 } catch (error) {
 	fastify.log.error(error);
 	process.exit(1);

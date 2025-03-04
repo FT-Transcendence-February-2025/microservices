@@ -1,27 +1,25 @@
-import { avatarUploadService } from '../services/avatar-upload-service.js';
+import avatarUploadService from '../services/avatar-upload-service.js';
 
 export const avatarUploadController = async (request, reply) => {
-	try {
-		const data = await request.file();
-		if (!data) {
-			return reply.status(400).send({ error: 'No file uploaded' });
-		}
+  try {
+    const file = await request.file();
+    if (!file) {
+      return reply.status(400).send({ error: 'No file uploaded' });
+    }
 
-		const allowedMimeTypes = ['image/jpg', 'image/jpeg', 'image/png'];
-		const maxSize = 5 * 1024 * 1024;
+    const userId = request.user.id;
+    const result = await avatarUploadService.uploadAvatar(file, userId);
 
-		if (!allowedMimeTypes.includes(data.mimetype)) {
-			return reply.status(400).send({ error: 'Invalid file type. Only JPG, JPEG, PNG are allowed.' });
-		}
+    if (!result.success) {
+      return reply.status(400).send({ error: result.error });
+    }
 
-		if (data.size > maxSize) {
-			return reply.status(400).send({ error: 'File size exceeds the 5MB limit.' });
-		}
-
-		const filePath = await avatarUploadService(data);
-
-		return reply.status(200).send({ success: 'Avatar uploaded successfully', filePath });
+    return reply.status(200).send({
+      success: 'Avatar uploaded successfully',
+      filePath: result.filePath
+    });
 	} catch (error) {
-		reply.status(500).send({ error: 'Something went wrong' });
-	}
+    console.error('Avatar upload error:', error);
+    return reply.status(500).send({ error: 'Something went wrong' });
+  }
 };

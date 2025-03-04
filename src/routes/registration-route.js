@@ -1,6 +1,6 @@
-import { registrationService } from '../services/registration-service.js';
+import registrationService from '../services/registration-service.js';
 
-export const createAccountRoute = {
+const registrationRoute = {
   method: 'POST',
   url: '/register',
   schema: {
@@ -24,3 +24,5 @@ export const createAccountRoute = {
   },
   handler: registrationService
 };
+
+export default registrationRoute;

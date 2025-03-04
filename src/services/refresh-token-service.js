@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export const refreshTokenService = async (request, reply) => {
+const refreshTokenService = async (request, reply) => {
 	try {
 		const signedRefreshToken = request.cookies.refreshToken;
 		if (!signedRefreshToken) {
@@ -18,7 +18,7 @@ export const refreshTokenService = async (request, reply) => {
 		const shortToken = jwt.sign(
 			{ userId: decoded.userId },
 			process.env.SECRET_KEY,
-			{ expiresIn: '10' }
+			{ expiresIn: '15m' }
 		);
 
 		reply.send({ token: shortToken });
@@ -26,3 +26,5 @@ export const refreshTokenService = async (request, reply) => {
 		reply.status(500).send({ error: "Internal Server Error" });
 	}
 };
+
+export default refreshTokenService;

@@ -1,25 +1,20 @@
-export const tournamentRoutes = function(fastify, options) {
-	// Register player for tournament
-	fastify.post('/:tournamentId/register', async (request, reply) => {
-		const { tournamentId } = request.params
-		const { playerId } = request.body
+import { tournamentController } from '../controllers/tournamentControllers.js'
 
-		// TODO: implement registration logic with databse
-		return{
-			success: true,
-			message: `Player ${playerId} registered for tournament ${tournamentId}`
-		}
-	})
+// TODO methods schema
 
-	// Unregistered player for tournament
-	fastify.delete('/:tournamentId/register', async(request, reply) => {
-		const { tournamentId } = request.params
-		const { playerId } = request.body
+export default async function (fastify) {
+  // Register player for tournament
+  fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)
 
-		// TODO: implement unregistration logic
-		return {
-			success: true,
-			message: `Player ${playerId} unregistered from tournament ${tournamentId}`
-		}
-	})
+  // Unregistered player for tournament
+  fastify.delete('/:tournamentId/register', tournamentController.deletePlayer)
+
+  // Get all players in tournament
+  fastify.get('/:tournamentId/players', tournamentController.getAllPlayers)
+
+  // Submit match results
+  fastify.post('/:tournamentId/matches/:matchId/results', tournamentController.postMatchResults)
+
+  // Get players matches in tournament
+  fastify.get('/:tournamentId/players/:playerId/matches', tournamentController.getPlayerMatches)
 }

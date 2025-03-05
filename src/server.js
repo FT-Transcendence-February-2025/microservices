@@ -14,7 +14,7 @@ const fastify = Fastify({
 // Initialize database
 try {
   initDatabase()
-  console.log('Databse initialized successfully')
+  console.log('Database initialized successfully')
 } catch (error) {
   console.error('Failed to initialize database:', error)
   process.exit(1)

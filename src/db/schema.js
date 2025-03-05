@@ -1,13 +1,4 @@
 import db from './database.js'
-import fs from 'fs'
-import path from 'path'
-
-const dataDir = path.join(path.dirname(db.name), '..')
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, {
-    recursive: true
-  })
-}
 
 export function initDatabase () {
   // Users table for testing
@@ -37,8 +28,6 @@ export function initDatabase () {
       ended_at INTEGER
     )
     `).run()
-
-  console.log('Database initialized successfully')
 }
 
 // Converts from JS objects/arrays to JSON strings

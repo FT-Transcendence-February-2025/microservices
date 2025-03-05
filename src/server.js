@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
 import tournamentRoutes from './routes/tournaments.js'
+import { initDatabase } from './db/schema.js'
 
 dotenv.config()
 
@@ -9,6 +10,15 @@ const PORT = process.env.PORT || 3000
 const fastify = Fastify({
   logger: true
 })
+
+// Initialize database
+try {
+  initDatabase()
+  console.log('Databse initialized successfully')
+} catch (error) {
+  console.error('Failed to initialize database:', error)
+  process.exit(1)
+}
 
 // Routes
 fastify.register(tournamentRoutes, { prefix: '/tournaments' })

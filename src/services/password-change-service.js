@@ -3,7 +3,6 @@ import userDataValidator from "../validation/validator.js";
 import db from "./database-service.js";
 
 const passwordChangeService = async (userId, currentPassword, newPassword) => {
-
 	const user = await db.getUserById(userId);
 	if (user.error) {
 		return { status: 500, error: "Internal Server Error" };

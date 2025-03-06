@@ -12,7 +12,6 @@ const refreshTokenService = (refreshToken) => {
 			process.env.SECRET_KEY,
 			{ expiresIn: "15m" }
 		);
-
 		return { token: accessToken };
 	} catch (error) {
 		return { status: 500, error: "Internal Server Error" };

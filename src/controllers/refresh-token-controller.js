@@ -17,3 +17,5 @@ const refreshTokenController = async (request, reply) => {
 
 	return reply.send({ token: refreshTokenResult.token });
 };
+
+export default refreshTokenController;

@@ -6,7 +6,7 @@ const db = {
 			await database("users").insert({ email, displayName, password });
 			return { success: true };
 		} catch (error) {
-			console.error("db error", error);
+			console.error(error);
 			return { error };
 		}
 	},
@@ -15,7 +15,7 @@ const db = {
 		try {
 			return await database("users").where({ email }).first();
 		} catch (error) {
-
+			console.error(error);
 			return { error };
 		}
 	},
@@ -24,6 +24,7 @@ const db = {
 		try {
 			return await database("users").where({ displayName }).first();
 		} catch (error) {
+			console.error(error);
 			return { error };
 		}
 	},
@@ -32,6 +33,7 @@ const db = {
 		try {
 			return await database("users").where({ id }).first();
 		} catch (error) {
+			console.error(error);
 			return { error };
 		}
 	},
@@ -43,6 +45,7 @@ const db = {
 				.update({ password: newPassword });
 			return { success: true };
 		} catch (error) {
+			console.error(error);
 			return { error };
 		}
 	},
@@ -52,6 +55,7 @@ const db = {
 			await database("refreshTokens").insert({ token, expiresAt, userId });
 			return { success: true };
 		} catch (error) {
+			console.error(error);
 			return { error };
 		}
 	},
@@ -61,6 +65,7 @@ const db = {
 			await database("refreshTokens").where({ userId }).del();
 			return { success: true };
 		} catch (error) {
+			console.error(error);
 			return { error };
 		}
 	},
@@ -75,7 +80,8 @@ const db = {
 
 			console.log(`Deleted ${deletedRows} expired tokens.`);
     } catch (error) {
-        console.error("Error deleting expired tokens:", error);
+			console.error(error);
+			console.error("Error deleting expired tokens:", error);
     }
 	}
 };

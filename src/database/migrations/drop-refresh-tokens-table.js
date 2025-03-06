@@ -1,16 +1,16 @@
-import database from '../database.js';
+import database from "../database.js";
 
 const dropRefreshTokensTable = async () => {
   try {
-    const exists = await database.schema.hasTable('refreshTokens');
+    const exists = await database.schema.hasTable("refreshTokens");
     if (exists) {
-      await database.schema.dropTable('refreshTokens');
-      console.log('refreshTokens table dropped');
+      await database.schema.dropTable("refreshTokens");
+      console.log("refreshTokens table dropped");
     } else {
-      console.log('refreshTokens table does not exist');
+      console.log("refreshTokens table does not exist");
     }
   } catch (error) {
-    console.error('Error dropping refreshTokens table:', error);
+    console.error("Error dropping refreshTokens table:", error);
   } finally {
     await database.destroy();
   }

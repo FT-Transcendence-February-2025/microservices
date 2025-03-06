@@ -1,28 +1,28 @@
-import registrationService from '../services/registration-service.js';
+import registrationController from "../controllers/registration-controller.js";
 
 const registrationRoute = {
-  method: 'POST',
-  url: '/register',
+  method: "POST",
+  url: "/register",
   schema: {
     body: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
-        displayName: { type: 'string' },
-        password: { type: 'string' }
+        email: { type: "string" },
+        displayName: { type: "string" },
+        password: { type: "string" }
       },
-      required: ['email', 'displayName', 'password']
+      required: ["email", "displayName", "password"]
     },
     response: {
       200: {
-        type: 'object',
+        type: "object",
         properties: {
-          success: { type: 'string' }
+          success: { type: "string" }
         }
       }
     }
   },
-  handler: registrationService
+  handler: registrationController
 };
 
 export default registrationRoute;

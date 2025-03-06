@@ -1,19 +1,19 @@
-import Fastify from 'fastify';
-import fastifyBcrypt from 'fastify-bcrypt';
-import dotenv from 'dotenv';
-import fastifyCors from '@fastify/cors';
-import fastifyCookie from '@fastify/cookie';
-import cron from 'node-cron';
-import db from './services/database-service.js';
-import registrationRoute from './routes/registration-route.js';
-import loginRoute from './routes/authentication-route.js';
-import changePasswordRoute from './routes/password-change-route.js';
-import refreshTokenRoute from './routes/refresh-token-route.js';
-import logoutRoute from './routes/logout-route.js';
+import Fastify from "fastify";
+import fastifyBcrypt from "fastify-bcrypt";
+import dotenv from "dotenv";
+import fastifyCors from "@fastify/cors";
+import fastifyCookie from "@fastify/cookie";
+import cron from "node-cron";
+import db from "./services/database-service.js";
+import registrationRoute from "./routes/registration-route.js";
+import loginRoute from "./routes/authentication-route.js";
+import changePasswordRoute from "./routes/password-change-route.js";
+import refreshTokenRoute from "./routes/refresh-token-route.js";
+import logoutRoute from "./routes/logout-route.js";
 
 dotenv.config();
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify();
 
 fastify.register(fastifyBcrypt, {
   saltWorkFactor: 12
@@ -21,8 +21,8 @@ fastify.register(fastifyBcrypt, {
 
 // TODO: modify this later (current settings are for testing local frontend).
 fastify.register(fastifyCors, {
-	origin: ['http://127.0.0.1:8080'],
-	methods: ['GET', 'POST', 'PUT', 'DELETE'],
+	origin: ["http://127.0.0.1:8080"],
+	methods: ["GET", "POST", "PUT", "DELETE"],
 	credentials: true
 });
 
@@ -37,12 +37,13 @@ fastify.route(changePasswordRoute);
 fastify.route(refreshTokenRoute);
 fastify.route(logoutRoute);
 
-cron.schedule('* * * * *', async () => {
+cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();
 });
+await db.deleteExpiredTokens();
 
-fastify.get('/', (request, reply) => {
-  return { message: 'Fastify server of authentication-service running' };
+fastify.get("/", (request, reply) => {
+  return { message: "Fastify server of authentication-service running" };
 });
 
 try {
@@ -55,3 +56,4 @@ try {
 export default fastify;
 
 // TODO: check and fix error codes.
+// TODO: refactor with controllers and services.

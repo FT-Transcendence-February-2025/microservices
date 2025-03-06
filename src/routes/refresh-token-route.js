@@ -1,13 +1,13 @@
-import refreshTokenService from '../services/refresh-token-service.js';
+import refreshTokenService from "../services/refresh-token-service.js";
 
 const refreshTokenRoute = {
-	method: 'POST',
-	url: '/refresh',
+	method: "POST",
+	url: "/refresh",
 	response: {
 		200: {
-			type: 'object',
+			type: "object",
 			properties: {
-				token: { type: 'string' }
+				token: { type: "string" }
 			}
 		}
 	},

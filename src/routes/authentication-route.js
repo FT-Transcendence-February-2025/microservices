@@ -1,28 +1,29 @@
-import authenticationService from '../services/authentication-service.js';
+import authenticationService from "../services/authentication-service.js";
+import authenticationController from "../controllers/authentication-controller.js";
 
 const loginRoute = {
-	method: 'POST',
-	url: '/login',
+	method: "POST",
+	url: "/login",
 	schema: {
 		body : {
-			type: 'object',
+			type: "object",
 			properties: {
-				email: { type: 'string' },
-				password: { type: 'string' }
+				email: { type: "string" },
+				password: { type: "string" }
 			},
-			required: ['email', 'password']
+			required: ["email", "password"]
 		},
 		response: {
 			200: {
-				type: 'object',
+				type: "object",
 				properties: {
-					success: { type: 'string' },
-					token: { type: 'string' }
+					success: { type: "string" },
+					token: { type: "string" }
 				}
 			}
 		}
 	},
-	handler: authenticationService
+	handler: authenticationController
 };
 
 export default loginRoute;

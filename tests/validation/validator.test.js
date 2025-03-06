@@ -1,9 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
-import {emailValidator, displayNameValidator, passwordValidator} from '../../src/validation/validator.js';
-import { getUserByEmail, getUserByDisplayName } from '../../src/services/user_service.js';
+import { describe, it, expect, vi } from "vitest";
+import {emailValidator, displayNameValidator, passwordValidator} from "../../src/validation/validator.js";
+import { getUserByEmail, getUserByDisplayName } from "../../src/services/user_service.js";
 
 // Mock the getUserByEmail function
-vi.mock('../../src/services/user_service.js', () => ({
+vi.mock("../../src/services/user_service.js", () => ({
   getUserByEmail: vi.fn(),
   getUserByDisplayName: vi.fn(),
 }));
@@ -136,7 +136,7 @@ const testDisplayNames = {
     "invalid.name", // contains invalid character
     "invalid;name", // contains invalid character
     "invalid:name", // contains invalid character
-    "invalid'name", // contains invalid character
+    "invalid"name", // contains invalid character
     "invalid\"name", // contains invalid character
     "invalid!name", // contains invalid character
     "invalid~name", // contains invalid character
@@ -211,8 +211,8 @@ const passwordsContainingDisplayName = [
   "SunriseP@ssword334!"
 ];
 
-describe('emailValidator', () => {
-  console.log('######### EMAIL TEST START ########');
+describe("emailValidator", () => {
+  console.log("######### EMAIL TEST START ########");
   beforeEach(() => {
     vi.clearAllMocks(); // Clear mocks before each test
   });
@@ -229,21 +229,21 @@ describe('emailValidator', () => {
   testEmails.invalid.forEach(email => {
     it(`should return valid: false and error for an invalid email: ${email}`, async () => {
       const result = await emailValidator(email);
-      expect(result).toEqual({ valid: false, error: 'Invalid email address' });
+      expect(result).toEqual({ valid: false, error: "Invalid email address" });
     });
   });
 
   // Test existing email
-  it('should return valid: false and error for an existing email', async () => {
-    getUserByEmail.mockResolvedValueOnce({ id: 1, email: 'test@example.com' });
-    const result = await emailValidator('test@example.com');
-    expect(result).toEqual({ valid: false, error: 'Email already in use' });
+  it("should return valid: false and error for an existing email", async () => {
+    getUserByEmail.mockResolvedValueOnce({ id: 1, email: "test@example.com" });
+    const result = await emailValidator("test@example.com");
+    expect(result).toEqual({ valid: false, error: "Email already in use" });
   });
-  console.log('######### EMAIL TEST END ########');
+  console.log("######### EMAIL TEST END ########");
 });
 
-describe('displayNameValidator', () => {
-  console.log('######### DISPLAY NAME TEST START ########');
+describe("displayNameValidator", () => {
+  console.log("######### DISPLAY NAME TEST START ########");
   beforeEach(() => {
     vi.clearAllMocks(); // Clear mocks before each test
   });
@@ -265,21 +265,21 @@ describe('displayNameValidator', () => {
   });
 
   // Test existing display name.
-  it('should return valid: false and error for an existing display name', async () => {
-    getUserByDisplayName.mockResolvedValueOnce({ id: 1, displayName: 'testuser' });
-    const result = await displayNameValidator('testuser');
-    expect(result).toEqual({ valid: false, error: 'Display name already in use' });
+  it("should return valid: false and error for an existing display name", async () => {
+    getUserByDisplayName.mockResolvedValueOnce({ id: 1, displayName: "testuser" });
+    const result = await displayNameValidator("testuser");
+    expect(result).toEqual({ valid: false, error: "Display name already in use" });
   });
-  console.log('######### DISPLAY NAME TEST END ########');
+  console.log("######### DISPLAY NAME TEST END ########");
 });
 
-describe('passwordValidator', () => {
-  console.log('######### PASSWORD TEST START ########');
+describe("passwordValidator", () => {
+  console.log("######### PASSWORD TEST START ########");
 
   // Test valid passwords.
   testPasswords.valid.forEach(password => {
     it(`should return valid: true for a valid password: ${password}`, async () => {
-      const result = await passwordValidator(password, 'test', 'test');
+      const result = await passwordValidator(password, "test", "test");
       expect(result).toEqual({ valid: true });
     });
   });
@@ -287,7 +287,7 @@ describe('passwordValidator', () => {
   // Test invalid passwords.
   testPasswords.invalid.forEach(password => {
     it(`should return valid: false and error for an invalid password: ${password}`, async () => {
-      const result = await passwordValidator(password, 'test', 'test');
+      const result = await passwordValidator(password, "test", "test");
       expect(result).toEqual({ valid: false, error: expect.any(String) });
     });
   });
@@ -295,17 +295,17 @@ describe('passwordValidator', () => {
   // Test password contains email.
   passwordsContainingEmail.forEach(password => {
     it(`should return valid: false and error for password: ${password} containing email: emailer@emailer.com`, async () => {
-      const result = await passwordValidator(password, 'emailer@emailer.com', 'test');
-      expect(result).toEqual({ valid: false, error: 'Password should not contain your email or display name' });
+      const result = await passwordValidator(password, "emailer@emailer.com", "test");
+      expect(result).toEqual({ valid: false, error: "Password should not contain your email or display name" });
     });
   });
 
   // Test password contains displayName.
   passwordsContainingDisplayName.forEach(password => {
     it(`should return valid: false and error for password: ${password} containing displayName: sunrise`, async () => {
-      const result = await passwordValidator(password, '', 'sunrise');
-      expect(result).toEqual({ valid: false, error: 'Password should not contain your email or display name' });
+      const result = await passwordValidator(password, "", "sunrise");
+      expect(result).toEqual({ valid: false, error: "Password should not contain your email or display name" });
     });
   });
-  console.log('######### PASSWORD TEST END ########');
+  console.log("######### PASSWORD TEST END ########");
 });

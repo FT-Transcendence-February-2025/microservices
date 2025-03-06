@@ -1,55 +1,53 @@
-import fastify from '../server.js';
-import jwt from 'jsonwebtoken';
-import db from './database-service.js';
+import fastify from "../server.js";
+import jwt from "jsonwebtoken";
+import db from "./database-service.js";
 
-const authenticationService = async (request, reply) => {
-	const { email, password } = request.body;
-
-	let user = {};
-	try {
-		user = await db.getUserByEmail(email);
-	} catch (error) {
-		console.error(error);
-		return reply.status(500).send({ error: 'Internal Server Error' });
+const authenticateUser = async (email, password) => {
+	const user = await db.getUserByEmail(email);
+	if (user.error) {
+    return { status: 500, error: "Internal Server Error" };
 	}
-	if (!user) {
-		return reply.status(404).send({ error: 'User not found'});
-	}
+  if (!user) {
+    return { status: 404, error: "User not found" };
+  }
 
-	const isPasswordValid = await fastify.bcrypt.compare(password, user.password);
-	if (!isPasswordValid) {
-		return reply.status(400).send({ error: 'Invalid password' });
-	}
+  const isPasswordValid = await fastify.bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    return { status: 400, error: "Invalid password" };
+  }
 
-	try {
-		const refreshToken = jwt.sign(
-			{ userId: user.id },
-			process.env.SECRET_KEY,
-			{ expiresIn: '7d' }
-		);
-		const expiresInSeconds = 7 * 24 * 60 * 60;
-		reply.setCookie('refreshToken', refreshToken, {
-			signed: true,
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
-			path: '/',
-			maxAge: expiresInSeconds
-		});
-		await db.deleteRefreshToken(user.id);
+  try {
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+    const expiresInSeconds = 7 * 24 * 60 * 60;
+    const cookieOptions = {
+      signed: true,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+      path: "/",
+      maxAge: expiresInSeconds
+    };
+
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-		await db.createRefreshToken(refreshToken, expiresAt, user.id);
+    const deleteResult = await db.deleteRefreshToken(user.id);
+    const createResult = await db.createRefreshToken(refreshToken, expiresAt, user.id);
+		if (deleteResult.error || createResult.error) {
+      return { status: 500, error: "Internal Server Error" };
+		}
+    const accessToken = jwt.sign(
+      { userId: user.id },
+      process.env.SECRET_KEY,
+      { expiresIn: "15m" }
+    );
 
-		const shortToken = jwt.sign(
-			{ userId: user.id },
-			process.env.SECRET_KEY,
-			 { expiresIn: '15m' }
-		);
-		reply.send({ success: 'You have successfully logged in', token: shortToken });
-	} catch (error) {
-		console.error(error);
-		return reply.status(500).send({ error: 'Internal Server Error' });
-	}
+    return { refreshToken, accessToken, cookieOptions };
+  } catch (error) {
+    return { status: 500, error: "Internal Server Error" };
+  }
 };
 
-export default authenticationService;
+export default { authenticateUser };

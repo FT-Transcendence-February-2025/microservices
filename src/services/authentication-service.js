@@ -2,7 +2,7 @@ import fastify from "../server.js";
 import jwt from "jsonwebtoken";
 import db from "./database-service.js";
 
-const authenticateUser = async (email, password) => {
+const authenticationService = async (email, password) => {
 	const user = await db.getUserByEmail(email);
 	if (user.error) {
     return { status: 500, error: "Internal Server Error" };
@@ -46,8 +46,9 @@ const authenticateUser = async (email, password) => {
 
     return { refreshToken, accessToken, cookieOptions };
   } catch (error) {
+		console.error(error);
     return { status: 500, error: "Internal Server Error" };
   }
 };
 
-export default { authenticateUser };
+export default authenticationService;

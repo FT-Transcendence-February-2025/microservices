@@ -46,12 +46,13 @@ fastify.get("/", (request, reply) => {
   return { message: "Fastify server of authentication-service running" };
 });
 
-try {
-  await fastify.listen({ port: 3001 });
-} catch (error) {
-  fastify.log.error(error);
-  process.exit(1);
-}
+fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
+  if (error) {
+    console.error(error);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
+});
 
 export default fastify;
 

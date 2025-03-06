@@ -35,7 +35,6 @@ export function initDatabase () {
       winner_id TEXT,
       schedule TEXT,
       scores TEXT,
-      player_ids TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       started_at TIMESTAMP DEFAULT NULL,
       ended_at TIMESTAMP DEFAULT NULL

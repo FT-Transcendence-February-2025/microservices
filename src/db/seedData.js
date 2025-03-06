@@ -34,8 +34,8 @@ function seedDatabase () {
     const serializedTournament = serializeTournament(tournamentData)
     const tournamentInsert = db.prepare(`
         INSERT INTO tournaments
-        (name, created_by, size, registration_start_time, registration_deadline, player_ids, schedule, scores)
-        VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+        (name, created_by, size, registration_start_time, registration_deadline, schedule, scores)
+        VALUES(?, ?, ?, ?, ?, ?, ?)
       `)
     const tournamentId = tournamentInsert.run(
       serializedTournament.name,
@@ -43,7 +43,6 @@ function seedDatabase () {
       serializedTournament.size,
       serializedTournament.registration_start_time,
       serializedTournament.registration_deadline,
-      serializedTournament.player_ids,
       serializedTournament.schedule,
       serializedTournament.scores
     ).lastInsertRowid

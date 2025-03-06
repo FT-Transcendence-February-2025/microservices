@@ -1,3 +1,5 @@
+import { tournamentService } from '../db/tournamentService.js'
+
 export const tournamentController = {
 
   async postRegisterPlayer (request, _reply) {
@@ -5,10 +7,16 @@ export const tournamentController = {
     const { playerId } = request.body
 
     // TODO: implement registration logic with databse
-    return {
-      success: true,
-      message: `Player ${playerId} registered for tournament ${tournamentId}`
+    // return {
+    //   success: true,
+    //   message: `Player ${playerId} registered for tournament ${tournamentId}`
+    // }
+    const result = tournamentService.registerPlayer(tournamentId, playerId)
+
+    if (!result.success) {
+      _reply.code(400)
     }
+    return result
   },
 
   async deletePlayer (request, _reply) {
@@ -16,9 +24,31 @@ export const tournamentController = {
     const { playerId } = request.body
 
     // TODO: implement unregistration logic
-    return {
-      success: true,
-      message: `Player ${playerId} unregistered from tournament ${tournamentId}`
+    // return {
+    //   success: true,
+    //   message: `Player ${playerId} unregistered from tournament ${tournamentId}`
+    // }
+
+    try {
+      const result = tournamentService.unregisterPlayer(tournamentId, playerId)
+
+      if (!result) {
+        return _reply.code(404).send({
+          statusCode: 404,
+          error: 'Player not found in tournament'
+        })
+      }
+
+      return {
+        success: true,
+        message: `Player ${playerId}, unregistered from tournament ${tournamentId}`
+      }
+    } catch (error) {
+      _reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to unregister player',
+        details: error.message
+      })
     }
   },
 

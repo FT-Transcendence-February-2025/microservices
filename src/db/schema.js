@@ -9,6 +9,19 @@ export function initDatabase () {
     )
     `).run()
 
+  // Players table
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS players (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      player_id INTEGER NOT NULL,
+      tournament_id INTEGER NOT NULL,
+      joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(player_id, tournament_id),
+      FOREIGN KEY (player_id) REFERENCES users(id),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
+    )
+    `).run()
+
   // Tournament table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS tournaments (
@@ -17,15 +30,15 @@ export function initDatabase () {
       created_by TEXT NOT NULL,
       current_round INTEGER DEFAULT 0,
       size INTEGER NOT NULL,
-      registration_start_time INTEGER NOT NULL,
-      registration_deadline INTEGER NOT NULL,
+      registration_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      registration_deadline TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       winner_id TEXT,
       schedule TEXT,
       scores TEXT,
       player_ids TEXT,
-      created_at INTEGER NOT NULL,
-      started_at INTEGER,
-      ended_at INTEGER
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      started_at TIMESTAMP DEFAULT NULL,
+      ended_at TIMESTAMP DEFAULT NULL
     )
     `).run()
 }

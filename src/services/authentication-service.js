@@ -1,8 +1,9 @@
 import fastify from "../server.js";
 import jwt from "jsonwebtoken";
 import db from "./database-service.js";
+import * as crypto from "crypto";
 
-const authenticationService = async (email, password) => {
+const authenticationService = async (email, password, userAgent) => {
 	const user = await db.getUserByEmail(email);
 	if (user.error) {
     return { status: 500, error: "Internal Server Error" };
@@ -32,11 +33,22 @@ const authenticationService = async (email, password) => {
       maxAge: expiresInSeconds
     };
 
+		const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    const deleteResult = await db.deleteRefreshToken(user.id);
-    const createResult = await db.createRefreshToken(refreshToken, expiresAt, user.id);
-		if (deleteResult.error || createResult.error) {
+		const device = await db.getDevice(deviceHash);
+		if (device.error) {
       return { status: 500, error: "Internal Server Error" };
+		}
+		if (!device) {
+			const addResult = await db.addDevice(user.id);
+			if (addResult.error) {
+        return { status: 500, error: "Internal Server Error" };
+			}
+		} else {
+			const updateResult = await db.updateToken(user.id, deviceHash, refreshToken, expiresAt);
+			if (updateResult.error) {
+				return { status: 500, error: "Internal Server Error"};
+			}
 		}
     const accessToken = jwt.sign(
       { userId: user.id },

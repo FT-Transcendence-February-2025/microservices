@@ -24,7 +24,11 @@ Let’s assume you want to include a repository located at `https://github.com/e
 First, add the remote so that Git knows where to fetch from or push to:
 
 ```bash
-git remote add component https://github.com/example/component.git
+git remote add authentication https://github.com/example/component.git
+git remote set-url authentication https://$(cat $TOKEN)@github.com/FT-Transcendence-February-2025/authentication-service.git
+ git fetch component main
+git subtree add --prefix=services/authentication-service/src authentication main --squash
+
 ```
 
 ### B. Import the Repository as a Subtree

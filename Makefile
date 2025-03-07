@@ -9,10 +9,6 @@ VOLUMES		:= ./volumes
 
 SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
-# WP_VOL		:= $(VOLUMES)/wordpress
-# DB_VOL		:= $(VOLUMES)/mariadb
-# MDB			:= $(SRCS)/requirements/mariadb
-# WP			:= $(SRCS)/requirements/wordpress
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
 NAME		:= ft_transcendence
 DOCKER_BUILDKIT=1

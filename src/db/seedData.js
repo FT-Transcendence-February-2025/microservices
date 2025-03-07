@@ -21,7 +21,6 @@ function seedDatabase () {
       size: 8,
       registration_start_time: new Date().toISOString(),
       registration_deadline: new Date(Date.now() + 86400000).toISOString(),
-      player_ids: [],
       schedule: [
         // { round: 1, matches: [{ player1: user1Id, player2: user2Id }] }
         {}

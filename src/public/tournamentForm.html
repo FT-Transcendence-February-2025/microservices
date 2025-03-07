@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Selection</title>
+</head>
+<body>
+  <h1>Choose Tournament Size</h1>
+  <form id="tournamentForm">
+    <label for="size">Tournament Size:</label>
+    <select id="size" name="size" required>
+      <option value="4">4</option>
+      <option value="6">6</option>
+      <option value="8">8</option>
+      <option value="10">10</option>
+    </select>
+    <button type="submit">Start Tournament</button>
+  </form>
+
+  <p id="responseMessage"></p>
+
+  <script>
+    document.getElementById('tournamentForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+  
+    const size = document.getElementById('size').value;
+  
+    try {
+      const response = await fetch('http://localhost:3002/tournament/set-size', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ size }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to open tournament');
+      }
+  
+      const data = await response.json();
+      document.getElementById('responseMessage').textContent = `Tournament opened with size ${data.size}`;
+    } catch (error) {
+      document.getElementById('responseMessage').textContent = error.message;
+    }
+  })
+  </script>
+</body>
+</html>

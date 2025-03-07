@@ -83,7 +83,32 @@ export const tournamentController = {
       { id: 'match1', player1: playerId, player2: 'opponent1', status: 'completed', result: { winner: playerId }, message: `Tournament ID: ${tournamentId}` },
       { id: 'match2', player1: playerId, player2: 'opponent2', status: 'scheduled', message: `Tournament ID: ${tournamentId}` }
     ]
-  }
+  },
 
   // TODO: get tournament statistics '/:tournamentId/statistics'
+
+  async createSchedule (request, reply) {
+
+    const result = myFunction(); // Call your function here
+    reply.send(result); // Send a response back to the client
+
+    // Respond with the created tournament
+    // console.log(size);
+    // return reply.status(201).send(tournament);
+
+    
+    //-name
+    //-invites
+    //-registrationTime
+  },
+
+  async sendInvite (request, reply) {
+    // Invite players to a tournament
+  },
+
+  async createTournament (request, reply) {
+    const { name, players } = request.body
+    const newTournament = createTournament(name, players)
+    return newTournament
+  }
 }

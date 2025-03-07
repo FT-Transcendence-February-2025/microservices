@@ -6,6 +6,12 @@ export default async function (fastify) {
   // Register player for tournament
   fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)
 
+  fastify.post('/:tournamentId/invite', tournamentController.sendInvite)
+
+  fastify.post('/:tournamentId/schudule', tournamentController.createSchedule)
+
+  fastify.post('/:tournamentId/tournament', tournamentController.createTournament)
+
   // Unregistered player for tournament
   fastify.delete('/:tournamentId/register', tournamentController.deletePlayer)
 

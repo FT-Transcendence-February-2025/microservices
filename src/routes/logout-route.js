@@ -1,5 +1,5 @@
-import logoutService from "../services/logout-service.js";
 import verifyToken from "jwt-validator-tr";
+import logoutController from "../controllers/logout-controller.js";
 
 const logoutRoute = {
   method: "POST",
@@ -13,7 +13,7 @@ const logoutRoute = {
 		}
 	},
 	preHandler: verifyToken,
-	handler: logoutService
+	handler: logoutController
 };
 
 export default logoutRoute;

@@ -3,7 +3,7 @@ import authenticationService from "../services/authentication-service.js";
 const authenticationController = async (request, reply) => {
   const { email, password } = request.body;
 
-  const result = await authenticationService(email, password);
+  const result = await authenticationService(email, password, request.headers["user-agent"]);
   if (result.error) {
     return reply.status(result.status).send({ error: result.error });
   }

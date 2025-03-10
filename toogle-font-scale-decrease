@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Get Current Scailing factor
+SCALE=$(gsettings get org.gnome.desktop.interface text-scaling-factor)
+
+SCALE_SWITCH=$(echo "$SCALE - 0.1" | bc -l)
+
+echo $SCALE_SWITCH
+
+# (Optional) Message intentions to CLI and GNOME Notifications
+echo -e "Previous Font Scale: $SCALE, Switched to $SCALE_SWITCH"
+notify-send "Previous Font Scale: $SCALE, Switched to $SCALE_SWITCH"
+
+# Run switch command
+gsettings set org.gnome.desktop.interface text-scaling-factor $SCALE_SWITCH

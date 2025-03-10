@@ -1,0 +1,92 @@
+{
+	"editor.fontSize": 16.5,
+	"window.zoomLevel": 1,
+    "terminal.explorerKind": "external",
+    "terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
+    "files.autoSave": "afterDelay",
+    "workbench.activityBar.iconClickBehavior": "focus",
+    "editor.tabCompletion": "on",
+    "editor.wordWrap": "on",
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+	"workbench.iconTheme": "material-icon-theme",
+    "terminal.integrated.allowChords": false,
+    "tabnine.experimentalAutoImports": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "terminal.integrated.automationProfile.linux": {"null":"null"},
+    "makefile.showOnStartup": false,
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "workbench.startupEditor": "none",
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        },
+        "Ubuntu (WSL)": {
+            "path": "C:\\Windows\\System32\\wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu"
+            ]
+        }
+    },
+    "42header.username": "lilizarr",
+    "settingsSync.ignoredExtensions": [
+    
+    ],
+    "gitConfigUser.profiles": [
+		{
+			"label": "42Wolfsburg",
+			"email": "lilizarr@student.42wolfsburg.de",
+			"userName": "lilizarr",
+			"selected": true,
+			"id": "3cd50b30-2f0e-47cf-a0e7-45e8d825bf1e",
+			"signingKey": ""
+		},
+		{
+			"label": "Work",
+			"userName": "Victoria Lizárraga",
+			"email": "victoria.lizcor@gmail.com",
+			"selected": false,
+			"id": "e82d36a9-51b1-4760-b99e-6557a38dcc56",
+			"signingKey": ""
+		}
+	],
+    "auto-rename-tag.activationOnLanguage": [
+    
+        "*"
+    ],
+    "editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"terminal.integrated.fontSize": 16,
+	"terminal.integrated.localEchoStyle": "dim",
+	"editor.renderWhitespace": "all",
+	"editor.wrappingIndent": "none",
+	"diffEditor.ignoreTrimWhitespace": false,
+	"files.watcherExclude": {
+		"**/.git": true
+	},
+	"files.exclude": {
+		"**/.git": false,
+		"**/.git*": true
+	},
+	"github.copilot.chat.welcomeMessage": "never",
+	"github.copilot.preferredAccount": "victoria.lizcor@gmail.com",
+	"workbench.colorTheme": "Monokai",
+	"[jsonc]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
+	}
+}

@@ -1,16 +1,16 @@
-import database from '../database.js';
+import database from "../database.js";
 
 const dropUsersTable = async () => {
 	try {
-		const exists = await database.schema.hasTable('users');
+		const exists = await database.schema.hasTable("users");
 		if (exists) {
-			await database.schema.dropTable('users');
-			console.log('Users table dropped');
+			await database.schema.dropTable("users");
+			console.log("Users table dropped");
 		} else {
-			console.log('Users table does not exist');
+			console.log("Users table does not exist");
 		}
 	} catch (error) {
-		console.error('Error dropping users table:', error);
+		console.error("Error dropping users table:", error);
 	} finally {
 		await database.destroy();
 	}

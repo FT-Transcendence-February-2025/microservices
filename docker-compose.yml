@@ -1,4 +1,4 @@
-name: ft_transcendence
+# name: ft_transcendence
 
 include:
   - services/authentication-service/docker-compose.yml

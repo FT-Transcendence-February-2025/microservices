@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-100 p-4">
 
-<button onclick="loadPage('login.html')">Login</button>
-<button onclick="loadPage('register.html')">Register</button>
-<button onclick="loadPage('password.html')">Change password</button>
-<button onclick="logout()">Logout</button>
+<button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="loadPage('login.html')">Login</button>
+<button class="bg-green-500 text-white px-4 py-2 rounded" onclick="loadPage('register.html')">Register</button>
+<button class="bg-yellow-500 text-white px-4 py-2 rounded" onclick="loadPage('password.html')">Change password</button>
+<button class="bg-red-500 text-white px-4 py-2 rounded" onclick="logout()">Logout</button>
 
 <div id="form-container"></div>
 
-<script src="../src/app.js"></script>
-<script src="../src/api.js"></script>
+<script src="app.js"></script>
+<script src="api.js"></script>
 </body>
 </html>

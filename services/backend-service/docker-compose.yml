@@ -18,6 +18,7 @@ services:
       dockerfile: Dockerfile
       args:
         - DNS_SERVER=8.8.8.8
+    image: img_fastify:latest
     container_name: fastify
     hostname: fastify
     volumes:

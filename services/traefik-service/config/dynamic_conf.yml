@@ -1,12 +1,4 @@
 http:
-  middlewares:
-    # Middleware to redirect non-canonical hosts to the canonical domain
-    redirect-to-canonical:
-      redirectRegex:
-        regex: "^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
-        replacement: "https://${DOMAIN}$$1"
-        permanent: true
-
   routers:
     # Default router to redirect HTTP to HTTPS
     default-redirect:
@@ -18,11 +10,19 @@ http:
       service: noop-service # A dummy service is required for this router
 
   middlewares:
+    # Middleware to redirect non-canonical hosts to the canonical domain
+    redirect-to-canonical:
+      redirectRegex:
+        regex: "^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
+        replacement: "https://${DOMAIN}$$1"
+        permanent: true
     # Middleware to enforce HTTPS redirection
     redirect-to-https:
       redirectScheme:
         scheme: https
         permanent: true
+        tls:
+          certResolver: myresolver
 
 services:
   # Noop service as Traefik requires a service for routers

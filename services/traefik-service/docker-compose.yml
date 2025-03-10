@@ -24,6 +24,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     # image: "traefik:v3.3"
+    image: img_traefik:latest
     container_name: traefik
     hostname: traefik
     environment:
@@ -72,16 +73,18 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--api.dashboard=true"
       - "--log.level=DEBUG"
-      - "--certificatesresolvers.test.acme.caserver=https://pebble:14000/dir"
-      - "--certificatesresolvers.test.acme.email=test@example.com"
-      - "--certificatesresolvers.test.acme.storage=/acme.json"
       # - "--entrypoints.web.address=:80"
       # - "--entrypoints.websecure.address=:443"
-    # labels:
-    #   - traefik.enable=true
-    #   - "traefik.http.routers.traefik.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"  # Updated domain address
-    #   - "traefik.http.routers.traefik.entrypoints=web,websecure"
-    #   - "traefik.http.routers.traefik.middlewares=redirect-to-newdomain@file"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.http-to-https.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-to-https.entrypoints=web"
+      - "traefik.http.routers.http-to-https.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.http-to-https.service=noop-service@file"
+      - "traefik.http.routers.traefik.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik.middlewares=redirect-to-canonical@file"
 
   pebble:
     image: letsencrypt/pebble

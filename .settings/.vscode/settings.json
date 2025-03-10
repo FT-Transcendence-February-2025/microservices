@@ -1,0 +1,57 @@
+{
+	"[windows]":
+	{
+		"editor.fontSize": 17.7,
+		"window.zoomLevel": 1
+	},
+	// "[osx]":
+	// "editor.fontSize": 13.5,
+	"[linux]":
+	{
+		"editor.fontSize": 14.0,
+		"window.zoomLevel": 0.5
+	},
+	"editor.fontSize": 14,
+	"window.zoomLevel": -0.6,
+	// "debug.console.fontSize": 20,
+	"terminal.integrated.fontSize": 13,
+	/*FOR BOTH*/
+	"makefile.makePath": "./Makefile",
+	"makefile.showOnStartup": false,
+	"terminal.integrated.shell.linux": "/bin/bash",
+	"terminal.integrated.defaultProfile.linux": "bash",
+	"workbench.startupEditor": "none",
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"doxdocgen.generic.useGitUserEmail": true,
+	"doxdocgen.generic.useGitUserName": true,
+	"doxdocgen.c.triggerSequence": "/**",
+	//************************************************//
+	// url of the compiler explorer you want to use.
+	"compiler-explorer.url": "https://godbolt.org",
+	// Compiler code - See help below.
+	"compiler-explorer.compiler": "armg454",
+	"compiler-explorer.options": [
+		"-O3"
+	], // Compiler options
+	"compiler-explorer.debug": true,
+	"compiler-explorer.include": [
+		// "${workspaceFolder}/CPP_01/ex04/src/${workspaceFolder}/CPP_01/ex04/src/main.cpp",
+		//	"${workspaceFolder}/CPP_00/ex01/src/${workspaceFolder}/CPP_00/ex01/src/my_awesome_phonebook.cpp"
+	],
+	"window.customTitleBarVisibility": "auto",
+	"rewrap.wrappingColumn": 70,
+	 // indicates that the extension will print debug to its output channel.
+	"doxdocgen.generic.commandSuggestionAddPrefix": true,
+	"files.exclude":
+	{
+		"**/.git": true,
+		"**/.git*": false
+	},
+	"github.copilot.editor.enableAutoCompletions": false,
+	"pdf-preview.default.sidebar": false,
+	"files.associations": {
+		//
+	},
+
+}

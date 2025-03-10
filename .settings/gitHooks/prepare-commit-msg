@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Gets the commit message received as parameter and the current branch name.
+COMMIT_MSG_FILE=$1
+message=$(cat "$COMMIT_MSG_FILE")
+
+
+# Read the commit message into an array
+LINES=()
+while IFS= read -r line; do
+	LINES+=("$line")
+done < "$COMMIT_MSG_FILE"
+
+# Capture the merge branch information
+mergeBranch=""
+if [ -f .git/MERGE_HEAD ]; then
+	mergeBranchName=$(git branch --contains $(cat .git/MERGE_HEAD) | sed 's/.* //' | tr -d '\n')
+	mergeBranch="* Merge:"
+fi
+
+# Modify the commit message
+# This script is a Git hook that prepares the commit message.
+# It is located at $(REPO_PATH)/.settings/gitHooks/prepare-commit-msg.
+# 
+# The script checks the number of lines in the LINES array.
+# If there is only one line:
+#   - If the mergeBranch variable is set, it writes the ticketID, mergeBranch, and the single line from LINES to the commit message file.
+#   - If the mergeBranch variable is not set, it writes the ticketID and the single line from LINES to the commit message file.
+# If there are multiple lines:
+#   - If the mergeBranch variable is set, it writes the ticketID, mergeBranch, and all lines from LINES to the commit message file.
+#   - If the mergeBranch variable is not set, it writes the ticketID, the first line from LINES, and the remaining lines from LINES to the commit message file.
+
+REMOTE_URL=$(git config --get remote.origin.url)
+
+# Extract the repository owner and name from the remote URL
+REPO_NAME=$(echo "$REMOTE_URL" | sed -n 's#.*/\([^/]*\)\.git#\1#p')
+
+# # Get organization members
+# MEMBERS=$(curl -s -H "Authorization: token `cat $TOKEN`" -H "Accept: application/vnd.github+json" https://api.github.com/orgs/FT-Transcendence-February-2025/members | jq -r '.[].login' | awk '{printf "\"%s\", ", $0}' | sed 's/, $/\n/')
+# LABELS=$(curl -s -H "Authorization: token `cat $TOKEN`" \
+# 	-H "Accept: application/vnd.github.v3+json" \
+# 	https://api.github.com/repos/FT-Transcendence-February-2025/FT_Transcendence/labels | jq -r '.[].name' | awk '{printf "\"%s\", ", $0}' | sed 's/, $/\n/')
+
+# Get the current user's GitHub username
+GIT_GLOBAL=$(git config --global --get user.name)
+
+# Obtain local branch User
+GIT_LOCAL=$(git config --local --get user.name)
+LOCAL_USER=$(echo $USER)
+
+# # Append the specified content to the commit message file
+# ISSUE=$(cat <<EOL
+# # Uncomment this lines if new issue is created and rename title to Issue
+# #{
+# #    "title": "",
+# #    "body": "",
+# #    "assignees": ["$GIT_LOCAL"],
+# #    "labels": [],
+# #    "milestone": 1,
+# #}
+# # MEMBERS: $MEMBERS
+# # LABELS: $LABELS
+# EOL
+# )
+
+if [ -n "$mergeBranch" ]; then
+	echo -e "$mergeBranch ${LINES[@]}\n" > "$COMMIT_MSG_FILE"
+else
+	printf "%s\n" "${LINES[@]}" > "$COMMIT_MSG_FILE"
+	# cat $COMMIT_MSG_FILE
+	# printf "%s\n%s\n%s\n" "${LINES[0]}" "$ISSUE" "${LINES[@]:1}" > "$COMMIT_MSG_FILE"
+fi
+
+echo end:pre-commit

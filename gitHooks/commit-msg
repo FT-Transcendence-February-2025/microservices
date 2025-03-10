@@ -1,0 +1,95 @@
+#!/bin/bash
+COMMIT_MSG_FILE="$1"
+# Read the commit message from the file
+commit_msg=$(cat "$COMMIT_MSG_FILE")
+
+# Get the current branch name
+current_branch=$(git symbolic-ref --short HEAD)
+
+# Check if the branch exists on the remote
+if git show-ref --verify --quiet "refs/remotes/origin/$current_branch"; then
+	# Get the last commit message from the remote branch
+	last_commit_msg=$(git log origin/"$current_branch" -1 --pretty=%B)
+	#echo -e "\033[0;33m$last_commit_msg \n\033[m"
+
+	# Check if the commit message is the same as the last commit
+	if [[ "$commit_msg" =~ "$last_commit_msg" ]]; then
+		echo -e "\033[0;35mNo changes \n \033[m"
+		exit 1
+	fi
+else
+	echo -e "\033[0;32mBranch does not exist on remote. Proceeding with commit. \n\033[m"
+fi
+
+#echo -e "\033[0;34m----\n$commit_msg\n---------\n\033[m"
+LINES=()
+while IFS= read -r line; do
+	LINES+=("$line")
+done < "$COMMIT_MSG_FILE"
+
+# Read the second line from the commit-msg file
+commitPattern=${LINES[0]}
+# Regex pattern to match and capture the string after "* [A-Z]:"
+# regex_pattern="^\* (Fix|Update in files|Docs|Feat|Style|Test|Refactor): (.*)"
+regex_pattern="^\[.*?\]:"
+
+# Check if the second line matches the regex pattern
+if [[ $commitPattern =~ $regex_pattern ]]; then
+	# Extract the matched pattern
+	matched_pattern="${BASH_REMATCH[0]}"
+	# Extract the string after the pattern
+	string_after_prefix="${commitPattern#"$matched_pattern"}"
+	# #Convert matched_pattern to lowercase for case-insensitive comparison
+	# ISSUE=$(echo "$matched_pattern" | tr '[:upper:]' '[:lower:]')
+	# if [[ "$ISSUE" == *"issue"* ]]; then
+	# 	issueFmt=$(printf "%s\n" "${LINES[@]:1}" | grep -v '^#')
+	# 	repo=$(git config --get remote.origin.url)
+	# 	repoName=$(basename -s .git $(git config --get remote.origin.url))
+	# 	orgReposApi=$(curl -s -H "Authorization: token `cat $TOKEN`" \
+	# 				-H "Accept: application/vnd.github+json" \
+	# 				https://api.github.com/user/orgs | jq -r '.[].repos_url')
+	# 	currentRepoApi=$(curl -s -H "Authorization: token `cat $TOKEN`" \
+	# 			-H "Accept: application/vnd.github+json" $orgReposApi | \
+	# 			jq -r --arg repoName "$repoName" '.[] | select(.permissions.admin == true and (.url | tostring | endswith($repoName))) | .url')
+	# 	echo $currentRepoApi
+	# 	# Create an issue using the GitHub API
+	# 	issue_response=$(echo curl -s -X POST -H "Authorization: token `cat $TOKEN`" \
+	# 		-H "Accept: application/vnd.github.v3+json" \
+	# 		-d '$issueFmt' "$currentRepoApi/issues")
+	# 	echo $issue_response
+	# 	# Extract the issue number and title from the response
+	# 	issue_number=$(echo "$issue_response" | jq -r '.number')
+	# 	issue_title=$(echo "$issue_response" | jq -r '.title' | sed 's/ /-/g')
+
+	# 	# Create a new branch locally based on the issue number and title
+	# 	branch_name="issue-$issue_number-$issue_title"
+	# 	echo "git checkout -b $branch_name"
+	# 	exit 1
+	# fi
+	if [[ -z "$string_after_prefix" || "$string_after_prefix" =~ ^[[:space:]]*$ ]]; then
+		# Check if there is a third line with a message
+		if [ ${#LINES[@]} -gt 2 ]; then
+			third_line=${LINES[2]}
+			#echo -e "third_line: $third_line"
+			if [[ -z "$third_line" || "$third_line" =~ ^[[:space:]]*$ || "$third_line" =~ ^# ]]; then
+				cat $COMMIT_MSG_FILE
+				echo -e "\033[0;35mNo message after '$matched_pattern' second line.\n \033[m"
+				exit 1
+			fi
+		else
+			echo ${#LINES[@]}
+			echo -e "\033[0;35mNo message after '$matched_pattern'.\n \033[m"
+			exit 1
+		fi
+	fi
+	echo -e "\033[0;32mCommit message accepted.\n \033[m"
+	exit 0
+else
+	echo -e "\033[0;35m"
+	echo -e "---\n$commitPattern\n-----\n"
+	echo -e "The commit Title does not match the specified pattern. \n\n"
+	echo -e " (Fix|Docs|Feat|Style|Test|Refactor)"
+	echo -e "\033[m"
+	echo test
+	exit 1
+fi

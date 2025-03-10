@@ -1,0 +1,88 @@
+// Place your key bindings in this file to override the defaults
+[
+	{
+		"key": "ctrl+numpad_divide",
+		"command": "editor.action.commentLine",
+		"when": "editorTextFocus && !editorReadonly"
+	},
+	{
+		"key": "ctrl+/",
+		"command": "editor.action.commentLine",
+		"when": "editorTextFocus && !editorReadonly"
+	},
+	{
+		"key": "ctrl+c",
+		"command": "editor.action.clipboardCopyAction",
+		"when": "editorTextFocus && !editorReadonly"
+	},
+	{
+		"key": "ctrl+v",
+		"command": "editor.action.clipboardPasteAction",
+		"when": "editorTextFocus && !editorReadonly"
+	},
+	{
+		"key": "ctrl+meta+r",
+		"command": "workbench.action.tasks.runTask",
+		"args": "C/C++:clang++ build active file"
+	},
+	{
+		"key": "ctrl+meta+b",
+		"command": "workbench.action.tasks.runTask",
+		"args": "C/C++:clang++ build active file"
+	},
+	{
+		"key": "alt+meta+f12",
+		"command": "compiler-explorer.open"
+	},
+	{
+		"key": "ctrl+shift+alt+end",
+		"command": "github.copilot.interactiveEditor.explain"
+	},
+	{
+		"key": "ctrl+alt+numpad_divide",
+		"command": "github.copilot.interactiveEditor.generateDocs"
+	},
+	{
+		"key": "alt+meta+b",
+		"command": "vs-browser.start"
+	},
+	{
+		"key": "ctrl+shift+alt+space",
+		"command": "openEditors.closeAll",
+		"when": "view == 'workbench.explorer.openEditorsView'"
+	},
+	{
+		"key": "ctrl+shift+alt+numpad_divide",
+		"command": "github.copilot.chat.generateDocs"
+	},
+	{
+		"key": "ctrl+shift+alt+o",
+		"command": "github.copilot.chat.explain"
+	},
+	{
+		"key": "ctrl+shift+alt+i",
+		"command": "-workbench.action.chat.openEditSession",
+		"when": "chatEditingParticipantRegistered && chatIsEnabled && view != 'workbench.panel.chat.view.edits'"
+	},
+	{
+		"key": "ctrl+shift+alt+w",
+		"command": "workbench.view.extension.copilot-chat"
+	},
+	{
+		"key": "ctrl+shift+q",
+		"command": "copilot-chat.resetViewLocation"
+	},
+	{
+		"key": "ctrl+shift+alt+q",
+		"command": "workbench.panel.chat.view.copilot.focus"
+	},
+	{
+		"key": "ctrl+shift+alt+i",
+		"command": "copilot-chat.focus"
+	},
+	{
+		"key": "ctrl+shift+alt+n",
+		"command": "workbench.action.chat.openInNewWindow",
+		"when": "chatIsEnabled && !editorFocus"
+	}
+]

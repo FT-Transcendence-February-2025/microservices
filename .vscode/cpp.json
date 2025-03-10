@@ -1,0 +1,15 @@
+{
+	"Main Function":
+	{
+        "prefix": "main",
+        "body": [
+            "#include <iostream>",
+            "",
+            "int main() {",
+            "    std::cout << \"Hello, World!\" << std::endl;",
+            "    return (0);",
+            "}"
+        ],
+        "description": "Standard main function"
+    }
+}

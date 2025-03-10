@@ -1,0 +1,194 @@
+[global_config]
+  geometry_hinting = True
+  title_transmit_fg_color = "#241f31"
+  title_transmit_bg_color = "#26a269"
+  inactive_color_offset = 1.0
+  enabled_plugins = CustomCommandsMenu, LaunchpadBugURLHandler, LaunchpadCodeURLHandler, APTURLHandler
+  suppress_multiple_term_dialog = True
+[keybindings]
+  edit_tab_title = <Primary><Alt><Super>a
+[profiles]
+  [[default]]
+    cursor_color = "#aaaaaa"
+    foreground_color = "#ffffff"
+    show_titlebar = False
+    scrollback_infinite = True
+    use_custom_command = True
+    custom_command = 'sh -c "if [ \"$PWD\" = \"$HOME\" ]; then cd /home/lilizarr/42_Cursus ; fi; exec bash"'
+    copy_on_selection = True
+  [[CPP]]
+    background_color = "#282828"
+    cursor_color = "#aaaaaa"
+    cursor_color_fg = False
+    font = Ubuntu Mono 12
+    foreground_color = "#eeeccd"
+    show_titlebar = False
+    scrollback_lines = 1000
+    scrollback_infinite = True
+    use_custom_command = True
+    custom_command = 'sh -c "if [ \"$PWD\" = \"$HOME\" ]; then cd /home/lilizarr/42_Cursus/CPP_Modules ; fi; exec bash"'
+    copy_on_selection = True
+[layouts]
+  [[default]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 0:48
+      maximised = False
+      fullscreen = False
+      size = 1054, 2070
+      title = Terminator
+      last_active_term = 57ae38f1-10ab-4f8a-9d07-8130ddf5ff12
+      last_active_window = True
+    [[[terminal1]]]
+      type = Terminal
+      parent = child0
+      order = 0
+      profile = default
+      uuid = 57ae38f1-10ab-4f8a-9d07-8130ddf5ff12
+  [[CPP]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 0:48
+      maximised = False
+      fullscreen = False
+      size = 1054, 2070
+      title = Terminator
+      last_active_window = True
+    [[[child1]]]
+      type = Notebook
+      parent = child0
+      order = 0
+      labels = None, None, None
+      last_active_term = 935c79d6-66bb-4656-8162-26626230e3a3, 9d85779c-2ad9-459e-9eb3-86ec2448a297, 57ae38f1-10ab-4f8a-9d07-8130ddf5ff12
+      active_page = 0
+    [[[child2]]]
+      type = VPaned
+      parent = child1
+      order = 0
+      position = 1013
+      ratio = 0.5
+    [[[terminal3]]]
+      type = Terminal
+      parent = child2
+      order = 0
+      profile = CPP
+      uuid = 935c79d6-66bb-4656-8162-26626230e3a3
+    [[[terminal4]]]
+      type = Terminal
+      parent = child2
+      order = 1
+      profile = CPP
+      uuid = e498c7fd-a973-4a64-b3cd-8dee1f0e7a44
+    [[[terminal5]]]
+      type = Terminal
+      parent = child1
+      order = 1
+      profile = CPP
+      uuid = 9d85779c-2ad9-459e-9eb3-86ec2448a297
+    [[[terminal6]]]
+      type = Terminal
+      parent = child1
+      order = 2
+      profile = CPP
+      uuid = 57ae38f1-10ab-4f8a-9d07-8130ddf5ff12
+  [[split]]
+    [[[child0]]]
+      type = Window
+      parent = ""
+      order = 0
+      position = 0:48
+      maximised = False
+      fullscreen = False
+      size = 1054, 2070
+      title = Terminator
+      last_active_window = True
+    [[[child1]]]
+      type = Notebook
+      parent = child0
+      order = 0
+      labels = None, None, None
+      last_active_term = 935c79d6-66bb-4656-8162-26626230e3a3, d8c7d648-9631-412a-b24f-e943f1364af9, ceb5d177-8bf0-4637-9d0b-37c375196084
+      active_page = 0
+    [[[child2]]]
+      type = VPaned
+      parent = child1
+      order = 0
+      position = 1013
+      ratio = 0.5
+    [[[terminal3]]]
+      type = Terminal
+      parent = child2
+      order = 0
+      profile = CPP
+      uuid = 935c79d6-66bb-4656-8162-26626230e3a3
+    [[[terminal4]]]
+      type = Terminal
+      parent = child2
+      order = 1
+      profile = CPP
+      uuid = e498c7fd-a973-4a64-b3cd-8dee1f0e7a44
+    [[[child5]]]
+      type = VPaned
+      parent = child1
+      order = 1
+      position = 1013
+      ratio = 0.5
+    [[[terminal6]]]
+      type = Terminal
+      parent = child5
+      order = 0
+      profile = CPP
+      uuid = 9d85779c-2ad9-459e-9eb3-86ec2448a297
+    [[[child7]]]
+      type = VPaned
+      parent = child5
+      order = 1
+      position = 504
+      ratio = 0.5
+    [[[terminal8]]]
+      type = Terminal
+      parent = child7
+      order = 0
+      profile = CPP
+      uuid = 1ca243cb-e0a1-4e9e-95ca-7f5c64b99908
+    [[[terminal9]]]
+      type = Terminal
+      parent = child7
+      order = 1
+      profile = CPP
+      uuid = d8c7d648-9631-412a-b24f-e943f1364af9
+    [[[child10]]]
+      type = VPaned
+      parent = child1
+      order = 2
+      position = 1013
+      ratio = 0.5
+    [[[terminal11]]]
+      type = Terminal
+      parent = child10
+      order = 0
+      profile = CPP
+      uuid = 57ae38f1-10ab-4f8a-9d07-8130ddf5ff12
+    [[[child12]]]
+      type = VPaned
+      parent = child10
+      order = 1
+      position = 504
+      ratio = 0.5
+    [[[terminal13]]]
+      type = Terminal
+      parent = child12
+      order = 0
+      profile = CPP
+      uuid = 8d3e6d8f-557a-4808-8e97-8d73f482a622
+    [[[terminal14]]]
+      type = Terminal
+      parent = child12
+      order = 1
+      profile = CPP
+      uuid = ceb5d177-8bf0-4637-9d0b-37c375196084
+[plugins]

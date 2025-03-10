@@ -1,14 +1,14 @@
-import knex from 'knex';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import knex from "knex";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const database = knex({
-	client: 'sqlite3',
+	client: "sqlite3",
 	connection: {
-		filename: path.join(__dirname, 'database.sqlite')
+		filename: path.join(__dirname, "database.sqlite")
 	},
 	useNullAsDefault: true
 });

@@ -1,8 +1,9 @@
-import Fastify from 'fastify';
-import verifyToken from 'jwt-validator-tr';
-import fastifyMultipart from '@fastify/multipart';
-import dotenv from 'dotenv';
-import { avatarUploadRoute } from './routes/avatar-upload-route.js';
+import Fastify from "fastify";
+import verifyToken from "jwt-validator-tr";
+import fastifyMultipart from "@fastify/multipart";
+import dotenv from "dotenv";
+import avatarUploadRoute from "./routes/avatar-upload-route.js";
+import displayNameRoute from "./routes/display-name-route.js";
 
 dotenv.config();
 
@@ -15,15 +16,16 @@ fastify.register(fastifyMultipart);
 
 // Register routes:
 fastify.route(avatarUploadRoute);
+fastify.route(displayNameRoute);
 
-fastify.addHook('preHandler', async (request, reply) => {
+fastify.addHook("preHandler", async (request, reply) => {
 	await verifyToken(request, reply);
 });
 
 // fastify.route(registrationRoute);
 
-fastify.get('/', (request, reply) => {
-	return { message: 'Fastify server of user-management service running' };
+fastify.get("/", (request, reply) => {
+	return { message: "Fastify server of user-management service running" };
 });
 
 try {
@@ -32,3 +34,5 @@ try {
 	fastify.log.error(error);
 	process.exit(1);
 }
+
+// TODO: change export to export default.

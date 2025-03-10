@@ -17,7 +17,7 @@ entryPoints:
       maxConcurrentStreams: 250
     http:
       tls:
-        certResolver: myresolver
+        # certResolver: myresolver
         domains:
           - main: "{{ env 'DOMAIN' }}"
             sans:
@@ -34,7 +34,7 @@ providers:
     exposedByDefault: false
     endpoint: "unix:///var/run/docker.sock"
   file:
-    filename: /etc/traefik/ #dynamic_conf.yml
+    filename: /etc/traefik/dynamic_conf.yml
     watch: true
 
 # self certificates
@@ -61,14 +61,14 @@ tls:
         # clientAuthType: RequireAndVerifyClientCert
 
 # acme let's encrypt certificates
-certificatesResolvers:
-  myresolver:
-    acme:
-      caServer: "https://pebble:14000/dir"
-      email: "test@example.com"
-      storage: "/acme.json"
-      httpChallenge:
-        entryPoint: web
+# certificatesResolvers:
+#   myresolver:
+#     acme:
+#       caServer: "https://pebble:14000/dir"
+#       email: "test@example.com"
+#       storage: "/acme.json"
+#       httpChallenge:
+#         entryPoint: websecure
     # acme:
     #   email: " lilizarr@student.42wolfsburg.de"
     #   # email: "/run/secrets/ssl_email"

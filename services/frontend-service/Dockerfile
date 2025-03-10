@@ -1,20 +1,13 @@
-# Use an official Node.js runtime as a parent image
 FROM node:20-alpine
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY src/package*.json ./
+RUN npm install --include=dev
 
-# Install dependencies
-RUN npm install
+COPY src .
 
-# Copy the rest of the application code
-COPY src/ .
-
-# Expose the port the app runs on
+# RUN npm run build
 EXPOSE 3000
 
-# Define the command to run the app
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]	

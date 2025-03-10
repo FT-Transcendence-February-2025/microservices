@@ -82,6 +82,7 @@ const db = {
     } catch (error) {
 			console.error(error);
 			console.error("Error deleting expired tokens:", error);
+			throw error; // Re-throw the error to be caught by the caller
     }
 	}
 };

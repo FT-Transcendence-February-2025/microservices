@@ -1,22 +1,13 @@
-const loadPage = (page: string) => {
-    window.location.href = page;
-}
+// src/app.ts
+import './styles/tailwind.css';
+import { initializeForms } from './forms/login';
+import { initializeRegistration } from './forms/register';
+import { initializePasswordChange } from './forms/password-change';
 
-const logout = async () => {
-    try {
-        const response = await apiCall('/logout', {
-            method: 'POST',
-        });
-
-        if (response.ok) {
-          localStorage.removeItem('token');
-          window.location.href = 'index.html';
-            alert('You have successfully logged out');
-        } else {
-            alert('Logout failed');
-            console.error('Logout failed:', await response.text());
-        }
-  } catch (error) {
-        console.error('Error during logout:', error);
-  }
+const initApp = () => {
+    initializeForms();
+    initializeRegistration();
+    initializePasswordChange();
 };
+
+document.addEventListener('DOMContentLoaded', initApp);

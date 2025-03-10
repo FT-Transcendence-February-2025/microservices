@@ -5,7 +5,7 @@ include:
   # - services/dns-service/docker-compose.yml
   # - services/user-management-service/docker-compose.yml
   # - services/game-service/docker-compose.yml
-  - services/backend-service/docker-compose.yml
+  # - services/backend-service/docker-compose.yml
   - services/traefik-service/docker-compose.yml
   - services/frontend-service/docker-compose.yml
   # <--! Deprecrated -->

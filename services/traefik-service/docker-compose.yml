@@ -60,21 +60,20 @@ services:
     volumes:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock:ro"
       - "./config/traefik.yml:/etc/traefik/traefik.yml:ro"
-    #   - "./config/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro"
+      - "./config/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro"
       - "traefik-logs:/etc/traefik/"
     networks:
       - frontend
       - backend
       # - game # will handle wss?
     restart: unless-stopped
-    command:
-      - "traefik"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--api.dashboard=true"
-      - "--log.level=DEBUG"
-      # - "--entrypoints.web.address=:80"
-      # - "--entrypoints.websecure.address=:443"
+    # command:
+    #   - "traefik"
+    #   - "--providers.docker=true"
+    #   - "--providers.docker.exposedbydefault=false"
+    #   - "--api.dashboard=true"
+    #   - "--log.level=DEBUG"
+      # - "--acme.caServerInsecureSkipVerify=true"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.http-to-https.rule=HostRegexp(`{host:.+}`)"
@@ -83,17 +82,19 @@ services:
       - "traefik.http.routers.http-to-https.service=noop-service@file"
       - "traefik.http.routers.traefik.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+      # - "traefik.http.routers.traefik.tls.certresolver=myresolver"
       - "traefik.http.routers.traefik.middlewares=redirect-to-canonical@file"
 
-  pebble:
-    image: letsencrypt/pebble
-    container_name: pebble
-    hostname: pebble
-    environment:
-      - PEBBLE_VA_NOSLEEP=1
-    ports:
-      - "14000:14000" # Pebble ACME server
-      - "15000:15000" # Pebble challenge server
-    networks:
-      - backend
+  # pebble:
+  #   image: letsencrypt/pebble
+  #   container_name: pebble
+  #   hostname: pebble
+  #   environment:
+  #     - PEBBLE_VA_NOSLEEP=1
+  #   ports:
+  #     - "14000:14000" # Pebble ACME server
+  #     - "15000:15000" # Pebble challenge server
+  #   networks:
+  #     - backend
+  #   labels:
+  #     - "traefik.enable=true"

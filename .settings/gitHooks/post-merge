@@ -1,0 +1,21 @@
+#!/bin/sh
+# Check if the merge was a squash merge or created a new commit
+if [ "$1" -eq 1 ]; then
+    echo "This was a squash merge or a commit was created. Amending commit message."
+else
+    echo "Fast-forward merge, no commit to amend."
+    exit 0
+fi
+
+# Temporary file to hold the new commit message
+TEMP_FILE=$(mktemp)
+
+# Get the current commit message and append "Merging completed" to it
+git log -1 --pretty=%B > "$TEMP_FILE"
+echo "Merging completed" >> "$TEMP_FILE"
+
+# Amend the commit with the new message
+git commit --amend -F "$TEMP_FILE"
+
+# Clean up
+rm "$TEMP_FILE"

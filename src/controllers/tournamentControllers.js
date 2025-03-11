@@ -1,6 +1,27 @@
 import { tournamentService } from '../db/tournamentService.js'
+import objects from '../db/objects.js'
 
 export const tournamentController = {
+
+  async generateTornament (request, reply){
+    // const serializedTournament = serializeTournament(objects.tournament)
+    const tournamentInsert = db.prepare(`
+        INSERT INTO tournament
+        (name, created_by, size, registration_start_time, registration_deadline, schedule, scores)
+        VALUES(?, ?, ?, ?, ?, ?, ?)
+      `)
+    const tournamentId = tournamentInsert.run(
+      objects.name,
+      objects.created_by,
+      objects.size,
+      objects.registration_start_time,
+      objects.registration_deadline,
+      objects.schedule,
+      objects.scores
+    ).lastInsertRowid
+
+    console.log(`Added tournament with ID: ${tournamentId}`)
+  },
 
   async postRegisterPlayer (request, _reply) {
     const { tournamentId } = request.params

@@ -5,6 +5,7 @@ import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import testRoutes from './routes/testRoutes.js'
 
 dotenv.config()
 
@@ -33,6 +34,9 @@ try {
 
 // Routes
 fastify.register(tournamentRoutes, { prefix: '/tournaments' })
+//testRoutes
+fastify.register(testRoutes, { prefix: '/menu' })
+
 
 fastify.get('/', (_request, reply) => {
   reply.send({

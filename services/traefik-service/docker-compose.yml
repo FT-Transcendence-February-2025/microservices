@@ -3,7 +3,7 @@ secrets:
     file: ${SSL_KEY}
   ssl_crt.crt:
     file: ${SSL_CRT}
-  ssl_pem:
+  ssl_pem.pem:
     file: ${SSL_PEM}
   ssl_email:
     file: ${SSL_EMAIL}
@@ -30,7 +30,7 @@ services:
       secrets:
       - ssl_key.key
       - ssl_crt.crt
-      - ssl_pem
+      - ssl_pem.pem
       - ssl_email
     # image: "traefik:v3.3"
     image: img_traefik:latest
@@ -64,7 +64,7 @@ services:
     secrets:
       - ssl_key.key
       - ssl_crt.crt
-      - ssl_pem
+      - ssl_pem.pem
       - ssl_email
     volumes:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock:ro"
@@ -74,23 +74,24 @@ services:
       - backend
       # - game # will handle wss?
     restart: unless-stopped
-    # command:
-    #   - "traefik"
-    #   - "--providers.docker=true"
-    #   - "--providers.docker.exposedbydefault=false"
-    #   - "--api.dashboard=true"
-    #   - "--log.level=DEBUG"
-      # - "--acme.caServerInsecureSkipVerify=true"
     labels:
       - "traefik.enable=true"
-    #   - "traefik.http.routers.http-to-https.rule=HostRegexp(`{host:.+}`)"
-    #   - "traefik.http.routers.http-to-https.entrypoints=web"
-    #   - "traefik.http.routers.http-to-https.middlewares=redirect-to-https@file"
-    #   - "traefik.http.routers.http-to-https.service=noop-service@file"
-    #   - "traefik.http.routers.traefik.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
-    #   - "traefik.http.routers.traefik.entrypoints=websecure"
-    #   # - "traefik.http.routers.traefik.tls.certresolver=myresolver"
-    #   - "traefik.http.routers.traefik.middlewares=redirect-to-canonical@file"
+      - "traefik.http.routers.default-redirect.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.default-redirect.entrypoints=websecure"
+      - "traefik.http.routers.default-redirect.middlewares=redirect-to-canonical"
+      - "traefik.http.routers.default-redirect.service=noop-service"
+
+      # - "traefik.http.routers.https-redirect.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      # - "traefik.http.routers.https-redirect.entrypoints=websecure"
+      # - "traefik.http.routers.https-redirect.middlewares=redirect-to-canonical"
+      # - "traefik.http.routers.https-redirect.service=noop-service"
+
+      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:{DOMAIN}|{IP}|127\\.0\\.0\\.1)(.*)"
+      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1}"
+      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
+
+
+      # - "traefik.http.services.noop-service.loadbalancer.server.url=http://127.0.0.1"
 
   # pebble:
   #   image: letsencrypt/pebble

@@ -12,8 +12,9 @@ import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 
 // Load environment variables early
-dotenv.config();
-
+dotenv.config({ path: process.env.ENV_FILE_PATH });
+// dotenv.config({ path: '/run/secrets/envsecret' });
+// dotenv.config();
 // Create Fastify instance with built-in logging enabled.
 const fastify = Fastify({
   logger: true,

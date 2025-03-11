@@ -26,11 +26,9 @@ services:
     # working_dir: /usr/src/app
     restart: unless-stopped
     environment:
-      NODE_ENV: development
+      NODE_ENV: ${NODE_ENV}
       DOMAIN: ${DOMAIN}
       IP: ${IP}
-    #   DNS_SERVER: ${DNS_SERVER}
-    #   DNS_SEARCH: ${DNS_SEARCH}
       DOMAIN_TEST: ${DOMAIN_TEST}
     dns:
       - 8.8.8.8

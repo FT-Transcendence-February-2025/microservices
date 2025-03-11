@@ -2,7 +2,7 @@ http:
   routers:
     # Router to redirect HTTP to HTTPS
     default-redirect:
-      rule: "HostRegexp(`{host:.+}`)"
+      rule: "Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       entryPoints:
         - web
       middlewares:
@@ -22,8 +22,8 @@ http:
     # Middleware to redirect non-canonical hosts to the canonical domain
     redirect-to-canonical:
       redirectRegex:
-        regex: "^https?://(?:{{ env \"DOMAIN\" }}|{{ env \"IP\" }}|127\\.0\\.0\\.1)(.*)"
-        replacement: "https://{{ env \"DOMAIN\" }}$${1}"
+        regex: "^https?://(?:{{ env 'DOMAIN' }}|{{ env 'IP' }}|127\\.0\\.0\\.1)(.*)"
+        replacement: "https://{{ env 'DOMAIN' }}$${1}"
         permanent: true
 
     # Middleware to enforce HTTPS redirection

@@ -2,17 +2,17 @@ entryPoints:
   web:
     address: ":80"
     # allowACMEByPass: true
-    # http:
-    #   redirections:
-    #     entryPoint:
-    #       to: websecure
-    #       scheme: https
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
   websecure:
     address: ":443"
-    allowACMEByPass: true
+    # allowACMEByPass: true
     http2:
       maxConcurrentStreams: 250
     http:
@@ -33,9 +33,21 @@ providers:
   docker:
     exposedByDefault: false
     endpoint: "unix:///var/run/docker.sock"
-  file:
-    filename: /etc/traefik/dynamic_conf.yml
-    watch: true
+    # tls:
+    #   # insecureSkipVerify: true
+    #   cert: "/run/secrets/ssl_crt.crt"
+    #   key: "/run/secrets/ssl_key.key"
+  # file:
+  #   filename: /etc/traefik/dynamic_conf.yml
+  #   watch: true
+
+http:
+  middlewares:
+    redirect-to-canonical:
+      redirectRegex:
+        regex: "^https?://(?:{{ env 'DOMAIN' }}|{{ env 'IP' }}|127\\.0\\.0\\.1)(.*)"
+        replacement: "https://{{ env 'DOMAIN' }}$${1}"
+        permanent: true
 
 # self certificates
 tls:
@@ -59,7 +71,10 @@ tls:
       #   caFiles:
       #     - "/run/secrets/ssl_pem"
         # clientAuthType: RequireAndVerifyClientCert
-
+tcpServersTransport:
+  tls:
+    rootCAs:
+      - "/run/secrets/ssl_pem.pem"
 # acme let's encrypt certificates
 # certificatesResolvers:
 #   myresolver:

@@ -1,3 +1,4 @@
+
 volumes:
   front-end-vol:
     driver: local
@@ -23,7 +24,6 @@ services:
     hostname: front-end
     volumes:
       - front-end-vol:/usr/src/app
-    # working_dir: /usr/src/app
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -39,9 +39,11 @@ services:
       - frontend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
-      - "traefik.http.routers.frontend-router.entrypoints=web,websecure"
+      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
+      # - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.frontend-router.entrypoints=websecure"
       - "traefik.http.routers.frontend-router.tls=true"
       # - "traefik.http.routers.frontend-router.tls.certresolver=myresolver"
-      - "traefik.http.routers.middlewares=redirect-to-canonical@file,redirect-to-https@file"
+      # - "traefik.http.routers.default-redirect.middlewares=redirect-to-https@file"
+      # - "traefik.http.routers.https-redirect.middlewares=redirect-to-canonical@file"
       - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"

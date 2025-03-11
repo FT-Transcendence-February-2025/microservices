@@ -1,6 +1,12 @@
 # frontend service
 
 ======= TO-DO =======:
+
+- add cleanup funtions to the classes if they have eventlisteners and stuff to clean
+- if (currentView && currentView.cleanup) {
+        currentView.cleanup(); // Call cleanup on the previous view
+    }
+
 menu:
 - responsiveness
 - add avatar and user menu
@@ -29,7 +35,6 @@ views:
         - join
 - user
 - game
-- user menu
 
 Guide:
 https://dev.to/dcodeyt/building-a-single-page-app-without-frameworks-hl9

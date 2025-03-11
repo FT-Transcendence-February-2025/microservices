@@ -2,7 +2,9 @@ import Start from "./views/Start.js"
 import Register from "./views/Register.js"
 import Login from "./views/Login.js"
 import Menu from "./views/Menu.js"
-import Play from "./views/Play.js"
+// import Play from "./views/Play.js"
+import Game from "./views/Game.js"
+// import Tournament from "./views/Tournament.js"
 
 const navigateTo = (url: string) => {
     history.pushState(null, "", url);
@@ -12,13 +14,15 @@ const navigateTo = (url: string) => {
 
 (window as any).navigateTo = navigateTo;
 
+const MenuInstance = new Menu();
+
 const router = async () => {
     const routes = [
         { path: "/", view: Start },
         { path: "/register", view: Register },
         { path: "/login", view: Login },
-        { path: "/menu", view: Menu },
-        { path: "/menu/play", view: Play }
+        { path: "/menu" , view: MenuInstance },
+        { path: "/game", view: Game }
     ];
 
     const potentialMatches = routes.map(route => {
@@ -36,9 +40,19 @@ const router = async () => {
             isMatch: true
         }
     }
+    
+    let view;
+    if (typeof match.route.view === "object") {
+        // Use the preallocated instance directly
+        view = match.route.view;
+        console.log("found")
+    } else {
+        // Instantiate a new instance for class-based views
+        view = new (match.route.view as any)();
+    }
 
-    const view = new (match.route as any).view();
-
+    // const view = new (match.route as any).view();
+    console.log(view.getHtml());
     (document.getElementById("app") as HTMLElement).innerHTML = await view.getHtml();
 
     if (view.afterRender) {

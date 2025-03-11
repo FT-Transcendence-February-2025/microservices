@@ -33,15 +33,15 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    port:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     networks:
       - frontend
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
-    #   - "traefik.http.routers.frontend-router.entrypoints=web,websecure"
-    #   - "traefik.http.routers.frontend-router.tls=true"
-    #   # - "traefik.http.routers.frontend-router.tls.certresolver=myresolver"
-    #   - "traefik.http.routers.middlewares=redirect-to-canonical@file,redirect-to-https@file"
-    #   - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.frontend-router.entrypoints=web,websecure"
+      - "traefik.http.routers.frontend-router.tls=true"
+      # - "traefik.http.routers.frontend-router.tls.certresolver=myresolver"
+      - "traefik.http.routers.middlewares=redirect-to-canonical@file,redirect-to-https@file"
+      - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"

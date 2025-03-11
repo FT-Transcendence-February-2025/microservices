@@ -1,24 +1,39 @@
 import { tournamentService } from '../db/tournamentService.js'
+import { initTournament} from '../db/schema.js'
 import objects from '../db/objects.js'
+import db from '../db/database.js'
 
 export const tournamentController = {
 
-  async generateTornament (request, reply){
+  async generateTournament (request, reply){
     // const serializedTournament = serializeTournament(objects.tournament)
-    const tournamentInsert = db.prepare(`
-        INSERT INTO tournament
-        (name, created_by, size, registration_start_time, registration_deadline, schedule, scores)
-        VALUES(?, ?, ?, ?, ?, ?, ?)
-      `)
-    const tournamentId = tournamentInsert.run(
-      objects.name,
-      objects.created_by,
-      objects.size,
-      objects.registration_start_time,
-      objects.registration_deadline,
-      objects.schedule,
-      objects.scores
-    ).lastInsertRowid
+    try {
+      initTournament()
+      console.log('Tournament initialized successfully')
+    } catch (error) {
+      console.error('Failed to initialize database:', error)
+      process.exit(1)
+    }
+    
+    const insertTournament = db.prepare(`
+      INSERT INTO tournaments
+      (created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, scores, created_at, started_at, ended_at)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    const tournamentId = insertTournament.run(
+      objects.tournaments.created_by,
+      objects.tournaments.current_round,
+      objects.tournaments.size,
+      objects.tournaments.registration_start_time,
+      objects.tournaments.registration_deadline,
+      objects.tournaments.winner_id,
+      objects.tournaments.schedule,
+      objects.tournaments.scores,
+      objects.tournaments.created_at,
+      objects.tournaments.started_at,
+      objects.tournaments.ended_at
+   ).lastInsertRowid
 
     console.log(`Added tournament with ID: ${tournamentId}`)
   },
@@ -131,5 +146,18 @@ export const tournamentController = {
     const { name, players } = request.body
     const newTournament = createTournament(name, players)
     return newTournament
+  },
+
+  async getTournaments (request, reply)  {
+    try {
+    const tournaments = db.prepare('SELECT * FROM tournaments').all();
+    console.log('Fetched tournaments:', tournaments); // Add this line for debugging
+    reply.send(tournaments);
+  } catch (error) {
+    console.error('Database error:', error); // Add this line for error logging
+    reply.status(500).send({ error: 'Failed to fetch tournament table' });
   }
 }
+}
+
+

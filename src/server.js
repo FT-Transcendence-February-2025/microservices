@@ -1,11 +1,10 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
 import tournamentRoutes from './routes/tournaments.js'
-import { initDatabase } from './db/schema.js'
+import { initDatabase, initTournament } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import testRoutes from './routes/testRoutes.js'
 
 dotenv.config()
 
@@ -22,7 +21,6 @@ fastify.register(fastifyStatic, {
 
 const PORT = process.env.PORT || 3000
 
-
 // Initialize database
 try {
   initDatabase()
@@ -34,9 +32,6 @@ try {
 
 // Routes
 fastify.register(tournamentRoutes, { prefix: '/tournaments' })
-//testRoutes
-fastify.register(testRoutes, { prefix: '/menu' })
-
 
 fastify.get('/', (_request, reply) => {
   reply.send({
@@ -56,7 +51,3 @@ const start = async () => {
 
 start()
 
-
-//read body from first request and save datat in t-table, do simple button that simulates menu post request
-//how to create multiple tournaments
-//create schedule

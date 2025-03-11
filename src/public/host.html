@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hosting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #070101;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      background-color: #ba19c9;
+      color: white;
+    }
+    button:hover {
+      background-color: #ba19c9;
+    }
+  </style>
+</head>
+<body>
+  <button id="hostButton">Invite</button>
+
+  <script>
+    // Host Button Click Handler
+    document.getElementById('hostButton').addEventListener('click', async () => {
+      try {
+        // Perform POST request to /tournaments/create
+        // const postResponse = await fetch('http://localhost:3000/tournaments', {
+        //   method: 'POST',
+        // });
+        // const postResult = await postResponse.json();
+        // console.log('Host Tournament (POST) Response:', postResult);
+
+        // Perform GET request to /tournaments/host
+        const getResponse = await fetch('http://localhost:3000/tournaments', {
+          method: 'GET',
+        });
+        const getResult = await getResponse.json();
+        console.log('Host Tournament (GET) Response:', getResult);
+
+      } catch (error) {
+        console.error('Error handling Host Tournament actions:', error);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2,19 +2,20 @@ import db from './database.js'
 
 export function initTournament(){
   db.prepare(`
-    CREATE TABLE IF NOT EXISTS tournament (
+    CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      createdAT TEXT,
-      startedAT TEXT,
-      endedAT TEXT,
-      createdBy TEXT,
+      created_by TEXT,
       current_round INTEGER DEFAULT 0,
-      size INTEGER,
-      registrationStartTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      registrationDeadline TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      size INTEGER DEFAULT 0,
+      registration_start_time INTEGER DEFAULT 0,
+      registration_deadline INTEGER DEFAULT 0,
       winner_id TEXT,
       schedule TEXT,
-      scores TEXT
+      scores TEXT,
+      player_ids TEXT,
+      created_at INTEGER DEFAULT 0,
+      started_at INTEGER DEFAULT 0,
+      ended_at INTEGER DEFAULT 0
     )
     `).run()
 }
@@ -40,8 +41,6 @@ export function initDatabase () {
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
     )
     `).run()
-
-  // Tournament table
 }
 
 // Converts from JS objects/arrays to JSON strings

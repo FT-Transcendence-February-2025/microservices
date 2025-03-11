@@ -33,6 +33,8 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    port:
+      - "3000:3000"
     networks:
       - frontend
     # labels:

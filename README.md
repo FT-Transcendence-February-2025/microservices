@@ -1,62 +1,43 @@
-# Secure Docker Compose Project
+# Microservices Project
 
-This project provides a secure setup for multiple microservices using Docker Compose. It includes services for authentication, user management, DNS resolution, backend processing, game management, and a frontend interface.
+This project is a microservices architecture designed for managing tournaments, matchmaking, game sessions, and user profiles. It utilizes Traefik as an API gateway to route requests to the appropriate services.
 
 ## Project Structure
 
 ```
 ft_transcendence
-├── docs
-│   ├── en.subject.pdf
-│   ├── Microservices.MD
-│   ├── ports.txt
-│   ├── RemoteAccess.MD
-│   ├── tmp
-│   └── toDo
-├── secrets
-│   └── nginx
-│       └── ssl
+├── docker-compose.yml        # Defines services, networks, and volumes for Docker  services
 ├── services
 │   ├── authentication-service
 │   │   ├── src
 │   │   │   └── app.js
 │   │   ├── Dockerfile
 │   │   └── package.json
-│   ├── backend-service
-│   │   ├── src
-│   │   │   └── app.js
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   ├── frontend-service
-│   │   ├── src
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   ├── game-service
-│   │   ├── src
-│   │   │   └── app.ts
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   ├── nginx-DNS-service
-│   │   ├── DNS
-│   │   │   ├── conf
-│   │   │   └── Dockerfile
-│   │   ├── nginx
-│   │   │   ├── conf
-│   │   │   │   └── default.conf
-│   │   │   └── Dockerfile
-│   │   └── docker-compose.yml
-│   └── user-management-service
-│       ├── src
-│       │   └── app.js
-│       ├── Dockerfile
-│       └── package.json
-├── docker-compose.yml
-├── generateSecrets.sh
-├── Makefile
-├── network.mk
-├── README.md
-└── tools.mk
-
+│   ├── traefik                   # Traefik configuration files
+│   │   ├── traefik.yml           # Static configuration for Traefik
+│   │   └── dynamic
+│   │       └── config.yml        # Dynamic routing rules and middleware
+│   ├── user-service              # User Service for authentication and profile management
+│   │   ├── Dockerfile            # Dockerfile for building User Service image
+│   │   └── src                   # Source code for User Service
+│   │       └── ...
+│   ├── tournament-service         # Tournament Service for managing tournaments
+│   │   ├── Dockerfile            # Dockerfile for building Tournament Service image
+│   │   └── src                   # Source code for Tournament Service
+│   │       └── ...
+│   ├── matchmaking-service        # Matchmaking Service for player matching
+│   │   ├── Dockerfile            # Dockerfile for building Matchmaking Service image
+│   │   └── src                   # Source code for Matchmaking Service
+│   │       └── ...
+│   ├── game-session-service       # Game Session Service for managing game sessions
+│   │   ├── Dockerfile            # Dockerfile for building Game Session Service image
+│   │   └── src                   # Source code for Game Session Service
+│   │       └── ...
+│   └── frontend-service           # Frontend Service for user interface
+│      ├── Dockerfile            # Dockerfile for building Frontend Service image
+│      └── src                   # Source code for Frontend Service
+│          └── ...
+└── README.md                 # Project documentation
 ```
 
 ## Services Overview
@@ -64,46 +45,36 @@ ft_transcendence
 1. **Authentication Service**
    - Handles user registration, login, and permission management.
    - Utilizes OAuth and JWT for secure authentication.
-
-2. **User Management Service**
-   - Manages user profiles, tracks statistics, and handles user preferences.
-
-3. **DNS Service**
-   - Provides DNS resolution for the services.
-
-4. **Backend Service**
-   - Handles API requests, interacts with the database, and manages business logic.
-
-5. **Game Service**
-   - Manages game creation, tracking within tournaments, player matchmaking, and recording results.
-
-6. **Frontend Service**
-   - Provides the user interface for the application.
+2. **User Service**: Handles user authentication, registration, and profile management.
+3. **Tournament Service**: Manages tournament creation, enrollment, and scheduling.
+4. **Matchmaking Service**: Matches players based on skill and manages real-time queues.
+5. **Game Session Service**: Manages game sessions and facilitates real-time communication.
+6. **Frontend Service**: Provides the user interface and interacts with the API gateway.
 
 ## Setup Instructions
 
 1. Clone the repository:
    ```
    git clone <repository-url>
-   cd secure-docker-compose
+   cd microservices-project
    ```
 
-2. Build and run the services using Docker Compose:
+2. Build and start the services using Docker Compose:
    ```
    docker-compose up --build
    ```
 
-3. Access the services through the specified ports as defined in the `docker-compose.yml` file.
+3. Access the application through the Traefik gateway with ${IP} or ${DOMAIN}
 
 ## Usage Guidelines
 
-- Ensure that all services are running before accessing the frontend.
-- Use HTTPS for secure communication between services.
-- Implement server-side validation for all user inputs and forms.
-- Protect all API routes and use secure WebSocket connections.
+- Each service can be accessed through the API gateway, which handles routing and security.
+- Refer to individual service documentation for specific API endpoints and usage instructions.
 
-## Security Considerations
+## Contributing
 
-- Implement HTTPS for all endpoints.
-- Use WebSocket Secure (WSS) for real-time communication.
-- Ensure routes are protected and implement two-factor authentication (2FA) where applicable.
+- @cptfran
+- @frbeyer1
+- @MemoCSales
+- @mottjes
+- @VictoriaLizCor

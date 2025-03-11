@@ -1,12 +1,21 @@
 http:
   routers:
-    # Default router to redirect HTTP to HTTPS
+    # Router to redirect HTTP to HTTPS
     default-redirect:
       rule: "HostRegexp(`{host:.+}`)"
       entryPoints:
         - web
       middlewares:
         - redirect-to-https
+      service: noop-service # A dummy service is required for this router
+
+    # Router to handle HTTPS requests and redirect to the canonical domain
+    https-redirect:
+      rule: "HostRegexp(`{host:.+}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - redirect-to-canonical
       service: noop-service # A dummy service is required for this router
 
   middlewares:
@@ -16,17 +25,16 @@ http:
         regex: "^https?://(?:{{ env \"DOMAIN\" }}|{{ env \"IP\" }}|127\\.0\\.0\\.1)(.*)"
         replacement: "https://{{ env \"DOMAIN\" }}$${1}"
         permanent: true
+
     # Middleware to enforce HTTPS redirection
     redirect-to-https:
       redirectScheme:
         scheme: https
         permanent: true
-        # tls:
-        #   certResolver: myresolver
 
 services:
   # Noop service as Traefik requires a service for routers
   noop-service:
     loadBalancer:
       servers:
-        - url: "http://127.0.0.1" 
+        - url: "http://127.0.0.1"

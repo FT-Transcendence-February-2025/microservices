@@ -1,7 +1,7 @@
 # name: ft_transcendence
 
 include:
-  - services/authentication-service/docker-compose.yml
+  # - services/authentication-service/docker-compose.yml
   # - services/dns-service/docker-compose.yml
   # - services/user-management-service/docker-compose.yml
   # - services/game-service/docker-compose.yml
@@ -18,11 +18,11 @@ networks:
     ipam:
       config:
         - subnet: 172.19.0.0/24 
-          gateway: 172.19.0.1
+          # gateway: 172.19.0.1
   backend:
     driver: bridge
     name: backend
     ipam:
       config:
         - subnet: 172.18.0.0/24 
-          gateway: 172.18.0.1
+          # gateway: 172.18.0.1

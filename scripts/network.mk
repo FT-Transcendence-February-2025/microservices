@@ -80,10 +80,10 @@ testWeb:
 
 # Open Firefox in private window with specific URLs
 browser:
-	firefox --private-window && \
-	firefox --private-window "$(shell hostname)"
 	firefox --private-window "127.0.0.1" && \
-	firefox --private-window "$(shell hostname -i)"
+	firefox --private-window "$(shell hostname)" && \
+	firefox --private-window "$(shell hostname -i)" && \
+	firefox --private-window "localhost:8080"
 
 # Perform curl requests with specific headers
 curlt:

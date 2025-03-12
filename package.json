@@ -7,15 +7,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "seed": "node scripts/seedData.js",
     "test:join-queue": "node scripts/test-join-queue.js",
     "test:matching": "node scripts/test-matching.js",
     "test:frontend": "npx http-server tests/frontend -p 8080",
-    "lint": "eslint . --fix",
-    "format": "prettier --write .",
-    "migrate": "NODE_ENV=development knex migrate:latest",
-    "migrate:make": "NODE_ENV=development knex migrate:make",
-    "migrate:rollback": "NODE_ENV=development knex migrate:rollback",
-    "migrate:prod": "NODE_ENV=production knex migrate:latest"
+    "lint": "eslint . --fix"
   },
   "repository": {
     "type": "git",

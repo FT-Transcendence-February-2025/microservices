@@ -1,4 +1,4 @@
-let clients = {}
+const clients = {}
 
 class MatchmakingClient {
   constructor (playerId) {
@@ -153,7 +153,7 @@ function leaveQueue (playerId) {
   }
 }
 
-function acceptMatch (playerId) {
+function matchAccept (playerId) {
   if (clients[playerId]) {
     clients[playerId].acceptMatch()
   }
@@ -164,9 +164,14 @@ window.onload = function () {
   // Pre-creating client instances is optional
   clients[1] = new MatchmakingClient(1)
   clients[2] = new MatchmakingClient(2)
+
+  const matchStatus = document.getElementById('matchMessages')
+  if (matchStatus) {
+    matchStatus.innerHTML = '<div class="messages">No active matches</div>'
+  }
 }
 
 // Initialize when page loads
 window.joinQueue = joinQueue
 window.leaveQueue = leaveQueue
-window.acceptMatch = acceptMatch
+window.matchAccept = matchAccept

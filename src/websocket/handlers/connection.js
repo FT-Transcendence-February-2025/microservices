@@ -1,9 +1,9 @@
 import db from '../../db/connection.js'
 
-const AUTH_SERVICE_URL = 'http://authentication:3000'
-
 // Queue to store waiting players
 const matchmakingQueue = []
+const activeConnections = []
+const matchAcceptances = {}
 
 const messageHandler = async (message, connection) => {
   // Converts the message from a string to a JavaScript object.
@@ -13,11 +13,8 @@ const messageHandler = async (message, connection) => {
   case 'joinQueue':
     try {
       // Verify user exists
-      const response = await fetch(
-        `${AUTH_SERVICE_URL}/api/users/${data.userId}`
-      )
-      const user = await response.json()
-      if (!user || !response.ok) {
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(data.userId)
+      if (!user) {
         connection.socket.send(
           JSON.stringify({
             type: 'error',
@@ -29,6 +26,7 @@ const messageHandler = async (message, connection) => {
 
       // Add player to queue if not already in it
       if (!matchmakingQueue.find((player) => player.id === data.userId)) {
+        connection.userId = data.userId
         matchmakingQueue.push({
           id: data.userId,
           socket: connection.socket,
@@ -153,78 +151,54 @@ const messageHandler = async (message, connection) => {
         return
       }
 
-      // Check if match wasn't cancelled while processing
-      const matchStatus = db.prepare(`
-        SELECT match_status FROM matchmaking WHERE id = ?
-      `).get(match.id)
-
-      if (matchStatus.match_status !== 'pending') {
-        connection.socket.send(
-          JSON.stringify({
-            type: 'error',
-            message: 'Match is no longer available'
-          })
-        )
-        return
+      if (!matchAcceptances[match.id]) {
+        console.log('Creating acceptance tracker for match', match.id)
+        matchAcceptances[match.id] = new Set()
       }
-
-      const opponentId =
-          match.player1_id === data.userId
-            ? match.player2_id
-            : match.player1_id
-
-      // Store the acceptance in memory
-      if (!match.acceptedPlayers) {
-        console.log('Initializing acceptedPlayers set')
-        match.acceptedPlayers = new Set()
-      }
-      match.acceptedPlayers.add(data.userId)
+      matchAcceptances[match.id].add(data.userId)
       console.log(
-        'Current acceptedPlayers:',
-        Array.from(match.acceptedPlayers)
+        'Current accepted Players for match', match.id, ':',
+        Array.from(matchAcceptances[match.id])
+      )
+
+      connection.socket.send(
+        JSON.stringify({
+          type: 'matchAccepted',
+          message: 'You have accepted the match'
+        })
       )
 
       // Check if both players have accepted
       if (
-        match.acceptedPlayers.has(match.player1_id) &&
-          match.acceptedPlayers.has(match.player2_id)
+        matchAcceptances[match.id].has(match.player1_id) &&
+        matchAcceptances[match.id].has(match.player2_id)
       ) {
         console.log('Both players accepted, starting match')
         db.prepare(`
         UPDATE matchmaking 
         SET match_status = ?, started_at = datetime('now') 
         WHERE id = ?
-      `).run('active', match.id);
+      `).run('in_progress', match.id)
 
         // Notify both players
-        [match.player1_id, match.player2_id].forEach((playerId) => {
-          const player = matchmakingQueue.find((p) => p.id === playerId)
-          if (player) {
-            player.socket.send(
+        activeConnections.forEach(conn => {
+          if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
+            const opponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            conn.socket.send(
               JSON.stringify({
                 type: 'matchStarted',
-                message: 'Match has started!',
                 matchId: match.id,
-                opponentId
+                opponentId: opponentId
               })
             )
           }
         })
 
+        delete matchAcceptances[match.id]
+
         console.log(
           `Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`
         )
-      } else {
-        const opponent = matchmakingQueue.find((p) => p.id === opponentId)
-        if (opponent) {
-          opponent.socket.send(
-            JSON.stringify({
-              type: 'matchPending',
-              message:
-                  'Your opponent has accepted the match. Waiting for you to accept.'
-            })
-          )
-        }
       }
     } catch (error) {
       connection.socket.send(
@@ -370,6 +344,7 @@ const errorHandler = async (error) => {
 
 const connectionHandler = (connection, _req) => {
   connection.socket = connection
+  activeConnections.push(connection)
 
   // Websocket event listeners
   connection.socket.on('message', (message) =>

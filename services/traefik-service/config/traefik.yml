@@ -19,12 +19,12 @@ entryPoints:
       tls:
         # certResolver: myresolver
         domains:
-          - main: "{{ env 'DOMAIN' }}"
+          - main: "{{ env \"DOMAIN\" }}"
             sans:
-              - "{{ env 'IP' }}"
+              - "{{ env \"IP\" }}"
               - "localhost"
               - "127.0.0.1"
-              # - "*.{{ env 'DNS_SEARCH' }}"
+            #   - "*.{{ env `DNS_SERVER` }}"
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
@@ -41,13 +41,13 @@ providers:
   #   filename: /etc/traefik/dynamic_conf.yml
   #   watch: true
 
-http:
-  middlewares:
-    redirect-to-canonical:
-      redirectRegex:
-        regex: "^https?://(?:{{ env 'DOMAIN' }}|{{ env 'IP' }}|127\\.0\\.0\\.1)(.*)"
-        replacement: "https://{{ env 'DOMAIN' }}$${1}"
-        permanent: true
+# http:
+#   middlewares:
+#     redirect-to-canonical:
+#       redirectRegex:
+#         regex: "^https?://(?:{{ env 'DOMAIN' }}|{{ env 'IP' }}|127\\.0\\.0\\.1)(.*)"
+#         replacement: "https://{{ env 'DOMAIN' }}$${1}"
+#         permanent: true
 
 # self certificates
 tls:

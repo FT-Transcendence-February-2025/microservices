@@ -32,7 +32,6 @@ services:
       - ssl_crt.crt
       - ssl_pem.pem
       - ssl_email
-    # image: "traefik:v3.3"
     image: img_traefik:latest
     container_name: traefik
     hostname: traefik
@@ -92,18 +91,6 @@ services:
       - "traefik.http.routers.main.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.main.entrypoints=websecure"
       - "traefik.http.routers.main.tls=true"
-
-      # - "traefik.http.routers.https-redirect.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
-      # - "traefik.http.routers.https-redirect.entrypoints=websecure"
-      # - "traefik.http.routers.https-redirect.middlewares=redirect-to-canonical"
-      # - "traefik.http.routers.https-redirect.service=noop-service"
-
-      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:{DOMAIN}|{IP}|127\\.0\\.0\\.1)(.*)"
-      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1}"
-      # - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
-
-
-      # - "traefik.http.services.noop-service.loadbalancer.server.url=http://127.0.0.1"
 
   # pebble:
   #   image: letsencrypt/pebble

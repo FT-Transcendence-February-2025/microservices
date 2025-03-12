@@ -2,6 +2,7 @@ FROM traefik:v3.3.3
 
 # Install curl and ca-certificates
 RUN apk add --no-cache curl ca-certificates openssl && \
+	update-ca-certificates && \
 	mkdir -p /etc/traefik
 
 # # Copy static configuration
@@ -23,4 +24,11 @@ ARG IP
 RUN env
 # ENV DSN_SERVER=${DSN_SERVER}
 # ENV DNS_SEARCH=${DNS_SEARCH}
+
+# Use Docker secrets for SSL certificates and update CA certificates
+RUN --mount=type=secret,id=ssl_key.key,dst=/run/secrets/ssl_key.key \
+    --mount=type=secret,id=ssl_crt.crt,dst=/run/secrets/ssl_crt.crt \
+    --mount=type=secret,id=ssl_pem.pem,dst=/run/secrets/rootCA.pem \
+    cp /run/secrets/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt && \
+    update-ca-certificates
 CMD ["traefik", "--configFile=/etc/traefik/traefik.yml"]

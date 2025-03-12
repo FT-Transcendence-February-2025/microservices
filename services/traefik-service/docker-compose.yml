@@ -59,8 +59,6 @@ services:
     extra_hosts:
       - "${DOMAIN}:127.0.0.1"
       - "${DOMAIN}:${IP}"
-    #   - "${DOMAIN_TEST}:127.0.0.1"
-    #   - "${DOMAIN_TEST}:${IP}"
     secrets:
       - ssl_key.key
       - ssl_crt.crt
@@ -76,10 +74,24 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.default-redirect.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
-      - "traefik.http.routers.default-redirect.entrypoints=websecure"
-      - "traefik.http.routers.default-redirect.middlewares=redirect-to-canonical"
-      - "traefik.http.routers.default-redirect.service=noop-service"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # Middleware to redirect to HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Redirect HTTPS to canonical domain
+      - "traefik.http.routers.https-catchall.rule=Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.https-catchall.entrypoints=websecure"
+      - "traefik.http.routers.https-catchall.middlewares=redirect-to-canonical"
+      # Middleware to redirect to canonical domain
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
+      # Main router for the canonical domain
+      - "traefik.http.routers.main.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.main.entrypoints=websecure"
+      - "traefik.http.routers.main.tls=true"
 
       # - "traefik.http.routers.https-redirect.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       # - "traefik.http.routers.https-redirect.entrypoints=websecure"

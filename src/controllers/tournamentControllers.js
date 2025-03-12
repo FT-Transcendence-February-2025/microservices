@@ -1,27 +1,21 @@
 import { tournamentService } from '../db/tournamentService.js'
-import { initTournament} from '../db/schema.js'
+// import { initTournament} from '../db/schema.js'
 import objects from '../db/objects.js'
 import db from '../db/database.js'
 
 export const tournamentController = {
 
+
   async generateTournament (request, reply){
-    // const serializedTournament = serializeTournament(objects.tournament)
-    try {
-      initTournament()
-      console.log('Tournament initialized successfully')
-    } catch (error) {
-      console.error('Failed to initialize database:', error)
-      process.exit(1)
-    }
     
     const insertTournament = db.prepare(`
       INSERT INTO tournaments
-      (created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, scores, created_at, started_at, ended_at)
+      (name, created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, created_at, started_at, ended_at)
       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     const tournamentId = insertTournament.run(
+      objects.tournaments.name,
       objects.tournaments.created_by,
       objects.tournaments.current_round,
       objects.tournaments.size,
@@ -29,7 +23,6 @@ export const tournamentController = {
       objects.tournaments.registration_deadline,
       objects.tournaments.winner_id,
       objects.tournaments.schedule,
-      objects.tournaments.scores,
       objects.tournaments.created_at,
       objects.tournaments.started_at,
       objects.tournaments.ended_at
@@ -38,49 +31,42 @@ export const tournamentController = {
     console.log(`Added tournament with ID: ${tournamentId}`)
   },
 
-  async postRegisterPlayer (request, _reply) {
+  async postRegisterPlayer (request, reply) {
     const { tournamentId } = request.params
     const { playerId } = request.body
 
-    // TODO: implement registration logic with databse
-    // return {
-    //   success: true,
-    //   message: `Player ${playerId} registered for tournament ${tournamentId}`
-    // }
     const result = tournamentService.registerPlayer(tournamentId, playerId)
 
     if (!result.success) {
-      _reply.code(400)
+      return reply.code(400).send({
+        statusCode: 400,
+        error: result.error,
+        details: result.message
+      })
     }
     return result
   },
 
-  async deletePlayer (request, _reply) {
+  async deletePlayer (request, reply) {
     const { tournamentId } = request.params
     const { playerId } = request.body
-
-    // TODO: implement unregistration logic
-    // return {
-    //   success: true,
-    //   message: `Player ${playerId} unregistered from tournament ${tournamentId}`
-    // }
 
     try {
       const result = tournamentService.unregisterPlayer(tournamentId, playerId)
 
       if (!result) {
-        return _reply.code(404).send({
+        return reply.code(404).send({
           statusCode: 404,
           error: 'Player not found in tournament'
         })
       }
 
-      return {
+      reply.send({
         success: true,
         message: `Player ${playerId}, unregistered from tournament ${tournamentId}`
-      }
+      })
     } catch (error) {
-      _reply.code(500).send({
+      reply.code(500).send({
         statusCode: 500,
         error: 'Failed to unregister player',
         details: error.message
@@ -88,54 +74,106 @@ export const tournamentController = {
     }
   },
 
-  async getAllPlayers (request, _reply) {
+  async getAllPlayers (request, reply) {
     const { tournamentId } = request.params
 
-    // TODO: fetch players from database
-    return [
-      { id: 'player1', username: 'Player One', message: `Tournament ID: ${tournamentId}` },
-      { id: 'player2', username: 'Player Two', message: `Tournament ID: ${tournamentId}` }
-    ]
-  },
+    try {
+      const result = tournamentService.getAllPlayers(tournamentId)
 
-  async postMatchResults (request, _reply) {
-    const { tournamentId, matchId } = request.params
-    const { winner, score } = request.body
+      if (!result.success) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: result.error,
+          details: result.message
+        })
+      }
 
-    // TODO: save match results
-    return {
-      success: true,
-      matchId,
-      tournamentId,
-      result: { winner, score }
+      return result.players
+    } catch (error) {
+      return reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to fetch players',
+        details: error.message
+      })
     }
   },
 
-  async getPlayerMatches (request, _reply) {
-    const { tournamentId, playerId } = request.params
+  async startTournament (request, reply) {
+    const { tournamentId } = request.params
 
-    // TODO: fetch matches from database
-    return [
-      { id: 'match1', player1: playerId, player2: 'opponent1', status: 'completed', result: { winner: playerId }, message: `Tournament ID: ${tournamentId}` },
-      { id: 'match2', player1: playerId, player2: 'opponent2', status: 'scheduled', message: `Tournament ID: ${tournamentId}` }
-    ]
+    try {
+      const result = tournamentService.startTournament(tournamentId)
+
+      if (!result.success) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: result.error,
+          details: result.message
+        })
+      }
+      return result
+    } catch (error) {
+      return reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to start tournament',
+        details: error.message
+      })
+    }
   },
 
-  // TODO: get tournament statistics '/:tournamentId/statistics'
+  async postMatchResults (request, reply) {
+    const { tournamentId, matchId } = request.params
+    const { winner, score } = request.body
 
-  async createSchedule (request, reply) {
+    try {
+      if (!winner || !score) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: 'Missing required fields',
+          details: 'Winner and score are required'
+        })
+      }
 
-    const result = myFunction(); // Call your function here
-    reply.send(result); // Send a response back to the client
+      const result = tournamentService.recordMatchResult(tournamentId, matchId, winner, score)
 
-    // Respond with the created tournament
-    // console.log(size);
-    // return reply.status(201).send(tournament);
+      if (!result.success) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: result.error,
+          details: result.message
+        })
+      }
+      return result
+    } catch (error) {
+      return reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to record match result',
+        details: error.message
+      })
+    }
+  },
 
-    
-    //-name
-    //-invites
-    //-registrationTime
+  async getPlayerMatches (request, reply) {
+    const { tournamentId, playerId } = request.params
+
+    try {
+      const result = tournamentService.getPlayerMatches(tournamentId, playerId)
+
+      if (!result.success) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: result.error,
+          details: result.message
+        })
+      }
+      return result
+    } catch (error) {
+      return reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to fetch player matches',
+        details: error.message
+      })
+    }
   },
 
   async sendInvite (request, reply) {
@@ -143,21 +181,7 @@ export const tournamentController = {
   },
 
   async createTournament (request, reply) {
-    const { name, players } = request.body
-    const newTournament = createTournament(name, players)
-    return newTournament
-  },
-
-  async getTournaments (request, reply)  {
-    try {
-    const tournaments = db.prepare('SELECT * FROM tournaments').all();
-    console.log('Fetched tournaments:', tournaments); // Add this line for debugging
-    reply.send(tournaments);
-  } catch (error) {
-    console.error('Database error:', error); // Add this line for error logging
-    reply.status(500).send({ error: 'Failed to fetch tournament table' });
   }
-}
-}
 
-
+  // TODO: get tournament statistics '/:tournamentId/statistics'
+}

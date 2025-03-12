@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
 import tournamentRoutes from './routes/tournaments.js'
-import { initDatabase, initTournament } from './db/schema.js'
+import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const fastify = Fastify({
   logger: true
 })
+
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, 'public'),
   prefix: '/', // Serve files at the root URL
@@ -34,9 +35,7 @@ try {
 fastify.register(tournamentRoutes, { prefix: '/tournaments' })
 
 fastify.get('/', (_request, reply) => {
-  reply.send({
-    message: 'Hello Fastify. Server is running'
-  })
+  reply.sendFile('tournament.html');
 })
 
 const start = async () => {
@@ -50,4 +49,3 @@ const start = async () => {
 }
 
 start()
-

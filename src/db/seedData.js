@@ -21,11 +21,11 @@ function seedDatabase () {
       size: 8,
       registration_start_time: new Date().toISOString(),
       registration_deadline: new Date(Date.now() + 86400000).toISOString(),
+      player_ids: [],
       schedule: [
         // { round: 1, matches: [{ player1: user1Id, player2: user2Id }] }
         {}
       ],
-      scores: [],
       started_at: null,
       endend_at: null
     }
@@ -33,8 +33,8 @@ function seedDatabase () {
     const serializedTournament = serializeTournament(tournamentData)
     const tournamentInsert = db.prepare(`
         INSERT INTO tournaments
-        (name, created_by, size, registration_start_time, registration_deadline, schedule, scores)
-        VALUES(?, ?, ?, ?, ?, ?, ?)
+        (name, created_by, size, registration_start_time, registration_deadline, schedule)
+        VALUES(?, ?, ?, ?, ?, ?)
       `)
     const tournamentId = tournamentInsert.run(
       serializedTournament.name,
@@ -42,8 +42,7 @@ function seedDatabase () {
       serializedTournament.size,
       serializedTournament.registration_start_time,
       serializedTournament.registration_deadline,
-      serializedTournament.schedule,
-      serializedTournament.scores
+      serializedTournament.schedule
     ).lastInsertRowid
 
     console.log(`Added tournament with ID: ${tournamentId}`)
@@ -53,7 +52,7 @@ function seedDatabase () {
     // playerInsert.run(user1Id, tournamentId)
     // playerInsert.run(user2Id, tournamentId)
 
-    // console.log(`Added players ${user1Id} and ${user2Id} to tournament ${tournamentId}`)
+    // console.log(`Added payers ${user1Id} and ${user2Id} to tournament ${tournamentId}`)
 
     // console.log('\nVerifying inserted data:')
 

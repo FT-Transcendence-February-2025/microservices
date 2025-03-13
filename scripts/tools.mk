@@ -138,26 +138,26 @@ cert:
 		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
 	else \
 		rm -rf $(SSL)/*; \
-		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c 'apk add --no-cache nss-tools curl ca-certificates && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/$(shell hostname -s).key -cert-file /certs/$(shell hostname -s).crt $(shell hostname) $(shell hostname -i) localhost 127.0.0.1 && cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem' ; \
+		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c 'apk add --no-cache nss-tools curl ca-certificates && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/$(shell hostname -s).key -cert-file /certs/$(shell hostname -s).crt $(shell hostname) "*.$(shell hostname)" $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem' ; \
 	fi
-	@curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
+# @curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
 
-# Generate SSL certificates using Certbot
-cerbot:
-	$(call createDir,$(SSL))
-	@HOST=$(shell hostname -s) ; \
-	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt]; then \
-		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
-	else \
-		rm -rf $(SSL)/*; \
-		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/etc/letsencrypt -v $(SSL):/var/lib/letsencrypt -v $(SSL):/var/log/letsencrypt -p 80:80 -p 443:443 certbot/certbot sh -c "certbot certonly --standalone -d $(shell hostname) && cp /etc/letsencrypt/live/$(shell hostname)/privkey.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).key && cp /etc/letsencrypt/live/$(shell hostname)/fullchain.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).crt"; \
-	fi
 # docker rm alpine
 testCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
 # docker run --rm -v /sgoinfre/$USER/data:/certs -it debian:bullseye sh -c 'apt-get update && apt-get install -y libnss3-tools curl && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/privkey.key -cert-file /certs/fullchain.crt ${USER}.pong.42.fr'
 #	@mkcert -key-file secrets/$(arg)/privkey.key -cert-file secrets/$(arg)/fullchain.crt ${USER}.pong.42.fr
 
+# Generate SSL certificates using Certbot
+# cerbot:
+# 	$(call createDir,$(SSL))
+# 	@HOST=$(shell hostname -s) ; \
+# 	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt]; then \
+# 		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
+# 	else \
+# 		rm -rf $(SSL)/*; \
+# 		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/etc/letsencrypt -v $(SSL):/var/lib/letsencrypt -v $(SSL):/var/log/letsencrypt -p 80:80 -p 443:443 certbot/certbot sh -c "certbot certonly --standalone -d $(shell hostname) && cp /etc/letsencrypt/live/$(shell hostname)/privkey.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).key && cp /etc/letsencrypt/live/$(shell hostname)/fullchain.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).crt"; \
+# 	fi
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

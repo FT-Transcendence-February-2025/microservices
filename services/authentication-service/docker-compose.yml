@@ -48,7 +48,4 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.authentication-router.rule=Host(`${DOMAIN}`) && Path(`/api/login`)"
       - "traefik.http.routers.authentication-router.entrypoints=websecure"
-      # - "traefik.http.routers.authentication-router.tls.certresolver=myresolver"
-      # - "traefik.http.routers.default-redirect.middlewares=redirect-to-https@file"
-      # - "traefik.http.routers.https-redirect.middlewares=redirect-to-canonical@file"
       - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"

@@ -1,28 +1,9 @@
-# name: ft_transcendence
-
-include:
-  - services/authentication-service/docker-compose.yml
-  # - services/dns-service/docker-compose.yml
-  # - services/user-management-service/docker-compose.yml
-  # - services/game-service/docker-compose.yml
-  # - services/backend-service/docker-compose.yml
-  - services/traefik-service/docker-compose.yml
-  - services/frontend-service/docker-compose.yml
-  # <--! Deprecrated -->
-  # - services/nginx-DNS-service/docker-compose.yml
-
-networks:
-  frontend:
-    driver: bridge
-    name: frontend
-    ipam:
-      config:
-        - subnet: 172.19.0.0/24 
-          gateway: 172.19.0.1
-  backend:
-    driver: bridge
-    name: backend
-    ipam:
-      config:
-        - subnet: 172.18.0.0/24 
-          gateway: 172.18.0.1
+services:
+  sqlite:
+    image: nouchka/sqlite3
+    container_name: sqlite3
+    stdin_open: true # Keep container running
+    tty: true # Keep container running
+    volumes:
+      - ./data:/data
+    command: sh # Use shell to keep container

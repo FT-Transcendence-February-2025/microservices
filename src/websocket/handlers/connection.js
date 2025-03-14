@@ -194,7 +194,10 @@ const messageHandler = async (message, connection) => {
           }
         })
 
-        delete matchAcceptances[match.id]
+        if (matchAcceptances[match.id]) {
+          delete matchAcceptances[match.id]
+          console.log(`Removed match ${match.id} from acceptances tracker`)
+        }
 
         console.log(
           `Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`
@@ -284,14 +287,20 @@ const messageHandler = async (message, connection) => {
 const closeHandler = async (connection) => {
   try {
     console.log('Client disconnect')
+
+    // Remove connection from activeConnections
+    const connectionIndex = activeConnections.findIndex(conn => conn === connection)
+    if (connectionIndex !== -1) {
+      activeConnections.splice(connectionIndex, 1)
+      console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
+    }
+
     let player
 
     // Find player in queue
     const playerIndex = matchmakingQueue.findIndex(
       (player) => player.socket === connection.socket
     )
-
-    // Remove from queue if found
     if (playerIndex !== -1) {
       player = matchmakingQueue[playerIndex]
       console.log(`Removing player ${player.id} from queue`)

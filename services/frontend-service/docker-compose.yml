@@ -15,7 +15,7 @@ volumes:
 services:
   front-end:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
       args:
         - DNS_SERVER=8.8.8.8
@@ -23,7 +23,7 @@ services:
     container_name: front-end
     hostname: front-end
     volumes:
-      - front-end-vol:/usr/src/app
+      - front-end-vol:/app
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -33,8 +33,8 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     networks:
       - frontend
     # labels:

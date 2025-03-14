@@ -1,28 +1,29 @@
 # Stage 1: Build the frontend assets
-FROM node:20-alpine AS build-frontend
+FROM node:20-alpine as builder
 
 WORKDIR /app/frontend
 
 # Install dependencies and build the frontend
-COPY src/frontend/package.json src/frontend/package-lock.json ./
+COPY ./src/frontend/*.json ./
 RUN npm install
-COPY src/frontend/ ./
+COPY ./src/frontend/ ./
 RUN npm run build
 
 # Stage 2: Set up the backend
-FROM node:20-alpine
+FROM node:20-alpine as runtime
+
 
 WORKDIR /app/backend
 
 # Install dependencies
-COPY src/backend/package.json src/backend/package-lock.json ./
+COPY ./src/backend/*.json ./
 RUN npm install
 
 # Copy the backend code
-COPY src/backend/ ./
+COPY ./src/backend/ ./
 
 # Copy the built frontend assets to the backend directory
-COPY --from=build-frontend /app/frontend/public /app/backend/src/frontend/public
+COPY --from=builder /app/frontend/public /app/backend/src/frontend/public
 
 # Expose the port for the Fastify server
 EXPOSE 3000

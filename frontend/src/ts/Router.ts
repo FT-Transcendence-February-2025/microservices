@@ -3,12 +3,14 @@ import MenuView from "./MenuView.js";
 import LoginView from "./LoginView.js";
 import RegisterView from "./RegisterView.js";
 import AuthenticationView from "./AuthenticationView.js";
+import UserView from "./UserView.js"
 
 export default class Router {
     private authenticationView: AuthenticationView;
     private menuView: MenuView;
     private loginView: LoginView;
     private registerView: RegisterView;
+    private userView: UserView;
     private currentView: IView | null;
     private routes: Map<string, IView>;
 
@@ -17,12 +19,14 @@ export default class Router {
         this.menuView = new MenuView(this);
         this.loginView = new LoginView(this);
         this.registerView = new RegisterView(this);
+        this.userView = new UserView(this);
         this.currentView = null;
         this.routes = new Map<string, IView>([
             ["/", this.authenticationView],
             ["/login", this.loginView],
             ["/register", this.registerView],
             ["/menu", this.menuView],
+            ["/user", this.userView],
         ]);
     }
 

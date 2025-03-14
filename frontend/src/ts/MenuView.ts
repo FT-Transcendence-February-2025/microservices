@@ -21,6 +21,7 @@ export default class MenuView extends AbstractView {
             { id: "createMatchButton", route: "/menu/match/remote/create" },
             { id: "joinTournamentButton", route: "/menu/tournament/join" },
             { id: "createTournamentButton", route: "/menu/tournament/create" },
+            { id: "avatar", route: "/user" },
         ];
     }
 
@@ -52,65 +53,80 @@ export default class MenuView extends AbstractView {
     async getHtml() {
         this.state = this.setState();
     
+        let menuContent;
         switch (this.state) {
             case 'mainMenu':
-                return this.getMainMenuHtml();
+                menuContent = this.getMainMenuHtml();
+                break;
             case 'match':
-                return this.getMatchHtml();
+                menuContent = this.getMatchHtml();
+                break;
             case 'tournament':
-                return this.getTournamentHtml();
+                menuContent = this.getTournamentHtml();
+                break;
             case 'local':
-                return this.getLocalHtml();
+                menuContent = this.getLocalHtml();
+                break;
             case 'remote':
-                return this.getRemoteHtml();
+                menuContent = this.getRemoteHtml();
+                break;
             case 'joinMatch':
-                return this.getJoinMatchHtml();
+                menuContent  =this.getJoinMatchHtml();
+                break;
             case 'createMatch':
-                return this.getCreateMatchHtml();
+                menuContent = this.getCreateMatchHtml();
+                break;
             case 'joinTournament':
-                return this.getJoinTournamentHtml();
+                menuContent = this.getJoinTournamentHtml();
+                break;
             case 'createTournament':
-                return this.getCreateTournamentHtml();
+                menuContent = this.getCreateTournamentHtml();
+                break;
             default:
-                return '<div>Invalid state</div>';
+                menuContent = '<div>Invalid state</div>';
+                break;
         }
+
+        return `
+        <div class="h-screen w-screen flex justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-no-repeat">
+            <img id="avatar" class="cursor-pointer w-12 h-12 rounded-full ring-3 hover:ring-pink-700 ring-pink-600 absolute top-4 left-4" src="/images/shrek.jpg" alt="avatar">
+                ${menuContent}
+        </div>
+        `;
     }
 
     getMainMenuHtml() {
         return `
-        <div class="h-screen w-screen flex justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-no-repeat">
-            <div class="flex flex-col space-y-4 items-center">
-                <div class="flex flex-col space-y-4">
-                    <button id="matchButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Match</button>
-                    <button id="tournamentButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Tournament</button>
-                </div>
-            </div>
+        <div class="flex flex-col space-y-4">
+            <button id ="matchButton" class="btn-primary">Match</button>
+            <button id ="tournamentButton" class="btn-primary">Tournament</button>
         </div>
         `;
     }
 
     getMatchHtml() {
         return `
-        <div class="h-screen w-screen flex justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-no-repeat">
-            <div class="flex flex-col space-y-4 items-center">
-                <div class="flex flex-col space-y-4">
-                    <button id="localButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Local</button>
-                    <button id="remoteButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Remote</button>
-                </div>
-            </div>
+        <div class="flex flex-col space-y-4">
+            <button id="localButton" class="btn-primary">Local</button>
+            <button id="remoteButton" class="btn-primary">Remote</button>
         </div>
         `;
     }
 
     getTournamentHtml() {
         return `
-        <div class="h-screen w-screen flex justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-no-repeat">
-            <div class="flex flex-col space-y-4 items-center">
-                <div class="flex flex-col space-y-4">
-                    <button id="createTournamentButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Create Tournament</button>
-                    <button id="joinTournamentButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Join Tournamente</button>
-                </div>
-            </div>
+        <div class="flex flex-col space-y-4">
+            <button id="createTournamentButton" class="btn-primary">Create Tournament</button>
+            <button id="joinTournamentButton" class="btn-primary">Join Tournamente</button>
+        </div>
+        `;
+    }
+
+    getRemoteHtml() {
+        return `
+        <div class="flex flex-col space-y-4">
+            <button id="createMatchButton" class="btn-primary">Create Match</button>
+            <button id="joinMatchButton" class="btn-primary">Join Match</button>
         </div>
         `;
     }
@@ -121,22 +137,16 @@ export default class MenuView extends AbstractView {
         `;
     }
 
-    getRemoteHtml() {
-        return `
-        <div class="h-screen w-screen flex justify-center items-center bg-[url('/images/background.jpg')] bg-cover bg-no-repeat">
-            <div class="flex flex-col space-y-4 items-center">
-                <div class="flex flex-col space-y-4">
-                    <button id="createMatchButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Create Match</button>
-                    <button id="joinMatchButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Join Match</button>
-                </div>
-            </div>
-        </div>
-        `;
-    }
-
     getJoinMatchHtml() {
         return `
-        <h1>join match</h1>
+        <form id="joinMatchForm" class="bg-white p-6 rounded-lg" method="post">
+            <label for="matchId" class="block text-sm font-bold mb-2">Match ID:</label>
+            <input type="text" id="matchId" name="matchId" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600 mb-4">
+
+            <div class="flex justify-center">
+                <button type="submit" class="btn-primary">Join</button>
+            </div>
+        </form>
         `;
     }
 
@@ -148,7 +158,14 @@ export default class MenuView extends AbstractView {
 
     getJoinTournamentHtml() {
         return `
-        <h1>join tournament</h1>
+        <form id="joinTournamentForm" class="bg-white p-6 rounded-lg" method="post">
+            <label for="matchId" class="block text-sm font-bold mb-2">Match ID:</label>
+            <input type="text" id="matchId" name="matchId" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600 mb-4">
+
+            <div class="flex justify-center">
+                <button type="submit" class="btn-primary">Join</button>
+            </div>
+        </form>
         `;
     }
 

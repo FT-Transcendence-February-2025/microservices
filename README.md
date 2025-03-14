@@ -12,7 +12,6 @@ menu:
     - own starfield background for menu (https://www.gimpusers.com/tutorials/starfield-tutorial)
     - own logo for menu (https://graphicdesign.stackexchange.com/questions/77527/how-to-make-retro-80s-chrome-text-in-gimp)
     - own game background animation
-    - add font-['Press_Start_2P']
     - menu music?
 
 game:

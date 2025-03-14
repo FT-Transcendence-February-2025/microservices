@@ -13,8 +13,8 @@ export default class AuthenticationView extends AbstractView {
                 <img src="/images/logo.png" alt="Logo" class="h-52 w-auto">
         
                 <div class="flex flex-col space-y-4">
-                    <button id="loginButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Login</button>
-                    <button id="registerButton" class="bg-pink-600 hover:bg-pink-700 text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150">Register</button>
+                    <button id="loginButton" class="btn-primary">Login</button>
+                    <button id="registerButton" class="btn-primary">Register</button>
                 </div>
             </div>
         </div>

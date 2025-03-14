@@ -13,27 +13,29 @@ const BALL_RADIUS = 15;
 const WINNING_SCORE = 11;
 const SCORE_DIFFERENCE = 2;
 
-const pongGame = {
-    ball: {
-        x: PLAY_FIELD_WIDTH/2,
-        y: PLAY_FIELD_HEIGHT/2,
-        speed: BALL_START_SPEED,
-        angle: Math.PI / 4 * (1 + 2 * Math.floor(Math.random() * 4)),
-        spin: 0,
-        lastCollision: null
-    },
-    paddleLeft: {
-        y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
-        dir: 0, 
-        score: 0 
-    },
-    paddleRight: {
-        y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
-        dir: 0, 
-        score: 0 
-    },
-    isGameOver: false,
-
+class pongGame {
+    constructor () {
+        this.ball = {
+            x: PLAY_FIELD_WIDTH/2,
+            y: PLAY_FIELD_HEIGHT/2,
+            speed: BALL_START_SPEED,
+            angle: Math.PI / 4 * (1 + 2 * Math.floor(Math.random() * 4)),
+            spin: 0,
+            lastCollision: null
+        }
+        this.paddleLeft = {
+            y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
+            dir: 0, 
+            score: 0 
+        }
+        this.paddleRight = {
+            y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
+            dir: 0, 
+            score: 0 
+        },
+        this.isGameOver = false,
+    }
+    
     resetBall() {
         this.ball.x = PLAY_FIELD_WIDTH/2;
         this.ball.y = PLAY_FIELD_HEIGHT/2;

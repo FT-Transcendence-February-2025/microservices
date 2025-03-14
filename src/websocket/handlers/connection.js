@@ -1,9 +1,9 @@
 import db from '../../db/connection.js'
 
 // Queue to store waiting players
-const matchmakingQueue = []
-const activeConnections = []
-const matchAcceptances = {}
+const matchmakingQueue = [] // Stores players who are waiting
+const activeConnections = [] // connected web sockets
+const matchAcceptances = {} // object the tracks accepted match invitations
 
 const messageHandler = async (message, connection) => {
   // Converts the message from a string to a JavaScript object.
@@ -280,6 +280,7 @@ const messageHandler = async (message, connection) => {
   }
 }
 
+// TODO: update activeConnections array
 const closeHandler = async (connection) => {
   try {
     console.log('Client disconnect')

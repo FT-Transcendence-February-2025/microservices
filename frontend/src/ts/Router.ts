@@ -1,9 +1,10 @@
-import IView from "./AbstractView.js";
+import AbstractView from "./AbstractView.js";
 import MenuView from "./MenuView.js";
 import LoginView from "./LoginView.js";
 import RegisterView from "./RegisterView.js";
 import AuthenticationView from "./AuthenticationView.js";
 import UserView from "./UserView.js"
+import GameView from "./GameView.js";
 
 export default class Router {
     private authenticationView: AuthenticationView;
@@ -11,8 +12,9 @@ export default class Router {
     private loginView: LoginView;
     private registerView: RegisterView;
     private userView: UserView;
-    private currentView: IView | null;
-    private routes: Map<string, IView>;
+    private gameView: GameView;
+    private currentView: AbstractView;
+    private routes: Map<string, AbstractView>;
 
     constructor() {
         this.authenticationView = new AuthenticationView(this);
@@ -20,13 +22,15 @@ export default class Router {
         this.loginView = new LoginView(this);
         this.registerView = new RegisterView(this);
         this.userView = new UserView(this);
-        this.currentView = null;
-        this.routes = new Map<string, IView>([
+        this.gameView = new GameView(this);
+        this.currentView = this.authenticationView;
+        this.routes = new Map<string, AbstractView>([
             ["/", this.authenticationView],
             ["/login", this.loginView],
             ["/register", this.registerView],
             ["/menu", this.menuView],
             ["/user", this.userView],
+            ["/game", this.gameView]
         ]);
     }
 
@@ -41,17 +45,19 @@ export default class Router {
         if (!app)
             return console.error("App element not found");
 
-        // Find new view
+        // Get new view
         let newView = this.routes.get(location.pathname);
         if (!newView)
             newView = this.menuView;
 
-        // Clean previous view and set currentView
-        if (this.currentView)
-            this.currentView.clean();
-        this.currentView = newView;
-
+        // Clean previous view
+        this.currentView.clean();
+        
+        // Get HTML code and init view
         app.innerHTML = await newView.getHtml();
         newView.init();
+
+        // Update currenView
+        this.currentView = newView;
     }
 }

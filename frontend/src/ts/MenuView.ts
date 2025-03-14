@@ -1,14 +1,10 @@
 import AbstractView from "./AbstractView.js";
 import type Router from "./Router.js"
 
-type ButtonConfig = {
-    id: string
-    route: string
-}
-
 export default class MenuView extends AbstractView {
     private state: 'mainMenu' | 'match' | 'tournament' | 'local' | 'remote' | 'joinMatch' | 'createMatch' | 'joinTournament' | 'createTournament';
-    private buttonConfigs: ButtonConfig[];
+    private buttonConfigs: Array<{ id: string, route: string }>;
+
     constructor(router: Router) {
         super(router);
         this.state = 'mainMenu';
@@ -23,6 +19,13 @@ export default class MenuView extends AbstractView {
             { id: "createTournamentButton", route: "/menu/tournament/create" },
             { id: "avatar", route: "/user" },
         ];
+    }
+
+    private handleButtonClick(event: MouseEvent) {
+        const button = event.currentTarget as HTMLElement;
+        const route = button.dataset.route;
+        if (route)
+            this.router.navigateTo(route);
     }
 
     private setState() {
@@ -175,14 +178,21 @@ export default class MenuView extends AbstractView {
         `;
     }
 
-    init () {
+    init() {
         this.buttonConfigs.forEach((config) => {
             const button: HTMLElement | null = document.getElementById(config.id);
             if (button) {
-                button.addEventListener("click", () => {
-                    this.router.navigateTo(config.route);
-                });
+                button.dataset.route = config.route;
+                button.addEventListener("click", this.handleButtonClick.bind(this));
             }
         });
     }
+
+    clean() {
+        this.buttonConfigs.forEach((config) => {
+            const button: HTMLElement | null = document.getElementById(config.id);
+            if (button)
+                button.removeEventListener("click", this.handleButtonClick.bind(this));
+        });
+    } 
 }

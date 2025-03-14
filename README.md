@@ -6,7 +6,9 @@
 
 menu:
 - responsiveness
-- add avatar and user menu
+- logout button
+- statistics site + button
+- friend list with online status
 
 - optics:
     - own starfield background for menu (https://www.gimpusers.com/tutorials/starfield-tutorial)

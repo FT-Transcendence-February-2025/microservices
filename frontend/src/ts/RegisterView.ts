@@ -28,7 +28,7 @@ export default class RegisterView extends AbstractView {
     }
 
     init() {
-        (document.getElementById('register-form') as HTMLElement).addEventListener('submit', async (event) => {
+        (document.getElementById('registerForm') as HTMLElement).addEventListener('submit', async (event) => {
             event.preventDefault();
             const email = (document.getElementById('email') as HTMLInputElement).value;
             const displayName = (document.getElementById('displayName') as HTMLInputElement).value;

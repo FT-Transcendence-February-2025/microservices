@@ -28,7 +28,7 @@ export default class extends AbstractView {
             const email = (document.getElementById('login-email') as HTMLInputElement).value;
             const password = (document.getElementById('login-password') as HTMLInputElement).value;
     
-            const response = await fetch('/login', {
+            const response = await fetch('http://127.0.0.1:3001/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

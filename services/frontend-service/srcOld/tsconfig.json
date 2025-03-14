@@ -1,12 +1,12 @@
 {
 	"compilerOptions": {
-	  "target": "es6",
-	  "module": "esnext",
+	  "target": "ES2022",
+	  "module": "ES2022",
 	  "strict": true,
 	  "esModuleInterop": true,
 	  "skipLibCheck": true,
 	  "forceConsistentCasingInFileNames": true,
-	  "outDir": "./dist",
+	  "outDir": "./public/js",
 	  "rootDir": "./src"
 	},
 	"include": ["src/**/*"],

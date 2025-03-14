@@ -33,13 +33,13 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    # ports:
-    #   - "3000:3000"
+    ports:
+      - "3000:3000"
     networks:
       - frontend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.frontend-router.entrypoints=websecure"
-      - "traefik.http.routers.frontend-router.tls=true"
-      - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
+    #   - "traefik.http.routers.frontend-router.entrypoints=websecure"
+    #   - "traefik.http.routers.frontend-router.tls=true"
+    #   - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"

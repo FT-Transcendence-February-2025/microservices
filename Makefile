@@ -11,7 +11,7 @@ SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
 NAME		:= ft_transcendence
-DOCKER_BUILDKIT=1
+# DOCKER_BUILDKIT=1
 -include $(wildcard scripts/*.mk)
 # -include tools.mk network.mk gitApi.mk
 
@@ -32,7 +32,7 @@ endif
 
 # Build and run a specific Docker container
 # Usage: make dcon c=<container_name>
-dcon: cert secrets volumes
+dcon: load-Img cert secrets volumes
 ifeq ($(D), 1)
 	-@bash -c 'set -o pipefail; $(CMD) up $$c --build -d 2>&1 | tee up.log || { echo "Error: Docker compose up failed. Check up.log for details."; exit 1; }'
 else

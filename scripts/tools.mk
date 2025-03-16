@@ -19,6 +19,15 @@ restartDocker:
 	-pkill -f dockerd-rootless.sh || echo "Docker is not running."
 runDocker: restartDocker
 	sh scripts/runDockerRootless.sh
+pull-Img:
+	docker pull alpine && docker save alpine -o alpine.tar && \
+	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
+	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar
+load-Img:
+	docker load -i alpine.tar && \
+	docker load -i node-20-alpine.tar && \
+	docker load -i traefik-v3.3.3.tar
+
 # Show list of all running Docker containers
 show:
 	@printf "$(LF)$(D_PURPLE)* List of all running containers$(P_NC)\n"

@@ -78,17 +78,10 @@ testWeb:
 	-curl -k https://$(shell hostname)
 	@echo;echo "----" ;
 
-# Open Firefox in private window with specific URLs
+# Open firefox in private window with specific URLs
 browser:
-	firefox --private-window "127.0.0.1" && \
-	firefox --private-window "$(shell hostname)" && \
-	firefox --private-window "$(shell hostname -i)" && \
-	firefox --private-window "localhost:8080"
+	firefox --private-windows -url  "127.0.0.1" "$(shell hostname)" "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" "localhost:8080" &
 
-# Perform curl requests with specific headers
-curlt:
-	curl -v -H "Host: c3r2s3.42wolfsburg.de" https://localhost:443
-	curl -v -H "Host: c3r2s3.42wolfsburg.de" http://localhost:80
 
 # Perform various tests related to 42wolfsburg.de domain
 42test:

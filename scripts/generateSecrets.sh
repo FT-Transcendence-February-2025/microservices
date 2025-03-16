@@ -53,7 +53,9 @@ SSL_PEM=$PWD/$SSL/rootCA.pem
 SSL_EMAIL=$PWD/$SSL/adminEmail.txt
 EOF
 echo "#-------- AUTHENTICATION ----- " >> .env
-echo "AUTH_ENV=$PWD/$AUTH_ENV" >> .env
-cat $AUTH_ENV >> .env
+# echo "AUTH_ENV=test" >> .env
+# echo "AUTH_ENV=$PWD/$AUTH_ENV" >> .env
+# cat $AUTH_ENV >> .env
+# cat $AUTH_ENV >> .env
 # echo -e "\nContent: \n" && tree --dirsfirst ./
 echo

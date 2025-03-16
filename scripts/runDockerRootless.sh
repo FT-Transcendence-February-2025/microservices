@@ -44,7 +44,7 @@ configure_rootless_networking() {
 
     # Check current runtime value
     CURRENT_VALUE=$(sysctl -n $REQUIRED_KEY 2>/dev/null)
-    if [ "$CURRENT_VALUE" == "$REQUIRED_VALUE" ]; then
+    if [ "$CURRENT_VALUE" = "$REQUIRED_VALUE" ]; then
         echo "✔ $REQUIRED_KEY is already set to $REQUIRED_VALUE."
     else
         echo "✖ $REQUIRED_KEY is not set to $REQUIRED_VALUE. Updating runtime configuration..."

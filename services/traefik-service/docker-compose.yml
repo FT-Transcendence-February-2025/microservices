@@ -87,10 +87,10 @@ services:
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
-      # Main router for the canonical domain
-      - "traefik.http.routers.main.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.main.entrypoints=websecure"
-      - "traefik.http.routers.main.tls=true"
+      # # Main router for the canonical domain
+      # - "traefik.http.routers.main.rule=Host(`${DOMAIN}`)"
+      # - "traefik.http.routers.main.entrypoints=websecure"
+      # - "traefik.http.routers.main.tls=true"
 
   # pebble:
   #   image: letsencrypt/pebble

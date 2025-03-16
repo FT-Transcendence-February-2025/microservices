@@ -11,7 +11,7 @@ SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
 NAME		:= ft_transcendence
-# DOCKER_BUILDKIT=1
+DOCKER_BUILDKIT=1x
 -include $(wildcard scripts/*.mk)
 # -include tools.mk network.mk gitApi.mk
 

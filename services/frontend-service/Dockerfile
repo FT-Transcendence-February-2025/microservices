@@ -1,5 +1,5 @@
 # Stage 1: Build the frontend assets
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app/frontend
 
@@ -10,7 +10,7 @@ COPY ./src/frontend/ ./
 RUN npm run build
 
 # Stage 2: Set up the backend
-FROM node:20-alpine as runtime
+FROM node:20-alpine AS runtime
 
 
 WORKDIR /app/backend

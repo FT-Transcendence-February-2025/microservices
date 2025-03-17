@@ -1,9 +1,9 @@
 import Fastify from "fastify";
-import verifyToken from "jwt-validator-tr";
 import fastifyMultipart from "@fastify/multipart";
 import dotenv from "dotenv";
 import avatarUploadRoute from "./routes/avatar-upload-route.js";
 import displayNameRoute from "./routes/display-name-route.js";
+import newUserRoute from "./routes/new-user-route.js";
 
 dotenv.config();
 
@@ -17,10 +17,7 @@ fastify.register(fastifyMultipart);
 // Register routes:
 fastify.route(avatarUploadRoute);
 fastify.route(displayNameRoute);
-
-fastify.addHook("preHandler", async (request, reply) => {
-	await verifyToken(request, reply);
-});
+fastify.route(newUserRoute);
 
 // fastify.route(registrationRoute);
 
@@ -28,11 +25,13 @@ fastify.get("/", (request, reply) => {
 	return { message: "Fastify server of user-management service running" };
 });
 
-try {
-	await fastify.listen({ port: 3002 });
-} catch (error) {
-	fastify.log.error(error);
-	process.exit(1);
-}
+fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
+  if (error) {
+    console.error(error);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
+});
+
 
 // TODO: change export to export default.

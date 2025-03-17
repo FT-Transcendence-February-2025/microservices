@@ -1,6 +1,16 @@
 import database from "../database/database.js"
 
 const db = {
+	addUser: async (id, displayName, avatarPath, wins, loses) => {
+		try {
+			await database("users").insert({ id, display_name: displayName, avatar_path: avatarPath, wins, loses });
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+
 	getUser: async (identifier) => {
     try {
       let query = database("users");

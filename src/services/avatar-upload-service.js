@@ -1,12 +1,12 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { pipeline } from 'stream/promises';
-import db from './database-service.js';
+import fs from "fs-extra";
+import path from "path";
+import { fileURLToPath } from "url";
+import { pipeline } from "stream/promises";
+import db from "./database-service.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const UPLOAD_DIR = path.join(__dirname, '../uploads/avatars');
+const UPLOAD_DIR = path.join(__dirname, "../uploads/avatars");
 
 const avatarUploadService = {
 	async uploadAvatar(file, userId) {
@@ -25,16 +25,16 @@ const avatarUploadService = {
         filePath
       };
   } catch (error) {
-    console.error('Error uploading avatar:', error);
+    console.error("Error uploading avatar:", error);
     return {
       success: false,
-      error: 'Error while saving avatar'
+      error: "Error while saving avatar"
     };
     }
   },
 
   config: {
-    allowedMimeTypes: ['image/jpg', 'image/jpeg', 'image/png'],
+    allowedMimeTypes: ["image/jpg", "image/jpeg", "image/png"],
     maxSize: 5 * 1024 * 1024, // 5MB
     uploadDir: UPLOAD_DIR
   },
@@ -43,14 +43,14 @@ const avatarUploadService = {
     if (!this.config.allowedMimeTypes.includes(file.mimetype)) {
       return {
         success: false,
-        error: 'Invalid file type. Only JPG, JPEG, PNG are allowed.'
+        error: "Invalid file type. Only JPG, JPEG, PNG are allowed."
       };
     }
 
     if (file.size > this.config.maxSize) {
       return {
         success: false,
-        error: 'File size exceeds the 5MB limit.'
+        error: "File size exceeds the 5MB limit."
       };
     }
 

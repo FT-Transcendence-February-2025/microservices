@@ -1,4 +1,4 @@
-import refreshTokenController from "../../controllers/refresh-token-controller.js";
+import refreshTokenController from "../controllers/refresh-token-controller.js";
 
 const refreshTokenRoute = {
 	method: "POST",

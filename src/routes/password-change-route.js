@@ -1,4 +1,4 @@
-import passwordChangeController from "../../controllers/password-change-controller.js";
+import passwordChangeController from "../controllers/password-change-controller.js";
 import verifyToken from "jwt-validator-tr";
 
 const changePasswordRoute = {

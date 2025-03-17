@@ -56,4 +56,3 @@ try {
 export default fastify;
 
 // TODO: check and fix error codes.
-// TODO: refactor with controllers and services.

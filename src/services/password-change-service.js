@@ -18,7 +18,7 @@ const passwordChangeService = async (userId, currentPassword, newPassword) => {
 	}
 
 	const passwordValidationResult =
-		await userDataValidator.password(newPassword, user.email, user.displayName, currentPassword);
+		await userDataValidator.password(newPassword, user.email, currentPassword);
 	if (!passwordValidationResult.valid) {
 		return { status: passwordValidationResult.status, error: passwordValidationResult.error };
 	}

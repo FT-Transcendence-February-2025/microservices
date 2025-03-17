@@ -3,9 +3,6 @@ import jwt from "jsonwebtoken";
 const refreshTokenService = (refreshToken) => {
 	try {
 		const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY);
-		// TODO: delete if works.
-		// request.user = { id: decoded.userId };
-		// const user = { id: decoded.userId };
 
 		const accessToken = jwt.sign(
 			{ userId: decoded.userId },

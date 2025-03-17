@@ -1,9 +1,9 @@
 import database from "../database/database.js"
 
 const db = {
-	createUser: async (email, displayName, password) => {
+	createUser: async (email, password) => {
 		try {
-			await database("users").insert({ email, displayName, password });
+			await database("users").insert({ email, password });
 			return { success: true };
 		} catch (error) {
 			console.error("db error", error);
@@ -16,14 +16,6 @@ const db = {
 			return await database("users").where({ email }).first();
 		} catch (error) {
 
-			return { error };
-		}
-	},
-
-	getUserByDisplayName: async (displayName) => {
-		try {
-			return await database("users").where({ displayName }).first();
-		} catch (error) {
 			return { error };
 		}
 	},

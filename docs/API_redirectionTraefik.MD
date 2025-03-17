@@ -105,3 +105,196 @@ User's browser
 This configuration ensures that clients always interact with a clean public URL (e.g., `/login`), while internal API endpoints (e.g., `/api/login`) are protected and only accessible when the proper flow is followed.
 
 Would you like further details on any particular middleware configuration or additional examples on enforcing strict access controls (such as rate limiting or IP whitelisting) for your API endpoints?
+
+
+Below is an approach to hide the authentication endpoints from the end user’s browser while still letting your front‑end talk to your authentication service. The idea is to have your front‑end use relative API paths (for example, `/api/auth/login`, `/api/auth/logout`, etc.) so that the user never sees the dedicated auth subdomain (like `auth.domain`). Then Traefik is configured as an internal reverse proxy that rewrites/forwards those requests to your authentication service. (Keep in mind that—even though the URL in the Network tab will show your unified domain—the request still appears there. There’s no way to completely hide a network request from the browser. This setup at least “hides” the real backend URL and keeps the user experience seamless.)
+
+Below are examples covering both server-side (Fastify + TypeScript with CORS on your authentication service) and the Traefik routing configuration to achieve this.
+
+---
+
+## 1. Traefik Configuration
+
+In this setup your front‑end makes AJAX calls to endpoints like `/api/auth/login` on your main domain (e.g. `https://domain/api/auth/login`). Then Traefik intercepts these calls and—invisibly to the user—rewrites or modifies the request as needed so that it is forwarded to your authentication service (which may expect requests on the host `auth.domain`). One way to do that is to override the Host header so that the authentication service’s router (configured for `auth.domain`) matches.
+
+Below is an example of a portion of your Traefik labels (or dynamic configuration) that handles the authentication endpoints:
+
+```yaml
+# In your Traefik configuration (for example, defined on the Traefik container)
+labels:
+  - "traefik.enable=true"
+
+  ##############################
+  # 1. External Redirect: HTTP → HTTPS
+  ##############################
+  - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+  - "traefik.http.routers.http-catchall.entrypoints=web"
+  - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+  - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  ##############################
+  # 2. Front‑End Router (Serving Your SPA)
+  ##############################
+  - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
+  - "traefik.http.routers.frontend-router.entrypoints=websecure"
+  - "traefik.http.routers.frontend-router.tls=true"
+  - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"
+
+  ##############################
+  # 3. API Router for Auth endpoints (Internal Reverse Proxy)
+  # Front‑end calls endpoints like /api/auth/...
+  # This router will catch those requests on your main domain
+  ##############################
+  - "traefik.http.routers.api-auth-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/auth`)"
+  - "traefik.http.routers.api-auth-router.entrypoints=websecure"
+  - "traefik.http.routers.api-auth-router.tls=true"
+  - "traefik.http.routers.api-auth-router.priority=90"
+  # Here we attach a middleware that overrides the Host header so that your auth service sees:
+  #   Host: auth.${DOMAIN}
+  - "traefik.http.routers.api-auth-router.middlewares=change-host-to-auth"
+
+  # Define the middleware for changing the Host header
+  - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
+
+  # And forward the request to the authentication service (listening on port 3001)
+  - "traefik.http.routers.api-auth-router.service=authentication-api-service"
+
+  # 4. Authentication API Service definition:
+  - "traefik.http.services.authentication-api-service.loadbalancer.server.port=3001"
+```
+
+**How This Works:**
+
+- **Front‑end Calls:** Your front‑end JavaScript calls a relative URL such as `/api/auth/login`. To the user, the URL is on your main domain (e.g. `https://domain/api/auth/login`).
+- **Traefik Routing:** Traefik’s `api-auth-router` catches any request starting with `/api/auth`.
+- **Middleware (Host Override):** The middleware `change-host-to-auth` rewrites the request’s Host header to `auth.domain` behind the scenes.
+- **Forwarding to Authentication Service:** The modified request then is routed to your authentication service (which is configured with a router that matches `Host(auth.domain)` and expects endpoints like `/login`, `/logout`, etc.)  
+- **Result:** The browser still displays the main domain in the URL, while internally the request reaches the correct back‑end endpoint.
+
+---
+
+## 2. Fastify Authentication Service Setup (TypeScript)
+
+Your authentication service is running on its own subdomain (virtually, behind Traefik) and listens on a port (e.g., 3001). With Fastify and TypeScript, you can configure the service to allow CORS from your front‑end domain, even though the browser won’t call it directly.
+
+**File: `server.ts`**
+
+```typescript
+import fastify from 'fastify';
+import cors from '@fastify/cors';
+
+const app = fastify({
+  logger: true,
+});
+
+// Configure CORS to allow your front‑end (but note: with the reverse proxy the user won’t see this domain)
+app.register(cors, {
+  origin: (origin, callback) => {
+    // Whitelist your front‑end domain
+    const allowedOrigins = ['https://domain', 'https://www.domain'];
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  credentials: true, // Allow cookies/credentials if needed
+});
+
+// Define your authentication endpoints
+app.get('/login', async (request, reply) => {
+  return { message: 'Display login page data' };
+});
+
+app.post('/login', async (request, reply) => {
+  // Process login
+  return { message: 'Login successful', token: 'access-token' };
+});
+
+app.get('/logout', async (request, reply) => {
+  return { message: 'Logged out successfully' };
+});
+
+app.post('/register', async (request, reply) => {
+  // Process registration
+  return { message: 'Registration successful' };
+});
+
+app.post('/password', async (request, reply) => {
+  // Process password change/reset
+  return { message: 'Password updated' };
+});
+
+app.post('/refresh', async (request, reply) => {
+  // Process token refresh
+  return { message: 'Token refreshed', token: 'new-access-token' };
+});
+
+// Start your authentication service on the appropriate port
+app.listen({ port: 3001, host: '0.0.0.0' }, (err, address) => {
+  if (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+  app.log.info(`Authentication service running on ${address}`);
+});
+```
+
+**Notes:**
+
+- The service uses CORS so that, if it were ever called directly, only requests from your allowed front‑end domains succeed.  
+- Because your front‑end isn’t calling `https://auth.domain/...` directly but via a reverse proxy at `https://domain/api/auth`, the CORS check is still internally relevant (especially for cross-origin scenarios or direct access attempts).
+
+---
+
+## 3. Front‑End AJAX (Fetch) Example in TypeScript
+
+Since you want to hide the backend endpoint, your front‑end code calls a relative URL (e.g., `/api/auth/login`):
+
+```typescript
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+async function login(payload: LoginPayload): Promise<void> {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      credentials: 'include', // Send cookies if needed
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Login failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Login successful:', data.message, data.token);
+  } catch (error) {
+    console.error('Login error:', error);
+  }
+}
+```
+
+**How It Looks to the User:**
+
+- The browser sends a request to `https://domain/api/auth/login`.
+- Traefik catches it, modifies the Host header (or performs any additional rewriting if needed) so that the request lands on your auth service.
+- The user’s network activity never shows a request to `auth.domain` explicitly—the visible URL remains on your main domain.
+
+---
+
+## Final Thoughts
+
+- **Unified Domain:** By having your front‑end use relative URLs (e.g. `/api/auth/...`), you hide the existence of a separate auth subdomain from the end user.
+- **Reverse Proxy:** Traefik does the “magic” behind the scenes by rewriting the request (such as overriding the Host header), meaning the browser only sees requests to your unified domain.
+- **Limitations:** Any network call is visible in Developer Tools, but the user will not directly see the internal routing details or the actual URL of the authentication service.
+
+This hybrid configuration delivers a seamless user experience while keeping your authentication endpoints abstracted behind a unified domain. If you need further details—like multiple middlewares or additional path rewrites—feel free to ask!

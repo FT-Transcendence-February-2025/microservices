@@ -9,61 +9,45 @@ const __dirname = path.dirname(__filename);
 const UPLOAD_DIR = path.join(__dirname, "../uploads/avatars");
 
 const avatarUploadService = {
-	async uploadAvatar(file, userId) {
-    try {
-      const validationResult = this.validateFile(file);
-      if (!validationResult.success) {
-        return validationResult;
-      }
-
-      await this.ensureUploadsDirExists();
-
-      const filePath = await this.saveFile(file, userId);
-
-      return {
-        success: true,
-        filePath
-      };
-  } catch (error) {
-    console.error("Error uploading avatar:", error);
-    return {
-      success: false,
-      error: "Error while saving avatar"
-    };
+	uploadAvatar: async (file, userId) => {
+    const validationResult = this.validateFile(file);
+    if (validationResult.error) {
+      return validationResult;
     }
+    await this.ensureUploadsDirExists();
+    const filePath = await this.saveFile(file, userId);
+		if (filePath.error) {
+      console.error("Error uploading avatar:", filePath.error);
+			return { error: filePath.error };
+		}
+    return { filePath };
   },
 
   config: {
     allowedMimeTypes: ["image/jpg", "image/jpeg", "image/png"],
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024,
     uploadDir: UPLOAD_DIR
   },
 
-  validateFile(file) {
+	validateFile: (file) => {
     if (!this.config.allowedMimeTypes.includes(file.mimetype)) {
-      return {
-        success: false,
-        error: "Invalid file type. Only JPG, JPEG, PNG are allowed."
-      };
+      return { error: "Invalid file type. Only JPG, JPEG, PNG are allowed." };
     }
 
     if (file.size > this.config.maxSize) {
-      return {
-        success: false,
-        error: "File size exceeds the 5MB limit."
-      };
+      return { error: "File size exceeds the 5MB limit." };
     }
 
     return { success: true };
   },
 
-  async ensureUploadsDirExists() {
+	ensureUploadsDirExists: async () => {
     if (!fs.existsSync(this.config.uploadDir)) {
       await fs.mkdir(this.config.uploadDir, { recursive: true });
     }
   },
 
-  async saveFile(file, userId) {
+	saveFile: async (file, userId) => {
 	  const fileExtension = path.extname(file.filename);
 	  const uniqueFileName = `${userId}-${Date.now()}${fileExtension}`;
 	  const filePath = path.join(this.config.uploadDir, uniqueFileName);
@@ -73,12 +57,15 @@ const avatarUploadService = {
 	  try {
       await pipeline(file.file, writeStream);
 
-      await db.updateAvatarPath(userId, filePath);
+      const updateResult = await db.updateAvatarPath(userId, filePath);
+			if (updateResult.error) {
+        return { error: "File size exceeds the 5MB limit." };
+			}
 
       return filePath;
 	  } catch (error) {
       await fs.remove(filePath).catch(console.error);
-      throw error;
+      return { error };
 	  }
 	}
 };

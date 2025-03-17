@@ -40,14 +40,15 @@ const db = {
 		}
 	},
 
-	// TODO: change exception to object return.
 	updateAvatarPath: async (id, avatarPath) => {
 		try {
 			await database("users")
 				.where({ id })
 				.update( { avatarPath })
+			return { success: true };
 		} catch (error) {
-			throw new Error(error);
+			console.error(error);
+			return { error };
 		}
 	}
 };

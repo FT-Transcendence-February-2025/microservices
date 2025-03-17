@@ -8,9 +8,9 @@ const displayNameRoute = {
 		body: {
 			type: "object",
 			properties: {
-				newDisplayName: { type: "string" }
+				displayName: { type: "string" }
 			},
-			required: ["newDisplayName"]
+			required: ["displayName"]
 		},
 		response: {
 			200: {

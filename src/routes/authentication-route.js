@@ -1,4 +1,3 @@
-import authenticationService from "../services/authentication-service.js";
 import authenticationController from "../controllers/authentication-controller.js";
 
 const loginRoute = {

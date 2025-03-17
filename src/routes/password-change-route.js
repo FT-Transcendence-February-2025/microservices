@@ -8,8 +8,8 @@ const changePasswordRoute = {
 		body: {
 			type: "object",
 			properties: {
-				currentPassword: {type: "string"},
-				newPassword: {type: "string"}
+				currentPassword: { type: "string" },
+				newPassword: { type: "string" }
 			},
 			required: ["currentPassword", "newPassword"]
 		},

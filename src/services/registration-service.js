@@ -17,9 +17,15 @@ const registrationService = async (email, password) => {
 
 	const createUserResult = await db.createUser(email, hashedPassword);
 	if (createUserResult.error) {
-		return { status: 500, error: "Internal Server Error"};
+		return { status: 500, error: "Internal Server Error" };
 	}
-	return { message: "You have successfully registered" };
+
+	const user = await db.getUserByEmail(email);
+	if (!user || user.error) {
+		return { status: 500, error: "Internal Server Error" };
+	}
+
+	return { message: "You have successfully registered", userId: user.id };
 };
 
 export default registrationService;

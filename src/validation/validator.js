@@ -1,10 +1,12 @@
-import validator from "validator"
-import { Filter } from "bad-words"
-import zxcvbn from "zxcvbn"
+import validator from "validator";
+import { Filter } from "bad-words";
+import zxcvbn from "zxcvbn";
 import db from "../services/database-service.js";
 
 const filter = new Filter();
 
+
+// TODO: remove displayName validation.
 const userDataValidator = {
 	email: async (email) => {
 	  if (!validator.isEmail(email)) {

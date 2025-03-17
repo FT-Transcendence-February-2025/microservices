@@ -1,4 +1,4 @@
-import refreshTokenService from "../services/refresh-token-service.js";
+import refreshTokenController from "../controllers/refresh-token-controller.js";
 
 const refreshTokenRoute = {
 	method: "POST",
@@ -11,7 +11,7 @@ const refreshTokenRoute = {
 			}
 		}
 	},
-	handler: refreshTokenService
+	handler: refreshTokenController
 }
 
 export default refreshTokenRoute;

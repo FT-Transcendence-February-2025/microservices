@@ -35,6 +35,7 @@ fastify.register(fastifyCors, {
     const allowedOrigins = [
       // In production, the domain should be defined as HTTPS.
       `https://${process.env.DOMAIN}`,
+	  `https://www.${process.env.DOMAIN}`,
       // Local development origins.
     //   "http://127.0.0.1:8080",
     //   "http://localhost:3000",

@@ -1,7 +1,7 @@
 # name: ft_transcendence
 
 include:
-  # - services/authentication-service/docker-compose.yml
+  - services/authentication-service/docker-compose.yml
   # - services/dns-service/docker-compose.yml
   # - services/user-management-service/docker-compose.yml
   # - services/game-service/docker-compose.yml

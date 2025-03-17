@@ -88,16 +88,6 @@ services:
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
 
-      # Login URL on front-end domain that triggers a redirect
-      - "traefik.http.routers.login-redirect.rule=Host(`${DOMAIN}`) && (Path(`/login`) || Path(`/login/`))"
-      - "traefik.http.routers.login-redirect.entrypoints=websecure"
-      - "traefik.http.routers.login-redirect.priority=100"  # Higher priority than the general frontend router
-      - "traefik.http.routers.login-redirect.middlewares=redirect-to-auth"
-
-      # Define the middleware that does the redirection
-      - "traefik.http.middlewares.redirect-to-auth.redirectregex.regex=^https?://(?:www\\.)?${DOMAIN}/login(.*)"
-      - "traefik.http.middlewares.redirect-to-auth.redirectregex.replacement=https://auth.${DOMAIN}/api/login$1"
-      - "traefik.http.middlewares.redirect-to-auth.redirectregex.permanent=true"
 
 
   # pebble:

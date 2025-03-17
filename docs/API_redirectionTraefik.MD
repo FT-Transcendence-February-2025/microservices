@@ -298,3 +298,127 @@ async function login(payload: LoginPayload): Promise<void> {
 - **Limitations:** Any network call is visible in Developer Tools, but the user will not directly see the internal routing details or the actual URL of the authentication service.
 
 This hybrid configuration delivers a seamless user experience while keeping your authentication endpoints abstracted behind a unified domain. If you need further details—like multiple middlewares or additional path rewrites—feel free to ask!
+
+Below is a summary of strategies you can use to ensure that your internal hostname (e.g. `auth.domain`) is only accessible from your backend (internal) network and not from the public (frontend) network.
+
+---
+
+## 1. Use Private/Internal Networks
+
+**Docker / Orchestration-Level Segmentation:**  
+- **Internal-Only Networks:**  
+  In Docker Compose (or your container orchestrator), you can define a network that is marked as internal. For example:
+
+  ```yaml
+  networks:
+    backend:
+      internal: true
+  ```
+
+  Then attach your auth service container only to this network. This prevents containers outside (or external clients) from accessing services on that network directly. Your frontend containers, if they are on a different network, won’t be able to reach `auth.domain` unless you deliberately attach them too.
+
+- **DNS Isolation:**  
+  Use internal DNS resolution for `auth.domain` such that it resolves only within your backend network. This way, even if external sources try to reach `auth.domain`, they won’t obtain the correct internal IP address.
+
+---
+
+## 2. Leverage Traefik IP Whitelist (IPAllowlist) Middleware
+
+You can protect your internal router in Traefik by restricting access to only a set of known IP ranges corresponding to your internal network. For example:
+
+- **Define an IP Whitelist Middleware:**  
+  If your internal network uses, say, the CIDR `10.0.0.0/16` (or whatever range your backend uses), add a middleware like:
+
+  ```yaml
+  - "traefik.http.middlewares.auth-ip-whitelist.ipwhitelist.sourcerange=10.0.0.0/16"
+  ```
+
+- **Attach Middleware to Your Internal Router:**  
+  Suppose you have an internal router that listens for requests on `Host(`auth.${DOMAIN}`) && PathPrefix(`/api`)`; attach this middleware:
+
+  ```yaml
+  - "traefik.http.routers.api-auth-internal.rule=Host(`auth.${DOMAIN}`) && PathPrefix(`/api`)"
+  - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
+  - "traefik.http.routers.api-auth-internal.tls=true"
+  - "traefik.http.routers.api-auth-internal.middlewares=auth-ip-whitelist"
+  ```
+
+  This configuration ensures that only requests originating from within the `10.0.0.0/16` IP range (i.e., your internal backend network) will be allowed to hit your `auth.domain` endpoints, even if someone somehow resolves it externally.
+
+---
+
+## 3. Use Firewall Rules or Cloud Security Groups
+
+Beyond Traefik and container network configurations, you should also:
+
+- **Set Up External Firewall Rules:**  
+  At the infrastructure level (for example, via your cloud provider’s security groups or your own hardware/software firewall), block public access to the IP and ports that serve `auth.domain`.  
+  This way, even if DNS resolution or misconfiguration occurs, the network firewall stops unwanted connections.
+
+---
+
+## 4. Combine Approaches for Defense in Depth
+
+- **Public-Facing Routes:**  
+  Your public clients should use only the external endpoint (for example, `https://domain/api/auth/login`). This endpoint is captured by Traefik’s public router, which performs host and path rewriting before forwarding the request to the internal auth service.
+
+- **Internal Communication:**  
+  Internal microservices communicate via the private address `https://auth.domain/api/login` (or a similar path), and that route is protected either by the internal network design or by Traefik’s IP whitelist (or both).
+
+---
+
+## Example Recap with Traefik Labels
+
+Here’s an example snippet showing both public and internal routers with IP whitelisting:
+
+```yaml
+labels:
+  - "traefik.enable=true"
+
+  # --- Public Router: Externally facing ---
+  # Clients connect to: https://domain/api/auth/...
+  - "traefik.http.routers.api-auth-public.rule=Host(`domain`) && PathPrefix(`/api/auth`)"
+  - "traefik.http.routers.api-auth-public.entrypoints=websecure"
+  - "traefik.http.routers.api-auth-public.tls=true"
+  - "traefik.http.routers.api-auth-public.priority=90"
+  # Rewrite public requests to internal endpoints.
+  - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
+  
+  # Middleware: Change Host header to internal host (auth.domain)
+  - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
+  
+  # Middleware: Rewrite path: /api/auth -> /api
+  - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.regex=^/api/auth(.*)"
+  - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.replacement=/api$1"
+
+  # --- Internal Router ---
+  # Internal microservices connect to: https://auth.domain/api/...
+  - "traefik.http.routers.api-auth-internal.rule=Host(`auth.${DOMAIN}`) && PathPrefix(`/api`)"
+  - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
+  - "traefik.http.routers.api-auth-internal.tls=true"
+  # Secure internal router so that only clients from the internal network get through.
+  - "traefik.http.routers.api-auth-internal.middlewares=auth-ip-whitelist"
+
+  # Middleware: IP whitelist for internal network (adjust CIDR as needed)
+  - "traefik.http.middlewares.auth-ip-whitelist.ipwhitelist.sourcerange=10.0.0.0/16"
+
+  # Service definition
+  - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"
+```
+
+---
+
+## Final Thoughts
+
+- **Internal Network Isolation:**  
+  Keep `auth.domain` confined to your backend network by using Docker’s internal networks or Kubernetes private services.
+
+- **Traefik IP Whitelisting:**  
+  Use the IP whitelist middleware to ensure that even if the internal hostname is accidentally exposed, only authorized IP ranges (your internal network) can access it.
+
+- **Firewall and DNS Control:**  
+  Complement these application-layer strategies with firewall rules and DNS configuration to enforce network boundaries.
+
+By combining these multiple layers of security, you can ensure that `auth.domain` only listens to requests from your internal network while external clients continue to interact with your intended public API endpoint.
+
+If you need further details on any aspect (such as configuring Docker networks, DNS setups, or more advanced Traefik middleware settings), feel free to ask!

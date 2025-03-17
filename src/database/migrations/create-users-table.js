@@ -6,6 +6,8 @@ const createUsersTable = async () => {
 			table.integer("id").primary();
 			table.string("display_name").notNullable().unique();
 			table.string("avatar_path").notNullable();
+			table.integer("wins").notNullable();
+			table.integer("loses").notNullable();
 		});
 		console.log("Users table created");
 	} catch (error) {

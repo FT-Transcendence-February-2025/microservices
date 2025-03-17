@@ -8,15 +8,16 @@ export default async function (fastify) {
     return reply.sendFile('tournament.html');
   });
 
-  fastify.get('/host', async (request, reply) => {
+  fastify.get('/:tournamentId/host', async (request, reply) => {
     return reply.sendFile('host.html');
   });
-  
+
   // Genarate new Tournament
   fastify.post('/create', tournamentController.generateTournament)
 
+  // Invite players
   fastify.post('/:tournamentId/invite', tournamentController.sendInvite)
-  
+
   // Register player for tournament
   fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)
 

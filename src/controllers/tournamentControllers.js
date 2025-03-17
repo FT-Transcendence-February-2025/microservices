@@ -1,10 +1,8 @@
 import { tournamentService } from '../db/tournamentService.js'
-// import { initTournament} from '../db/schema.js'
 import objects from '../db/objects.js'
 import db from '../db/database.js'
 
 export const tournamentController = {
-
 
   async generateTournament (request, reply){
     
@@ -177,7 +175,7 @@ export const tournamentController = {
   },
 
   async sendInvite (request, reply) {
-    // Invite players to a tournament
+    console.log(`Send Invite`)
   },
 
   async createTournament (request, reply) {

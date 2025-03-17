@@ -20,6 +20,7 @@ const db = {
 		}
 	},
 
+	// TODO: delete.
 	getUserByDisplayName: async (displayName) => {
 		try {
 			return await database("users").where({ display_name: displayName }).first();

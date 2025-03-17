@@ -10,7 +10,7 @@ const authenticationService = async (email, password, userAgent) => {
     return { status: 500, error: "Internal Server Error" };
 	}
   if (!user) {
-    return { status: 404, error: "User not found" };5
+    return { status: 404, error: "User not found" };
   }
 
   const isPasswordValid = await fastify.bcrypt.compare(password, user.password);

@@ -1,4 +1,3 @@
-import validator from "validator";
 import { Filter } from "bad-words";
 import db from "./database-service.js";
 
@@ -13,7 +12,7 @@ const displayNameService = {
 		if (user.error) {
 			return {status: 500, error: "Internal Server Error"};
 		}
-		const validationResult = displayNameValidator(user.display_name, newDisplayName);
+		const validationResult = await displayNameValidator(user.display_name, newDisplayName);
 		if (validationResult.error) {
 			return {status: validationResult.status, error: validationResult.error};
 		}

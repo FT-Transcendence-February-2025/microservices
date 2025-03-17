@@ -32,6 +32,3 @@ fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
   }
   console.log(`Server listening at ${address}`);
 });
-
-
-// TODO: change export to export default.

@@ -1,4 +1,4 @@
-import registrationController from "../controllers/registration-controller.js";
+import registrationController from "../../controllers/registration-controller.js";
 
 const registrationRoute = {
   method: "POST",

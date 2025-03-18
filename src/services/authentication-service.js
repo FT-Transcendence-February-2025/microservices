@@ -6,12 +6,12 @@ import * as crypto from "crypto";
 
 const authenticationService = async (email, password, userAgent) => {
 	const user = await db.getUserByEmail(email);
+	if (!user) {
+    return { status: 404, error: "User not found" };
+  }
 	if (user.error) {
     return { status: 500, error: "Internal Server Error" };
 	}
-  if (!user) {
-    return { status: 404, error: "User not found" };
-  }
 
   const isPasswordValid = await fastify.bcrypt.compare(password, user.password);
   if (!isPasswordValid) {

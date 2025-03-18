@@ -10,6 +10,7 @@ import loginRoute from "./routes/authentication-route.js";
 import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
+import emailRoute from "./routes/email-route.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ fastify.register(fastifyCookie, {
 
 fastify.route(registrationRoute);
 fastify.route(loginRoute);
+fastify.route(emailRoute);
 fastify.route(passwordRoute);
 fastify.route(refreshTokenRoute);
 fastify.route(logoutRoute);

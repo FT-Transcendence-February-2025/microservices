@@ -29,6 +29,18 @@ const db = {
 		}
 	},
 
+	updateEmail: async (id, newEmail) => {
+		try {
+			await database("users")
+				.where({ id })
+				.update({ email: newEmail });
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+
 	updatePassword: async (id, newPassword) => {
 		try {
 			await database("users")

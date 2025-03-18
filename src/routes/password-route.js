@@ -1,7 +1,7 @@
-import passwordChangeController from "../controllers/password-change-controller.js";
+import passwordController from "../controllers/password-controller.js";
 import verifyToken from "jwt-validator-tr";
 
-const changePasswordRoute = {
+const passwordRoute = {
 	method: "POST",
 	url: "/password",
 	schema: {
@@ -23,7 +23,7 @@ const changePasswordRoute = {
 		}
 	},
 	preHandler: verifyToken,
-	handler: passwordChangeController
+	handler: passwordController
 };
 
-export default changePasswordRoute;
+export default passwordRoute;

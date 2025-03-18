@@ -7,9 +7,10 @@ import cron from "node-cron";
 import db from "./services/database-service.js";
 import registrationRoute from "./routes/registration-route.js";
 import loginRoute from "./routes/authentication-route.js";
-import changePasswordRoute from "./routes/password-change-route.js";
+import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
+import emailRoute from "./routes/email-route.js";
 
 dotenv.config();
 
@@ -33,7 +34,8 @@ fastify.register(fastifyCookie, {
 
 fastify.route(registrationRoute);
 fastify.route(loginRoute);
-fastify.route(changePasswordRoute);
+fastify.route(emailRoute);
+fastify.route(passwordRoute);
 fastify.route(refreshTokenRoute);
 fastify.route(logoutRoute);
 

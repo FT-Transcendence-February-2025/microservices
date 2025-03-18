@@ -23,7 +23,7 @@ class GameInstanceManager {
 		gameInstance.matchId = matchId
 
 		gameInstance.connectedPlayers = new Set()
-		gameInstance.gameState = 'waiting'
+		gameInstance.gameState = 'pending'
 
 		this.gameInstances.set(matchId, gameInstance)
 
@@ -51,9 +51,9 @@ class GameInstanceManager {
 		this.playerConnections.set(playerId, { socket, matchId })
 		gameInstance.connectedPlayers.add(playerId);
 	
-		console.log(`Player ${playerId} connected to match ${matchId}`)
+		console.log(`Player ${playerId} connected to match ${matchId} | Connected count: ${gameInstance.connectedPlayers.size}`)
 	
-		if (gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'waiting') {
+		if (gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'in_progress') {
 			this.startGame(matchId)
 		}
 		return { success: true }
@@ -68,7 +68,7 @@ class GameInstanceManager {
 				message: 'Game instance not found'
 			};
 		}
-		gameInstance.gameInstance = 'playing'
+		gameInstance.gameState = 'in_progress'
 		console.log(`Starting game for match ${matchId}`)
 
 		// Game starts here
@@ -79,7 +79,7 @@ class GameInstanceManager {
 			// clean up if game is over
 			if (gameInstance.isGameOver) {
 				clearInterval(gameLoop)
-				gameInstance.gameState = 'ended'
+				gameInstance.gameState = 'completed'
 				this.endGame(matchId)
 			}
 		}, GAME_LOOP_INTERVAL)

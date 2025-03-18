@@ -1,7 +1,7 @@
 import gameInstanceManager from './gameInstance.js'
 
 export default async function gameRoute(fastify, options) {
-    fastify.post('/api/game', async (request, reply) => {
+    fastify.post('/games', async (request, reply) => {
         const { matchId, player1Id, player2Id } = request.body
 
         if (!matchId || !player1Id || !player2Id) {
@@ -11,23 +11,30 @@ export default async function gameRoute(fastify, options) {
                 message: 'Missing required parameters'
             })
         };
-        const result = gameInstanceManager.createGameInstance(matchId);
+        const result = gameInstanceManager.createGameInstance(matchId, player1Id, player2Id);
         return result;
     })
 
-    fastify.get('/game/:matchId', { websocket: true }, (socket, req) => {
+    fastify.get('/games/:matchId', { websocket: true }, (socket, req) => {
         const matchId = req.params.matchId;
         const playerId = parseInt(req.query.playerId);
 
         if (!matchId || !playerId) {
             console.log('Invalid connection attempt: Missing matchId or playerId');
-            socket.socket.close(1008, 'Invalid connection parameters');
+            socket.close(1008, 'Invalid connection parameters');
+            return
+        }
+
+        // Register the player's connection
+        const registration = gameInstanceManager.connectedPlayersToGame(playerId, matchId, socket);
+        if (!registration.success) {
+            socket.close(1008, registration.message)
             return
         }
 
         console.log(`Player ${playerId} connected to game ${matchId}`);
 
-        socket.socket.on('message', (data) => {
+        socket.on('message', (data) => {
             try {
                 const message = JSON.parse(data.toString())
 
@@ -40,12 +47,12 @@ export default async function gameRoute(fastify, options) {
             }
         });
 
-        socket.socket.on('close', () => {
+        socket.on('close', () => {
             console.log(`Player ${playerId} disconnected from game ${matchId}`);
             gameInstanceManager.disconnectPlayer(playerId);
         });
 
-        socket.socket.on('error', (error) => {
+        socket.on('error', (error) => {
             console.error(`WebSocket error: ${error}`);
             gameInstanceManager.disconnectPlayer(playerId);
         });

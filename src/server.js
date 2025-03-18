@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import avatarUploadRoute from "./routes/avatar-upload-route.js";
 import displayNameRoute from "./routes/display-name-route.js";
 import newUserRoute from "./routes/new-user-route.js";
+import matchmakingRoute from "./routes/matchmaking-route.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ fastify.register(fastifyMultipart);
 fastify.route(avatarUploadRoute);
 fastify.route(displayNameRoute);
 fastify.route(newUserRoute);
+fastify.route(matchmakingRoute);
 
 // fastify.route(registrationRoute);
 

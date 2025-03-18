@@ -1,13 +1,13 @@
-import avatarUploadService from "../services/avatar-upload-service.js";
+import avatarService from "../services/avatar-service.js";
 
-const avatarUploadController = async (request, reply) => {
+const avatarController = async (request, reply) => {
   try {
     const file = await request.file();
     if (!file) {
       return reply.status(400).send({ error: "No file uploaded" });
     }
 
-    const result = await avatarUploadService.uploadAvatar(file, request.user.id);
+    const result = await avatarService.uploadAvatar(file, request.user.id);
     if (result.error) {
       return reply.status(400).send({ error: result.error });
     }
@@ -19,4 +19,4 @@ const avatarUploadController = async (request, reply) => {
   }
 };
 
-export default avatarUploadController;
+export default avatarController;

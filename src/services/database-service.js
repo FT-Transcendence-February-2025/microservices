@@ -44,7 +44,7 @@ const db = {
 		try {
 			await database("users")
 				.where({ id })
-				.update( { avatarPath })
+				.update({ avatar_path: avatarPath })
 			return { success: true };
 		} catch (error) {
 			console.error(error);

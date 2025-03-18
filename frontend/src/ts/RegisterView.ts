@@ -34,7 +34,7 @@ export default class RegisterView extends AbstractView {
             const displayName = (document.getElementById('displayName') as HTMLInputElement).value;
             const password = (document.getElementById('password') as HTMLInputElement).value;
 
-            const response = await fetch('http://127.0.0.1:3001/register', {
+            const response = await fetch('/api/auth/register', {
             	method: 'POST',
             	headers: {
             		'Content-Type': 'application/json',

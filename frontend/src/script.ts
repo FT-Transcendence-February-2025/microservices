@@ -31,7 +31,18 @@ const gameState = {
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
 
-const socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
+let matchId = null;
+let playerId = null;
+
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('matchId') && urlParams.has('playerId')) {
+    matchId = urlParams.get('matchId');
+    playerId = urlParams.get('playerId');
+}
+
+const socket = matchId && playerId
+    ? new WebSocket(`ws://${window.location.hostname}:3000/game/${matchId}?playerId=${playerId}`)
+    : new WebSocket(`ws://${window.location.hostname}:3000/game`);
 
 function updateGameState(parsedData: any) {
     if (!isGameState(parsedData))

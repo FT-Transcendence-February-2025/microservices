@@ -1,79 +1,53 @@
-import PongGame from './gameLogic.js';
-
-const GAME_LOOP_INTERVAL = 1000/60; // 60fps
-
-const playerSlots = [null, null];
-
-let gameState = 'waiting';
+import gameInstanceManager from './gameInstance.js'
 
 export default async function gameRoute(fastify, options) {
-    fastify.get('/game', { websocket: true }, (socket, req) => {
-        const availableSlot = playerSlots.findIndex(slot => slot === null);
+    fastify.post('/api/game', async (request, reply) => {
+        const { matchId, player1Id, player2Id } = request.body
 
-        if (availableSlot === -1) {
-            console.log(`Can't connect client from ${req.socket.remoteAddress}: Game is full`);
-            socket.close();
-            return;
+        if (!matchId || !player1Id || !player2Id) {
+            return reply.code(400).send({
+                statusCode: 400,
+                success: false,
+                message: 'Missing required parameters'
+            })
+        };
+        const result = gameInstanceManager.createGameInstance(matchId);
+        return result;
+    })
+
+    fastify.get('/game/:matchId', { websocket: true }, (socket, req) => {
+        const matchId = req.params.matchId;
+        const playerId = parseInt(req.query.playerId);
+
+        if (!matchId || !playerId) {
+            console.log('Invalid connection attempt: Missing matchId or playerId');
+            socket.socket.close(1008, 'Invalid connection parameters');
+            return
         }
 
-        const playerId = availableSlot + 1;
-        socket.playerId = playerId;
-        playerSlots[availableSlot] = socket;
-        console.log(`New Client connected from ${req.socket.remoteAddress} as player[${playerId}]`);
+        console.log(`Player ${playerId} connected to game ${matchId}`);
 
-        socket.on('message', (data) => { 
+        socket.socket.on('message', (data) => {
             try {
-                const message = JSON.parse(data.toString());
+                const message = JSON.parse(data.toString())
 
-                if (isValidMessage(message)) {
-                    const paddle = socket.playerId === 1 ? PongGame.paddleLeft : PongGame.paddleRight;
-                    const directionMap = {
-                        'up': -1,
-                        'down': 1,
-                        'none': 0
-                    };
-                    paddle.dir = directionMap[message.dir];
-                }
+                if (message && message.type === 'paddleMove' &&
+                    ['up', 'down', 'none'].includes(message.dir)) {
+                        gameInstanceManager.handlePlayerInput(playerId, message);
+                    }
             } catch (error) {
                 console.error(`Error processing message: ${error}`);
             }
         });
 
-        socket.on('close', () => {
-            playerSlots[socket.playerId - 1] = null;
-            console.log(`Client closed connection from ${req.socket.remoteAddress} as player[${socket.playerId}]`);
+        socket.socket.on('close', () => {
+            console.log(`Player ${playerId} disconnected from game ${matchId}`);
+            gameInstanceManager.disconnectPlayer(playerId);
         });
 
-        socket.on('error', (error) => {
+        socket.socket.on('error', (error) => {
             console.error(`WebSocket error: ${error}`);
+            gameInstanceManager.disconnectPlayer(playerId);
         });
-
-        if (playerSlots[0] && playerSlots[1] && gameState != 'playing')
-        {
-            gameState = 'playing';
-            const gameLoop = setInterval(() => {
-                PongGame.update(gameLoop);
-                broadcastGameState(PongGame.getGameState(), fastify);
-            }, GAME_LOOP_INTERVAL);
-        }
     });
-}
-
-function isValidMessage(message) {
-    return (
-        message &&
-        typeof message === 'object' &&
-        message.type === 'paddleMove' &&
-        ['up', 'down', 'none'].includes(message.dir)
-    );
-}
-
-function broadcastGameState(gameState, fastify) {
-    const server = fastify.websocketServer;
-    const gameStateJSON = JSON.stringify(gameState);
-    
-    for (const client of server.clients) {
-        if (client.readyState === 1)
-            client.send(gameStateJSON);
-    }
 }

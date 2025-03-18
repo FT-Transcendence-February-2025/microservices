@@ -1,0 +1,1 @@
+dotenv.config({ path: process.env.ENV_FILE_PATH });

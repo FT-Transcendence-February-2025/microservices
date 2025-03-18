@@ -13,7 +13,7 @@ const fastify = Fastify({
 });
 
 await fastify.register(fastifyStatic, {
-    root: join(__dirname, '..', '..', 'frontend', 'public'),
+    root: join(__dirname, 'frontend', 'public'),
 });
 
 fastify.setNotFoundHandler((request, reply) => {

@@ -53,20 +53,22 @@ fastify.register(fastifyCors, {
 
 // Ensure that a secret for cookie parsing has been defined.
 if (!process.env.COOKIE_SECRET) {
-  fastify.log.error("COOKIE_SECRET is not defined in environment variables.");
-  process.exit(1);
+	fastify.log.error("COOKIE_SECRET is not defined in environment variables.");
+	process.exit(1);
+  } else {
+	fastify.register(fastifyCookie, {
+	  secret: process.env.COOKIE_SECRET,
+	  parseOptions: {},
+	});
 }
-fastify.register(fastifyCookie, {
-  secret: process.env.COOKIE_SECRET,
-  parseOptions: {},
-});
 
 // Register routes with an optional prefix for a clean API namespace; adjust as needed.
-fastify.register(registrationRoute, { prefix: "/api" });
-fastify.register(loginRoute, { prefix: "/api" });
-fastify.register(changePasswordRoute, { prefix: "/api" });
-fastify.register(refreshTokenRoute, { prefix: "/api" });
-fastify.register(logoutRoute, { prefix: "/api" });
+// fastify.register(registrationRoute, { prefix: "/api" });
+fastify.register(registrationRoute);
+fastify.register(loginRoute);
+fastify.register(changePasswordRoute);
+fastify.register(refreshTokenRoute);
+fastify.register(logoutRoute);
 
 // Schedule a cron job to delete expired tokens every 12 hours.
 cron.schedule("0 */12 * * *", async () => {

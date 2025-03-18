@@ -31,14 +31,14 @@ services:
     restart: unless-stopped
     secrets:
       - envFile
-    env_file:
-      - ${AUTH_ENV}
+    # env_file:
+    #   - ${AUTH_ENV}
     environment:
       NODE_ENV: development
       DOMAIN: ${DOMAIN}
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
-      ENV_FILE_PATH: /run/secrets/envsecret
+      ENV_FILE_PATH: /run/secrets/envFile
     dns:
       - 8.8.8.8
       - 1.1.1.1

@@ -1,9 +1,39 @@
 import db from '../../db/connection.js'
+import fetch from 'node-fetch'
 
 // Queue to store waiting players
 const matchmakingQueue = [] // Stores players who are waiting
 const activeConnections = [] // connected web sockets
 const matchAcceptances = {} // object the tracks accepted match invitations
+
+async function startGameForMatch (match) {
+  try {
+    const response = await fetch('http://localhost:3002/games', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        matchId: match.id,
+        player1Id: match.player1_id,
+        player2Id: match.player2_id
+      })
+    })
+
+    const result = await response.json()
+
+    if (result.success) {
+      console.log(`Game created successfully for match ${match.id}`)
+      return true
+    } else {
+      console.error(`Failed to create game for match ${match.id}: ${result.message}`)
+      return false
+    }
+  } catch (error) {
+    console.error(`Error creating game: ${error.message}`)
+    return false
+  }
+}
 
 const messageHandler = async (message, connection) => {
   // Converts the message from a string to a JavaScript object.
@@ -180,6 +210,23 @@ const messageHandler = async (message, connection) => {
         WHERE id = ?
       `).run('in_progress', match.id)
 
+        const gameStarted = await startGameForMatch(match)
+
+        if (!gameStarted) {
+          console.error(`Game creation failed for match ${match.id}. Notifying players...`)
+          activeConnections.forEach(conn => {
+            conn.socket.send(
+              JSON.stringify({
+                type: 'error',
+                message: `Failed to create game for match ${match.id}`
+              })
+            )
+          })
+          return
+        }
+
+        const gameUrl = `http://localhost:3002/?matchId=${match.id}`
+
         // Notify both players
         activeConnections.forEach(conn => {
           if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
@@ -188,20 +235,15 @@ const messageHandler = async (message, connection) => {
               JSON.stringify({
                 type: 'matchStarted',
                 matchId: match.id,
-                opponentId: opponentId
+                opponentId: opponentId,
+                gameUrl: `${gameUrl}&playerId=${conn.userId}`
               })
             )
           }
         })
 
-        if (matchAcceptances[match.id]) {
-          delete matchAcceptances[match.id]
-          console.log(`Removed match ${match.id} from acceptances tracker`)
-        }
-
-        console.log(
-          `Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`
-        )
+        delete matchAcceptances[match.id]
+        console.log(`Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`)
       }
     } catch (error) {
       connection.socket.send(
@@ -283,7 +325,6 @@ const messageHandler = async (message, connection) => {
   }
 }
 
-// TODO: update activeConnections array
 const closeHandler = async (connection) => {
   try {
     console.log('Client disconnect')

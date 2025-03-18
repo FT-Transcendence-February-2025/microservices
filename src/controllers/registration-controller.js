@@ -2,10 +2,11 @@ import registrationService from "../services/registration-service.js";
 import sendIdToUserManagement from "../services/user-management-service.js";
 
 const registrationController = async (request, reply) => {
-  const { email, displayName, password } = request.body;
+  const { email, password } = request.body;
 
-	const registrationResult = await registrationService(email, displayName, password);
+	const registrationResult = await registrationService(email, password);
 	if (registrationResult.error) {
+		console.error(registrationResult.error);
 		return reply.status(registrationResult.status).send({ error: registrationResult.error });
 	}
 

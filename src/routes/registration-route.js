@@ -8,10 +8,9 @@ const registrationRoute = {
       type: "object",
       properties: {
         email: { type: "string" },
-        displayName: { type: "string" },
         password: { type: "string" }
       },
-      required: ["email", "displayName", "password"]
+      required: ["email", "password"]
     },
     response: {
       200: {

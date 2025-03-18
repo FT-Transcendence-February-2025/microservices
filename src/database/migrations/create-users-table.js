@@ -5,7 +5,6 @@ const createUsersTable = async () => {
     await database.schema.createTable("users", (table) => {
       table.increments("id").primary();
       table.string("email").notNullable().unique();
-      table.string("display_name").notNullable().unique();
       table.string("password").notNullable();
     });
     console.log("Users table created");

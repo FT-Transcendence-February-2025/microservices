@@ -21,42 +21,7 @@ const userDataValidator = {
 	  return { valid: true };
 	},
 
-	displayName: async (displayName) => {
-	  if (displayName.length < 4) {
-	    return { valid: false, error: "Display name too short (min 4 characters)", status: "400" };
-	  }
-
-	  if (displayName.length > 25) {
-	    return { valid: false, error: "Display name too long (max 25 characters)", status: "400" };
-	  }
-
-	  if (filter.isProfane(displayName)) {
-	    return { valid: false, error: "Display name contains profane words", status: "400" };
-	  }
-
-	  if (!/^[a-zA-Z0-9_-]+$/.test(displayName)) {
-	    return { valid: false, error: "Display name contains invalid characters", status: "400" };
-	  }
-
-	  if (!/[a-zA-Z]/.test(displayName)) {
-	    return { valid: false, error: "Display name must contain at least one letter", status: "400" };
-	  }
-
-		let existingUser = {};
-		try {
-			existingUser = await db.getUserByDisplayName(displayName);
-		} catch (error) {
-			console.error(error);
-			return { valid: false, error: "Internal Server Error", status: "500" };
-		}
-	  if (existingUser) {
-	    return { valid: false, error: "Display name already in use", status: "400" };
-	  }
-
-	  return { valid: true };
-	},
-
-	password: async (password, email, displayName, currentPassword = "") => {
+	password: async (password, email, currentPassword = "") => {
 	  if (password.length < 8) {
 	    return { valid: false, error: "Password too short (min 8 characters)", status: "400" };
 	  }
@@ -73,9 +38,8 @@ const userDataValidator = {
 	          "one digit, and one special character", status: "400" };
 	  }
 
-	  if (password.toLowerCase().includes(email.toLowerCase()) ||
-	      password.toLowerCase().includes(displayName.toLowerCase())) {
-	    return { valid: false, error: "Password should not contain your email or display name", status: "400" };
+	  if (password.toLowerCase().includes(email.toLowerCase())) {
+	    return { valid: false, error: "Password should not contain your email", status: "400" };
 	  }
 
 		if (currentPassword && currentPassword === password) {

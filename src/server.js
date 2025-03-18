@@ -57,4 +57,3 @@ fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
 export default fastify;
 
 // TODO: check and fix error codes.
-// TODO: refactor with controllers and services.

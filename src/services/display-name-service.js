@@ -5,6 +5,7 @@ const filter = new Filter();
 
 const displayNameService = {
 	changeDisplayName: async (userId, newDisplayName) => {
+		console.log(userId, newDisplayName);
 		const user = await db.getUser(userId);
 		if (!user) {
 			return {status: 404, error: "User not found"};

@@ -2,6 +2,7 @@ import db from "./database-service.js";
 import userDataValidator from "../validation/validator.js";
 import fastify from "../server.js";
 import notifyService from "./notify-service.js";
+import jwt from "jsonwebtoken";
 
 const registrationService = async (email, password) => {
   const emailValidationResult = await userDataValidator.email(email);
@@ -26,11 +27,20 @@ const registrationService = async (email, password) => {
 		return { status: 500, error: "Internal Server Error" };
 	}
 
-	const sendResult = await notifyService.sendEmail({
-		type: "confirm",
-		receiver: email,
-		link: "https://www.google.com/"
-	});
+	let link = "http://localhost:3001/verify-email/";
+	try {
+		const verifyToken = jwt.sign(
+      { userId: user.id },
+      process.env.SECRET_KEY,
+      { expiresIn: "10m" }
+    );
+		link += verifyToken;
+	} catch (error) {
+		console.error(error);
+    return { status: 500, error: "Internal Server Error" };
+	}
+
+	const sendResult = await notifyService.sendEmail({ type: "confirm", receiver: email, link });
 	if (sendResult.error) {
 		return { statuts: sendResult.status, error: sendResult.error };
 	}

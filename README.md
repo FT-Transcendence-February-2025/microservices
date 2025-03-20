@@ -60,14 +60,29 @@ ft_transcendence
    ```
 
 2. Build and start the services using Docker Compose:
-   ```
-   docker-compose up --build
+   ```bash
+   # secrets generated in tmp_extract, move .env.tmp and .envauthentication to microservices root directory
+   make decrypt
+   # RUN ROOTLESS DOCKER
+   make runDocker
+   # BUILD AND RUN CONTAINERS 
+   make dcon 
+   #docker-compose up --build
    ```
 
 3. Access the application through the Traefik gateway with ${IP} or ${DOMAIN}
-
+   ```bash
+   # open private firefox window 
+   make browser
+   # 127.0.0.1
+   ```
 ## Usage Guidelines
-
+   ```bash
+   #check all services status
+   make logs
+   # check specific service status
+   make logs c=auth/traefik/fron-end
+   ```
 - Each service can be accessed through the API gateway, which handles routing and security.
 - Refer to individual service documentation for specific API endpoints and usage instructions.
 

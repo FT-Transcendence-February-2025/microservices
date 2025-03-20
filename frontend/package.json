@@ -1,0 +1,18 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && npx tailwindcss --input src/css/input.css --output public/css/output.css --content 'src/**/*.{html,js,ts}'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.8",
+    "@types/node": "^22.13.5",
+    "tailwindcss": "^4.0.8",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,14 +1,16 @@
 import database from "../database.js"
 
-const createRefreshTokensTable = async () => {
+const createDevicesTable = async () => {
   try {
-    await database.schema.createTable("refreshTokens", (table) => {
+    await database.schema.createTable("devices", (table) => {
       table.increments("id").primary();
-			table.string("token").notNullable();
-      table.bigInteger("expiresAt").notNullable();
-      table.integer("userId").unsigned().notNullable()
+			table.integer("user_id").unsigned().notNullable()
 	      .references("id").inTable("users")
 	      .onDelete("CASCADE");
+			table.string("device_hash").notNullable();
+			table.string("token").notNullable();
+      table.bigInteger("expires_at").notNullable();
+			table.unique(["user_id", "device_hash"]);
     });
     console.log("refreshTokens table created");
   } catch (error) {
@@ -19,5 +21,5 @@ const createRefreshTokensTable = async () => {
 };
 
 (async () => {
-  await createRefreshTokensTable();
+  await createDevicesTable();
 })();

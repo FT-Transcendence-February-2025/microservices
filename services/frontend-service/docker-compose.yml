@@ -1,0 +1,45 @@
+
+volumes:
+  front-end-vol:
+    driver: local
+    name: front-end-vol
+    # driver_opts:
+    #   type: bind
+    #   o: bind
+    #   device: ./
+
+# networks:
+#   backend:
+#     external: true
+
+services:
+  front-end:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - DNS_SERVER=8.8.8.8
+    image: img_front-end:latest
+    container_name: front-end
+    hostname: front-end
+    volumes:
+      - front-end-vol:/app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DOMAIN: ${DOMAIN}
+      IP: ${IP}
+      DOMAIN_TEST: ${DOMAIN_TEST}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    # ports:
+    #   - "3030:3000"
+    networks:
+      - frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend-router.entrypoints=websecure"
+      - "traefik.http.routers.frontend-router.tls=true"
+      - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"

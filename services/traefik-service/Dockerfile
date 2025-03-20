@@ -2,13 +2,11 @@ FROM traefik:v3.3.3
 
 # Install curl and ca-certificates
 RUN apk add --no-cache curl ca-certificates openssl && \
+	update-ca-certificates && \
 	mkdir -p /etc/traefik
 
 # # Copy static configuration
-# COPY config/traefik.yml /etc/traefik/traefik.yml
-
-# # Copy dynamic configuration
-# COPY dynamic/config.yml /etc/traefik/dynamic/config.yml
+COPY ./config/traefik.yml /etc/traefik/traefik.yml
 
 # Create and set permissions for acme.json
 RUN touch /etc/traefik/acme.json && chmod 600 /etc/traefik/acme.json
@@ -19,9 +17,18 @@ EXPOSE 443
 EXPOSE 8080
 
 WORKDIR /etc/traefik/
-ENV DOMAIN=${DOMAIN}
-ENV DOMAIN_TEST=${DOMAIN_TEST}
-ENV IP=${IP}
+ARG DOMAIN
+ARG DOMAIN_TEST
+ARG IP
+
+RUN env
 # ENV DSN_SERVER=${DSN_SERVER}
 # ENV DNS_SEARCH=${DNS_SEARCH}
-# CMD ["traefik"]
+
+# Use Docker secrets for SSL certificates and update CA certificates
+RUN --mount=type=secret,id=ssl_key.key,dst=/run/secrets/ssl_key.key \
+    --mount=type=secret,id=ssl_crt.crt,dst=/run/secrets/ssl_crt.crt \
+    --mount=type=secret,id=ssl_pem.pem,dst=/run/secrets/rootCA.pem \
+    cp /run/secrets/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt && \
+    update-ca-certificates
+CMD ["traefik", "--configFile=/etc/traefik/traefik.yml"]

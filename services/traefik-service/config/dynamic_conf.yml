@@ -1,118 +1,40 @@
-# http:
-#   routers:
-#     main-router:
-#       entryPoints:
-#         - web
-#         - websecure
-#       rule: "Host(`{{ env 'DOMAIN_TEST' }}`) || Host(`127.0.0.1`) || Host(`{{ env 'IP'}}`)"
-#       middlewares:
-#         - redirect-to-newdomain
-#       service: fastify-service
-#       tls: true
-#         # certResolver: myresolver
-#       priority: 10
+http:
+  routers:
+    # Router to redirect HTTP to HTTPS
+    default-redirect:
+      rule: "Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      service: noop-service # A dummy service is required for this router
 
-#   middlewares:
-#     redirect-to-newdomain:
-#       redirectRegex:
-#         regex: "^https?://(?:www\\.)?old-domain\\.com(.*)"
-#         replacement: "https://{{ env 'DOMAIN_TEST' }}$${1}"
-#         permanent: true
+    # Router to handle HTTPS requests and redirect to the canonical domain
+    https-redirect:
+      rule: "HostRegexp(`{host:.+}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - redirect-to-canonical
+      service: noop-service # A dummy service is required for this router
 
-  # services:
-  #   fastify-service:
-  #     loadBalancer:
-  #       servers:
-  #         - url: "http://fastify:3000"
-# http:
-#   middlewares:
-#     redirect-to-https:
-#       redirectScheme:
-#         scheme: https
-#         permanent: true
-    # ipwhitelist:
-    #   ipWhiteList:
-    #     sourceRange:
-    #       - "10.12.1.0/24"
-    #       - "10.13.1.0/24"
-    #       - "10.61.249.0/24"
-    #       - "10.64.254.0/24"
+  middlewares:
+    # Middleware to redirect non-canonical hosts to the canonical domain
+    redirect-to-canonical:
+      redirectRegex:
+        regex: "^https?://(?:{{ env 'DOMAIN' }}|{{ env 'IP' }}|127\\.0\\.0\\.1)(.*)"
+        replacement: "https://{{ env 'DOMAIN' }}$${1}"
+        permanent: true
 
-  # routers:
-  #   http-router:
-  #     rule: "Host(`{{ env 'DNS_SEARCH' }}`)"
-  #     entryPoints:
-  #       - web
-  #     middlewares:
-  #       - redirect-to-https
-  #       - ipwhitelist
-  #     service: fastify-service
+    # Middleware to enforce HTTPS redirection
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
 
-  #   https-router:
-  #     rule: "Host(`{{ env 'DNS_SEARCH' }}`)"
-  #     entryPoints:
-  #       - websecure
-  #     tls:
-  #       certResolver: myresolver
-  #     middlewares:
-  #       - ipwhitelist
-  #     service: fastify-service
-# http:
-#   routers:
-#     fastify:
-#       rule: "Host(`fastify-service`)"
-#       service: fastify-service
-#       entryPoints:
-#         - websecure
-
-    # user-service:
-    #   rule: "Host(`user-service.local`)"
-    #   service: user-service
-    #   entryPoints:
-    #     - websecure
-    # tournament-service:
-    #   rule: "Host(`tournament-service.local`)"
-    #   service: tournament-service
-    #   entryPoints:
-    #     - websecure
-    # matchmaking-service:
-    #   rule: "Host(`matchmaking-service.local`)"
-    #   service: matchmaking-service
-    #   entryPoints:
-    #     - websecure
-    # game-session-service:
-    #   rule: "Host(`game-session-service.local`)"
-    #   service: game-session-service
-    #   entryPoints:
-    #     - websecure
-    # frontend-service:
-    #   rule: "Host(`frontend.local`)"
-    #   service: frontend-service
-    #   entryPoints:
-    #     - websecure
-
-  services:
-    fastify-service:
+services:
+  # Noop service as Traefik requires a service for routers
+  noop-service:
     loadBalancer:
       servers:
-        - url: "http://fastify:3000"
-    # user-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://user-service:8000"
-    # tournament-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://tournament-service:8000"
-    # matchmaking-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://matchmaking-service:8000"
-    # game-session-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://game-session-service:8000"
-    # frontend-service:
-    #   loadBalancer:
-    #     servers:
-    #       - url: "http://frontend-service:3000"
+        - url: "http://127.0.0.1"

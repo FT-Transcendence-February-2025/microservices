@@ -1,5 +1,0 @@
-[http.routers.dashboard]
-entryPoints = ["websecure"]
-service = "api@internal"
-rule = "PathPrefix(`/`)"
-[http.routers.dashboard.tls]

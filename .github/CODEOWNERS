@@ -9,6 +9,7 @@
 #./services/frontend-service
 ./services/game-service/src @mottjes
 ./services/tournament-service @frbeyer1 @MemoCSales
+services/match-service @MemoCSales
 #./services/user-management-service
 #./services/nginx-DNS-service
 

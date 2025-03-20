@@ -3,16 +3,10 @@ secrets:
     file: ${SSL_KEY}
   ssl_crt.crt:
     file: ${SSL_CRT}
-  ssl_pem:
+  ssl_pem.pem:
     file: ${SSL_PEM}
   ssl_email:
     file: ${SSL_EMAIL}
-
-# networks:
-#   backend:
-#     external: true
-#   frontend:
-#     external: true
 
 volumes:
   traefik-logs:
@@ -29,7 +23,16 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    # image: "traefik:v3.3"
+      args:
+        DOMAIN: ${DOMAIN}
+        IP: ${IP}
+        DOMAIN_TEST: ${DOMAIN_TEST}
+      secrets:
+      - ssl_key.key
+      - ssl_crt.crt
+      - ssl_pem.pem
+      - ssl_email
+    image: img_traefik:latest
     container_name: traefik
     hostname: traefik
     environment:
@@ -55,32 +58,48 @@ services:
     extra_hosts:
       - "${DOMAIN}:127.0.0.1"
       - "${DOMAIN}:${IP}"
-    #   - "${DOMAIN_TEST}:127.0.0.1"
-    #   - "${DOMAIN_TEST}:${IP}"
     secrets:
       - ssl_key.key
       - ssl_crt.crt
-      - ssl_pem
+      - ssl_pem.pem
       - ssl_email
     volumes:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock:ro"
-      - "./config/traefik.yml:/etc/traefik/traefik.yml:ro"
-    #   - "./config/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro"
       - "traefik-logs:/etc/traefik/"
     networks:
       - frontend
       - backend
+      # - game # will handle wss?
     restart: unless-stopped
-    command:
-      - "traefik"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--api.dashboard=true"
-      - "--log.level=DEBUG"
-    # labels:
-    #   - traefik.enable=true
-    #   - "traefik.http.routers.traefik.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"  # Updated domain address
-    #   - "traefik.http.routers.traefik.entrypoints=web,websecure"
-    #   - "traefik.http.routers.traefik.middlewares=redirect-to-newdomain@file"
+    labels:
+      - "traefik.enable=true"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # Middleware to redirect to HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # Redirect HTTPS to canonical domain
+      - "traefik.http.routers.https-catchall.rule=Host(`${IP}`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.https-catchall.entrypoints=websecure"
+      - "traefik.http.routers.https-catchall.middlewares=redirect-to-canonical"
+      # Middleware to redirect to canonical domain
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
+      - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
+
+
+
+  # pebble:
+  #   image: letsencrypt/pebble
+  #   container_name: pebble
+  #   hostname: pebble
+  #   environment:
+  #     - PEBBLE_VA_NOSLEEP=1
+  #   ports:
+  #     - "14000:14000" # Pebble ACME server
+  #     - "15000:15000" # Pebble challenge server
+  #   networks:
+  #     - backend
+  #   labels:
+  #     - "traefik.enable=true"

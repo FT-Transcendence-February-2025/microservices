@@ -2,7 +2,6 @@
 .env.tmp
 **/.env
 .env
-.settings/
 secrets/
 .vscode/
 *.log
@@ -14,3 +13,6 @@ secrets/
 # services/game-service
 # services/nginx-service
 # services/user-management-service
+.settings/
+*.tar
+

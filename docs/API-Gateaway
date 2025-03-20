@@ -315,13 +315,13 @@ networks:
          +------------------+------------------+
          |        |        |        |         |
          v        v        v        v         v
-   +---------+ +---------+ +---------+ +---------+ +---------+
-   | User    | | Tourna- | | Match-  | | Game    | | Leader- |
-   | Service | | ment    | | making  | | Session | | board   |
-   +---------+ +---------+ +---------+ +---------+ +---------+
-         |        |        |        |         |
-         v        v        v        v         v
- [User DB] [Tournament DB][Matchmaking DB][Game Session DB][Leaderboard DB]
+   +---------+ +---------+ +---------+ +-------------------+ +---------+
+   | User    | | Tourna- | | Match-  | | Authentication    | | front-  |
+   | Service | | ment    | | making  | | Service           | | end     |
+   +---------+ +---------+ +---------+ +-------------------+ +---------+
+         |        |        |           |                     |
+         v        v        v           v                     v
+ [User DB] [Tournament DB][Matchmaking DB][AuthenticationDB][front-end]
 ```
 
 - **Traefik** serves as the gatekeeper, directing traffic based on the URL path.

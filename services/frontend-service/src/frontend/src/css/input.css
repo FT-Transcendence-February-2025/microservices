@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+@layer base {
+    html {
+        font-family: "Press Start 2P", sans-serif;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply bg-pink-600 hover:bg-pink-700 cursor-pointer text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150;
+    }
+}

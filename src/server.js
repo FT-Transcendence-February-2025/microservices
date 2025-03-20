@@ -5,6 +5,7 @@ import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { tournamentController } from './controllers/tournamentControllers.js'
 
 dotenv.config()
 
@@ -42,10 +43,32 @@ const start = async () => {
   try {
     await fastify.listen({ port: PORT, host: '0.0.0.0' })
     console.log(`Tournament service listening at port ${PORT}`)
+    return fastify // Return the server instance
   } catch (error) {
     fastify.log.error(error)
     process.exit(1)
   }
 }
 
+fastify.addHook('onClose', async () => {
+  await tournamentController.deleteTournaments();
+})
+
 start()
+
+process.on('SIGINT', async () => {
+  try {
+    await fastify.close()
+    console.log('Server closed successfully')
+    process.exit(0)
+  } catch (err) {
+    console.error('Error closing server:', err)
+    process.exit(1)
+  }
+})
+
+
+/*
+ - make tournament id accessible for routes
+ - send out invite from from tournament id 
+*/

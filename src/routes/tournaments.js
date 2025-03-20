@@ -16,7 +16,7 @@ export default async function (fastify) {
   fastify.post('/create', tournamentController.generateTournament)
 
   // Invite players
-  fastify.post('/:tournamentId/invite', tournamentController.sendInvite)
+  fastify.get('/:tournamentId/invite', tournamentController.sendInvite)
 
   // Register player for tournament
   fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)
@@ -33,6 +33,6 @@ export default async function (fastify) {
   // Submit match results
   fastify.post('/:tournamentId/matches/:matchId/results', tournamentController.postMatchResults)
 
-  // // Get players matches in tournament
+  // Get players matches in tournament
   fastify.get('/:tournamentId/players/:playerId/matches', tournamentController.getPlayerMatches)
 }

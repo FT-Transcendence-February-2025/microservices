@@ -11,6 +11,7 @@ import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
+import verifyEmailRoute from "./routes/verify-email-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 
 dotenv.config();
@@ -51,6 +52,7 @@ fastify.route(emailRoute);
 fastify.route(passwordRoute);
 fastify.route(refreshTokenRoute);
 fastify.route(logoutRoute);
+fastify.route(verifyEmailRoute);
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

@@ -5,7 +5,7 @@ import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { tournamentController } from './controllers/tournamentControllers.js'
+import { deletionController } from './controllers/deletionController.js'
 
 dotenv.config()
 
@@ -51,7 +51,7 @@ const start = async () => {
 }
 
 fastify.addHook('onClose', async () => {
-  await tournamentController.deleteTournaments();
+  await deletionController.deleteTournaments();
 })
 
 start()
@@ -70,5 +70,23 @@ process.on('SIGINT', async () => {
 
 /*
  - make tournament id accessible for routes
- - send out invite from from tournament id 
+ - send out invite from from tournament id
+
+ -request to um for users table 
+
+ invites:
+ -GET route to /tournaments/:ID once tm table was created (host.html)
+ -init player table with host
+ -list friends, get from um
+ -invite button next to friend, when clicked, send request with current tmID
+ -(maybe with via access code)
+ -get tournament id from player table, where player id matches current user
+ -when accepted, get userinfo with tmID in response, add to users and player table with current tmId
+
+ -when done with invites and settings on build click, fill tm table
+
+ -when tm is done send all important userinfo to um and delete all relatable to current user, when hosted delete instances from all tables, when invited delte only from users and players
+  currently it is delteing whole tm table for workflow
+
+ -watch video about routes, call route from controller??
 */

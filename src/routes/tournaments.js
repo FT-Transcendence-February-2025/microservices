@@ -1,4 +1,7 @@
 import { tournamentController } from '../controllers/tournamentControllers.js'
+import { inviteController } from '../controllers/inviteController.js';
+import { settingsController } from '../controllers/settingsController.js'
+import { deletionController } from '../controllers/deletionController.js';
 
 // TODO methods schema
 
@@ -8,7 +11,7 @@ export default async function (fastify) {
     return reply.sendFile('tournament.html');
   });
 
-  fastify.get('/:tournamentId/host', async (request, reply) => {
+  fastify.get('/:tournamentId', async (request, reply) => {
     return reply.sendFile('host.html');
   });
 
@@ -16,7 +19,10 @@ export default async function (fastify) {
   fastify.post('/create', tournamentController.generateTournament)
 
   // Invite players
-  fastify.get('/:tournamentId/invite', tournamentController.sendInvite)
+  fastify.post('/:tournamentId/invite', inviteController.sendInvite)
+
+  //fill tournament table with settings and info
+  fastify.post('/:tournamentId/settings', settingsController.setTournament)
 
   // Register player for tournament
   fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)

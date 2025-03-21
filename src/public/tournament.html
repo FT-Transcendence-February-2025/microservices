@@ -45,7 +45,7 @@
         console.log('Host Tournament (POST) Response:', postResult);
 
         // Perform GET request to /tournaments/host
-        const getResponse = await fetch('http://localhost:3000/tournaments/host', {
+        const getResponse = await fetch('http://localhost:3000/tournaments/:tournamentId', {
           method: 'GET',
         });
         const htmlContent = await getResponse.text(); // Get the HTML content as text

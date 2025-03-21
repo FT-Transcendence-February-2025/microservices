@@ -172,22 +172,6 @@ export const tournamentController = {
         details: error.message
       })
     }
-  },
-
-  async sendInvite (request, reply) {
-    console.log(`Sending invite for tournament: ${request.params.tournamentId}`);
-  },
-
-  async createTournament (request, reply) {
-  },
-
-  async deleteTournaments() {
-    try {
-      await db.exec('DROP TABLE IF EXISTS tournaments');
-      console.log('Tournaments table deleted successfully');
-    } catch (error) {
-      console.error('Error deleting table:', error);
-    }
   }
   // TODO: get tournament statistics '/:tournamentId/statistics'
 }

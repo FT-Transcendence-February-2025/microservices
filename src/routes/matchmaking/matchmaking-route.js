@@ -1,4 +1,4 @@
-import matchmakingController from "../controllers/matchmaking-controller.js";
+import matchmakingController from "../../controllers/matchmaking-controller.js";
 
 const matchmakingRoute = {
 	method: "POST",
@@ -24,7 +24,7 @@ const matchmakingRoute = {
 			}
 		}
 	},
-	handler: matchmakingController
+	handler: matchmakingController.getDisplayName
 };
 
 export default matchmakingRoute;

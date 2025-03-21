@@ -1,10 +1,11 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import dotenv from "dotenv";
-import avatarRoute from "./routes/avatar-route.js";
-import displayNameRoute from "./routes/display-name-route.js";
-import newUserRoute from "./routes/new-user-route.js";
-import matchmakingRoute from "./routes/matchmaking-route.js";
+import newUserRoute from "./routes/authentication/new-user-route.js";
+import userExistsRoute from "./routes/authentication/user-exists-route.js";
+import avatarRoute from "./routes/frontend/avatar-route.js";
+import displayNameRoute from "./routes/frontend/display-name-route.js";
+import matchmakingRoute from "./routes/matchmaking/matchmaking-route.js";
 
 dotenv.config();
 
@@ -16,9 +17,10 @@ const fastify = Fastify({
 fastify.register(fastifyMultipart);
 
 // Register routes:
+fastify.route(newUserRoute);
+fastify.route(userExistsRoute);
 fastify.route(avatarRoute);
 fastify.route(displayNameRoute);
-fastify.route(newUserRoute);
 fastify.route(matchmakingRoute);
 
 // fastify.route(registrationRoute);

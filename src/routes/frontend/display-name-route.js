@@ -1,5 +1,5 @@
-import displayNameController from "../controllers/display-name-controller.js";
-import verifyToken from "jwt-validator-tr";
+import frontendController from "../../controllers/frontend-controller.js";
+import jwtTr from "jwt-validator-tr";
 
 const displayNameRoute = {
 	method: "POST",
@@ -21,8 +21,8 @@ const displayNameRoute = {
 			}
 		}
 	},
-	preHandler: verifyToken,
-	handler: displayNameController
+	preHandler: jwtTr.verifyAccessToken,
+	handler: frontendController.displayName
 };
 
 export default displayNameRoute;

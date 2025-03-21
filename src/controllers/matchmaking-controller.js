@@ -1,14 +1,19 @@
-import matchmakingService from "../services/matchmaking-service.js";
+import db from "../services/database-service.js";
 
-const matchmakingController = async (request, reply) => {
-	const { userId } = request.body;
+const matchmakingController = {
+	getDisplayName: async (request, reply) => {
+		const { userId } = request.body;
 
-	const displayName = await matchmakingService.getDisplayName(userId);
-	if (displayName.error) {
-		return reply.status(displayName.status).send({ error: displayName.error });
+		const user = await db.getUser(userId);
+			if (!user) {
+				return reply.status(404).send({ error: "User not found" });
+			}
+			if (user.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+
+		return reply.send({ success: "Found display name", displayName: user.display_name });
 	}
-
-	return reply.send({ success: "Found display name", displayName });
 };
 
 export default matchmakingController;

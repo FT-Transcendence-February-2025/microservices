@@ -1,4 +1,4 @@
-import newUserController from "../controllers/new-user-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 const displayNameRoute = {
 	method: "POST",
@@ -10,9 +10,10 @@ const displayNameRoute = {
 				userId: {
 					type: "number",
 					multipleOf: 1
-				}
+				},
+				displayName: { type: "string" }
 			},
-			required: ["userId"]
+			required: ["userId", "displayName"]
 		},
 		response: {
 			200: {
@@ -23,7 +24,7 @@ const displayNameRoute = {
 			}
 		}
 	},
-	handler: newUserController
+	handler: authenticationController.newUser
 };
 
 export default displayNameRoute;

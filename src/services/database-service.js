@@ -29,6 +29,15 @@ const db = {
 		}
 	},
 
+	getUserByDisplayName: async (displayName) => {
+		try {
+			return await database("users").where({ display_name: displayName }).first();
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+
 	updateEmail: async (id, newEmail) => {
 		try {
 			await database("users")

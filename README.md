@@ -1,3 +1,8 @@
+<=== TO DO ===>
+
+- build resposive html
+- add Local font files
+
 # frontend service
 
 ======= TO-DO =======:

@@ -1,0 +1,32 @@
+import LoginTemplate from './login.html?raw';
+import Auth from '../../utils/Auth';
+
+const template = document.createElement('template');
+template.innerHTML = LoginTemplate;
+
+export default class Login extends HTMLElement {
+    constructor() {
+        super();
+        this.appendChild(template.content.cloneNode(true));
+    }
+
+    connectedCallback() {
+        const loginForm = this.querySelector('#loginForm');
+        if (loginForm)
+            loginForm.addEventListener('submit', this.handleSubmit.bind(this));
+    }
+
+    async handleSubmit(event: Event): Promise<void> {
+        event.preventDefault();
+        const email = (this.querySelector('#email') as HTMLInputElement).value;
+        const password = (this.querySelector('#password') as HTMLInputElement).value;
+
+        const success = await Auth.login(email, password);
+        if (success)
+            alert('Login successful');
+        else
+            alert('Login failed');
+    }
+}
+
+customElements.define("login-form", Login);

@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+@layer base {
+    html {
+        font-family: "Press Start 2P", sans-serif;
+    }
+}
+
+@layer components {
+    .bg-base {
+        @apply h-screen w-screen bg-cover bg-no-repeat;
+        background-image: url('/background.jpg');
+    }
+    .card {
+        @apply bg-white rounded-lg p-12;
+    }
+    .flex-center {
+        @apply flex justify-center items-center;
+    }
+    .btn-primary {
+        @apply bg-pink-600 hover:bg-pink-700 cursor-pointer text-black font-bold py-2 px-4 rounded-lg border-b-8 border-pink-800 active:border-pink-900 active:translate-y-1 duration-150;
+    }
+    .input-field {
+        @apply px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-600;
+    }
+    .nav-link {
+        @apply text-white hover:text-gray-300 transition duration-300;
+    }
+}

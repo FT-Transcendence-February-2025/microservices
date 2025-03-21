@@ -75,7 +75,7 @@ process.on('SIGINT', async () => {
  -request to um for users table 
 
  invites:
- -GET route to /tournaments/:ID once tm table was created (host.html)
+ -tmID response once tm table was created
  -init player table with host
  -list friends, get from um
  -invite button next to friend, when clicked, send request with current tmID

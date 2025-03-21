@@ -1,4 +1,4 @@
-import verifyToken from "jwt-validator-tr";
+import jwtTr from "jwt-validator-tr";
 import logoutController from "../controllers/logout-controller.js";
 
 const logoutRoute = {
@@ -12,7 +12,7 @@ const logoutRoute = {
 			}
 		}
 	},
-	preHandler: verifyToken,
+	preHandler: jwtTr.verifyAccessToken,
 	handler: logoutController
 };
 

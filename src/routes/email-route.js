@@ -1,5 +1,5 @@
 import emailController from "../controllers/email-controller.js";
-import verifyToken from "jwt-validator-tr";
+import jwtTr from "jwt-validator-tr";
 
 const emailRoute = {
 	method: "POST",
@@ -21,7 +21,7 @@ const emailRoute = {
 			}
 		}
 	},
-	preHandler: verifyToken,
+	preHandler: jwtTr.verifyAccessToken,
 	handler: emailController
 };
 

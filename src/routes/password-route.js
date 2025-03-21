@@ -1,5 +1,5 @@
 import passwordController from "../controllers/password-controller.js";
-import verifyToken from "jwt-validator-tr";
+import jwtTr from "jwt-validator-tr";
 
 const passwordRoute = {
 	method: "POST",
@@ -22,7 +22,7 @@ const passwordRoute = {
 			}
 		}
 	},
-	preHandler: verifyToken,
+	preHandler: jwtTr.verifyAccessToken,
 	handler: passwordController
 };
 

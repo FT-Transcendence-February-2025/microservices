@@ -19,6 +19,8 @@ services:
       dockerfile: Dockerfile
       args:
         - DNS_SERVER=8.8.8.8
+        - VITE_HOST=${DOMAIN}
+        - VITE_PORT=3000
     image: img_front-end:latest
     container_name: front-end
     hostname: front-end
@@ -28,13 +30,18 @@ services:
     environment:
       NODE_ENV: development
       DOMAIN: ${DOMAIN}
+      VITE_HOST: ${DOMAIN}
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
+      VITE_PORT: "3000"
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    # ports:
-    #   - "3030:3000"
+    ports:
+      - "3030:3000"
+    extra_hosts:
+      - "${DOMAIN}:127.0.0.1"
+      - "${DOMAIN}:${IP}"
     networks:
       - frontend
     labels:

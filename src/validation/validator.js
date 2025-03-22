@@ -2,6 +2,7 @@ import validator from "validator";
 import { Filter } from "bad-words";
 import zxcvbn from "zxcvbn";
 import db from "../services/database-service.js";
+import userManagementService from "../services/user-management-service.js";
 
 const filter = new Filter();
 
@@ -18,6 +19,38 @@ const userDataValidator = {
 	  }
 
 	  return { valid: true };
+	},
+
+	displayName: async (displayName) => {
+		if (displayName.length < 4) {
+			return { valid: false, error: "Display name too short (min 4 characters)", status: "400" };
+		}
+	
+		if (displayName.length > 25) {
+			return { valid: false, error: "Display name too long (max 25 characters)", status: "400" };
+		}
+	
+		if (filter.isProfane(displayName)) {
+			return { valid: false, error: "Display name contains profane words", status: "400" };
+		}
+	
+		if (!/^[a-zA-Z0-9_-]+$/.test(displayName)) {
+			return { valid: false, error: "Display name contains invalid characters", status: "400" };
+		}
+	
+		if (!/[a-zA-Z]/.test(displayName)) {
+			return {valid: false, error: "Display name must contain at least one letter", status: "400" };
+		}
+	
+		const userExists = await userManagementService.displayNameExists(displayName);
+		if (userExists.error) {
+			return { valid: false, error: "Internal Server Error", status: "500" };
+		}
+		if (userExists.exists) {
+			return { valid: false, error: "Display name already in use", status: "400" };
+		}
+	
+		return { valid: true };
 	},
 
 	password: async (password, email, currentPassword = "") => {

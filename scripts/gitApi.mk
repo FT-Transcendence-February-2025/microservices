@@ -73,8 +73,16 @@ reposAdmin:
 
 # List all issues in a specific repository
 listIssues:
-	@curl -s -H "Authorization: token `cat $(TOKEN)`"     -H "Accept: application/vnd.github+json"     https://api.github.com/repos/FT-Transcendence-February-2025/microservices/issues | jq -r '.[] | "\(.title):\n  https://github.com/FT-Transcendence-February-2025/microservices/issues/\(.number)"'
+	@curl -s -H "Authorization: token `cat $(TOKEN)`" -H "Accept: application/vnd.github+json"  https://api.github.com/repos/FT-Transcendence-February-2025/microservices/issues | jq -r '.[] | "\(.title):\n  https://github.com/FT-Transcendence-February-2025/microservices/issues/\(.number)"'
 
+createBranch: listIssues
+	@read -p "Enter issue number: " issue; \
+	read -p "Enter branch name (leave blank for default: feature/$$issue): " branch; \
+	branch=$${branch:+feature/$$issue-$$branch}; \
+	branch=$${branch:-feature/$$issue}; \
+	git checkout -b $$branch; \
+	git push -u origin $$branch; \
+	echo "Branch $$branch created and linked to remote."
 # Fetch and display the URL of a specific repository where the authenticated user has admin permissions
 microRepo:
 	@curl -s -H "Authorization: token `cat $(TOKEN)`" \

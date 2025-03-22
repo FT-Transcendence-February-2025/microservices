@@ -6,6 +6,7 @@ const createUsersTable = async () => {
       table.increments("id").primary();
       table.string("email").notNullable().unique();
       table.string("password").notNullable();
+			table.boolean("email_verified").notNullable();
     });
     console.log("Users table created");
   } catch (error) {

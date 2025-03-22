@@ -11,6 +11,8 @@ import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
+import verifyEmailRoute from "./routes/verify-email-route.js";
+const { default: fastifyMailer } = await import('fastify-mailer');
 
 dotenv.config();
 
@@ -30,7 +32,19 @@ fastify.register(fastifyCors, {
 fastify.register(fastifyCookie, {
 	secret: process.env.COOKIE_SECRET,
 	parseOptions: {}
-})
+});
+
+fastify.register(fastifyMailer, {
+  transport: {
+    host: "smtp.gmail.com",
+	  port: 465,
+	  secure: true,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
+    }
+  }
+});
 
 fastify.route(registrationRoute);
 fastify.route(loginRoute);
@@ -38,6 +52,7 @@ fastify.route(emailRoute);
 fastify.route(passwordRoute);
 fastify.route(refreshTokenRoute);
 fastify.route(logoutRoute);
+fastify.route(verifyEmailRoute);
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

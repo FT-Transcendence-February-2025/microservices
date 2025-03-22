@@ -1,9 +1,9 @@
 import database from "../database/database.js"
 
 const db = {
-	createUser: async (email, password) => {
+	createUser: async (email, password, emailVerified) => {
 		try {
-			await database("users").insert({ email, password });
+			await database("users").insert({ email, password, email_verified: emailVerified });
 			return { success: true };
 		} catch (error) {
 			console.error(error);
@@ -29,6 +29,15 @@ const db = {
 		}
 	},
 
+	getUserByDisplayName: async (displayName) => {
+		try {
+			return await database("users").where({ display_name: displayName }).first();
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+
 	updateEmail: async (id, newEmail) => {
 		try {
 			await database("users")
@@ -46,6 +55,18 @@ const db = {
 			await database("users")
 				.where({ id })
 				.update({ password: newPassword });
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+
+	updateEmailVerified: async (id, verified) => {
+		try {
+			await database("users")
+				.where({ id })
+				.update({ email_verified: verified });
 			return { success: true };
 		} catch (error) {
 			console.error(error);

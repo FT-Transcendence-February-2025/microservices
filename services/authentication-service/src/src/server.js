@@ -13,6 +13,8 @@ import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import fs from "fs";
+import verifyEmailRoute from "./routes/verify-email-route.js";
+const { default: fastifyMailer } = await import('fastify-mailer');
 
 // Load environment variables
 if (fs.existsSync(process.env.ENV_FILE_PATH)) {
@@ -63,7 +65,19 @@ fastify.register(fastifyCors, {
 fastify.register(fastifyCookie, {
 	secret: process.env.COOKIE_SECRET,
 	parseOptions: {}
-})
+});
+
+fastify.register(fastifyMailer, {
+  transport: {
+    host: "smtp.gmail.com",
+	  port: 465,
+	  secure: true,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
+    }
+  }
+});
 
 fastify.register(registrationRoute, { prefix: "/api" });
 fastify.register(loginRoute, { prefix: "/api" });
@@ -71,8 +85,7 @@ fastify.register(emailRoute, { prefix: "/api" });
 fastify.register(passwordRoute, { prefix: "/api" });
 fastify.register(refreshTokenRoute, { prefix: "/api" });
 fastify.register(logoutRoute, { prefix: "/api" });
-
-
+fastify.register(verifyEmailRoute, { prefix: "/api" });
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

@@ -1,28 +1,28 @@
 import emailController from "../controllers/email-controller.js";
 import jwtTr from "jwt-validator-tr";
 
-const emailRoute = {
-	method: "POST",
-	url: "/email",
-	schema: {
-		body: {
-			type: "object",
-			properties: {
-				email: { type: "string" }
-			},
-			required: ["email"]
-		},
-		response: {
-			200: {
+export default async function (fastify, opts) {
+	fastify.route({
+		method: "POST",
+		url: "/email",
+		schema: {
+			body: {
 				type: "object",
 				properties: {
-					success: { type: "string" }
+					email: { type: "string" }
+				},
+				required: ["email"]
+			},
+			response: {
+				200: {
+					type: "object",
+					properties: {
+						success: { type: "string" }
+					}
 				}
 			}
-		}
-	},
-	preHandler: jwtTr.verifyAccessToken,
-	handler: emailController
+		},
+		preHandler: jwtTr.verifyAccessToken,
+		handler: emailController
+	});
 };
-
-export default emailRoute;

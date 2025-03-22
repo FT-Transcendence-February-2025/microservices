@@ -3,20 +3,24 @@
 <=== TO DO ===>
 
 components:
-- friend list
-- statistics view
 - profile view (change form)
+- fullscreen button
+- statistics view
+- tournament create view
+- torunament join view
+- torunament lobby
+- friend list
 
 other:
-- build resposive html
 - add Local font files
 - try implement static asset handling with vite
 
 design:
-    - own starfield background image (https://www.gimpusers.com/tutorials/starfield-tutorial)
-    - own logo for menu (https://graphicdesign.stackexchange.com/questions/77527/how-to-make-retro-80s-chrome-text-in-gimp)
-    - own game background animation
-    - menu music ?
+- own starfield background image (https://www.gimpusers.com/tutorials/starfield-tutorial)
+- own logo for menu (https://graphicdesign.stackexchange.com/questions/77527/how-to-make-retro-80s-chrome-text-in-gimp)
+- own game background animation
+- menu music ?
+- favicon
 
 game:
 - add local game logic

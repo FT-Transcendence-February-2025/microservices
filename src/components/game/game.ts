@@ -32,8 +32,13 @@ let downPressed = false;
 
 const trail: any = [];
 
-const socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
+let socket: any;
 
+// try {
+//     socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
+// } catch (error) {
+//     console.log('websocket not connected')
+// }
 
 export default class Game extends HTMLElement {
     private _canvas: HTMLCanvasElement;
@@ -56,28 +61,28 @@ export default class Game extends HTMLElement {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
 
-        socket.onmessage = (message) => {
-            try {
-                const parsedData = JSON.parse(message.data);
-                    this.updateGameState(parsedData);
-            } catch (error) {
-                console.error('Failed to parse received data:', error);
-            }
-        }
+        // socket.onmessage = (message) => {
+        //     try {
+        //         const parsedData = JSON.parse(message.data);
+        //             this.updateGameState(parsedData);
+        //     } catch (error) {
+        //         console.error('Failed to parse received data:', error);
+        //     }
+        // }
 
-        socket.onopen = () => {
-            console.log("Connected to WebSocket server.");
-        };
+        // socket.onopen = () => {
+        //     console.log("Connected to WebSocket server.");
+        // };
 
-        socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+        // socket.onerror = (error) => {
+        //     console.error("WebSocket error:", error);
+        // };
 
-        socket.onclose = () => {
-            console.log("WebSocket connection closed.");
-        };
+        // socket.onclose = () => {
+        //     console.log("WebSocket connection closed.");
+        // };
 
-        this.addEventListeners();
+        // this.addEventListeners();
     }
 
     updateGameState(parsedData: any) {

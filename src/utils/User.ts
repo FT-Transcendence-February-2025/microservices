@@ -1,10 +1,4 @@
-export default class Auth {
-    // static isLoggedIn(): boolean {
-    //     // Check if the user is logged in
-    //     // This could be checking for a token in localStorage, or a cookie, etc.
-    //     return localStorage.getItem('userToken') !== null;
-    // }
-
+export default class User {
     static async login(email: string, password: string): Promise<boolean> {
         try {
             const response = await fetch('/api/auth/login', {
@@ -31,8 +25,28 @@ export default class Auth {
         }
     }
 
+    // static isLoggedIn(): boolean {
+        
+
+    // }
+
     // static logout(): void {
-    //     // Remove the token when the user logs out
-    //     localStorage.removeItem('userToken');
+
+    // }
+
+    // static changeDisplayName(): Promise<boolean> {
+
+    // }
+
+    // static changeEmail(): Promise<boolean> {
+
+    // }
+
+    // static changePassword(): Promise<boolean> {
+
+    // }
+
+    // static changeAvatar(): Promise<boolean> {
+
     // }
 }

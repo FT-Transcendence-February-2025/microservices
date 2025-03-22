@@ -1,5 +1,5 @@
 import LoginTemplate from './login.html?raw';
-import Auth from '../../utils/Auth';
+import User from '../../../utils/User';
 
 const template = document.createElement('template');
 template.innerHTML = LoginTemplate;
@@ -21,7 +21,7 @@ export default class Login extends HTMLElement {
         const email = (this.querySelector('#email') as HTMLInputElement).value;
         const password = (this.querySelector('#password') as HTMLInputElement).value;
 
-        const success = await Auth.login(email, password);
+        const success = await User.login(email, password);
         if (success)
             alert('Login successful');
         else

@@ -1,0 +1,62 @@
+secrets:
+  envFile:
+    file: ${AUTH_ENV}
+
+volumes:
+  userentication-vol:
+    driver: local
+    name: user-vol
+
+services:
+  user:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - DNS_SERVER=8.8.8.8
+    image: img_user:latest
+    container_name: user
+    hostname: user
+    volumes:
+      - user-vol:/usr/src/app
+    restart: unless-stopped
+    secrets:
+      - envFile
+    env_file:
+      - ${AUTH_ENV}
+    environment:
+      NODE_ENV: development
+      DOMAIN: ${DOMAIN}
+      IP: ${IP}
+      DOMAIN_TEST: ${DOMAIN_TEST}
+      ENV_FILE_PATH: /run/secrets/envFile
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    networks:
+      - backend
+    labels:
+        - "traefik.enable=true"
+        # --- Public Router: Externally facing ---
+        # Matches any request coming to the public domain with the /api/user prefix
+        - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`)"
+        - "traefik.http.routers.api-user-public.entrypoints=websecure"
+        - "traefik.http.routers.api-user-public.tls=true"
+        - "traefik.http.routers.api-user-public.priority=90"
+        # Apply middlewares: one for Host rewriting and one for path rewriting
+        - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path"
+        # Middleware: Change the Host header to the internal hostname (user.domain)
+        - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user.${DOMAIN}"
+        # Middleware: Rewrite the incoming path.
+        # This rule strips the /api/user prefix so that:
+        #   /api/user/login  →  /api/login
+        - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user(.*)"
+        - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api$1"
+        # --- Internal Router (Optional) ---
+        # This router allows internal microservices to call the user service directly using user.domain
+        - "traefik.http.routers.api-user-internal.rule=Host(`user.${DOMAIN}`) && PathPrefix(`/api`)"
+        - "traefik.http.routers.api-user-internal.entrypoints=websecure"
+        - "traefik.http.routers.api-user-internal.tls=true"
+        # Service definition: Point to the user service’s container on port 3002
+        - "traefik.http.services.userentication-service.loadbalancer.server.port=3002"
+

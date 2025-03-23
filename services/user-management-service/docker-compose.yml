@@ -1,9 +1,0 @@
-# Web service for sqlite 
-# services:
-#   sqlite-web:
-#     image: coleifer/sqlite-web
-#     ports:
-#       - "8080:8080"
-#     volumes:
-#       - ./path/to/your/database.db:/data/database.db
-#     command: --database /data/database.db --port 8080

@@ -49,4 +49,5 @@ services:
       - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.frontend-router.entrypoints=websecure"
       - "traefik.http.routers.frontend-router.tls=true"
+      - "traefik.http.routers.frontend.priority=40"
       - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"

@@ -2,7 +2,7 @@
 
 include:
   - services/authentication-service/docker-compose.yml
-  - services/user-management-service/docker-compose.yml
+  - services/user-mgmt-service/docker-compose.yml
   # - services/game-service/docker-compose.yml
   # - services/backend-service/docker-compose.yml
   - services/traefik-service/docker-compose.yml
@@ -25,3 +25,7 @@ networks:
       config:
         - subnet: 172.18.0.0/24 
           gateway: 172.18.0.1
+
+#   - "traefik.http.routers.tournament.priority=70"
+#   - "traefik.http.routers.match.priority=60
+#   - "traefik.http.routers.game.priority=50""

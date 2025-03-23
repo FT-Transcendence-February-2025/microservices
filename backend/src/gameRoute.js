@@ -57,12 +57,15 @@ export default async function gameRoute(fastify, options) {
             gameInstanceManager.disconnectPlayer(playerId);
         });
     });
+
+    // Debug route
     fastify.get('/debug/games', async (request, reply) => {
         reply.send(Array.from(gameInstanceManager.gameInstances.values()).map(instance => ({
             matchId: instance.matchId,
             player1Id: instance.player1Id,
             player2Id: instance.player2Id,
-            connectedPlayers: Array.from(instance.connectedPlayers)
+            connectedPlayers: Array.from(instance.connectedPlayers),
+            gameState: instance.gameState
         })));
     });
 }

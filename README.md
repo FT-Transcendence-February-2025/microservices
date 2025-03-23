@@ -3,13 +3,18 @@
 <=== TO DO ===>
 
 components:
-- profile view (change form)
-- fullscreen button
+- game:
+    - remove key listeners from document
+    - not render on every package from server, but render at 60 fps and predict ball position and stuff
+- profile view (make responsive)
 - statistics view
 - tournament create view
 - torunament join view
 - torunament lobby
+- home button ? or navbar?
+- fullscreen button
 - friend list
+-// router.addRoute({ path: '/', view: [Root] }): // checks if user is logged in and redirects to either login or home
 
 other:
 - add Local font files
@@ -21,7 +26,3 @@ design:
 - own game background animation
 - menu music ?
 - favicon
-
-game:
-- add local game logic
-- not render on every package from server, but render at 60 fps and predict ball position and stuff

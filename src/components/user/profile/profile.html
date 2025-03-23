@@ -2,12 +2,25 @@
     <div class="card text-center">
         <h1>- Profile -</h1>
         <div class="flex-center mt-8 mb-8">
-            <img id="avatarButton" type="button" class="w-26 h-26 rounded-full ring-2 ring-pink-600" src="https://baconmockup.com/250/250/" alt="Avatar">
+            <label for="avatarUpload">
+                <img id="avatar" class="w-30 h-30 rounded-full ring-2 ring-pink-600 cursor-pointer" src="https://baconmockup.com/250/250/" alt="Avatar">
+              </label>
+            <input type="file" id="avatarUpload" class="hidden" accept="image/*">
         </div>
-        <div>
-            <h2>Name:</h2>
-            <h2>Email:</h2>
-        </div>
-        <button class="btn-primary">Change Password</button>
+        <div class="flex flex-col text-start">
+            <label for="displayNameInput">Display Name:</label>
+            <div class="flex items-center">
+                <input id="displayNameInput" type="text" class="input-field bg-gray-600 flex-grow" readonly>
+                <button id="displayNameEditButton" class="btn-primary ml-2">Edit</button>
+                <button id="displayNameSaveButton" class="btn-primary ml-2 hidden">Save</button>
+            </div>
+            <label for="emailInput">Email:</label>
+            <div class="flex items-center">
+                <input id="emailInput" type="email" class="input-field bg-gray-600 flex-grow" readonly>
+                <button id="emailEditButton" class="btn-primary ml-2">Edit</button>
+                <button id="emailSaveButton" class="btn-primary ml-2 hidden">Save</button>
+            </div>
+          </div>
+        <button id="saveButton" class="btn-primary">Change Password</button>
     </div>
 </div>

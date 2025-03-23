@@ -6,14 +6,6 @@ volumes:
   authentication-vol:
     driver: local
     name: authentication-vol
-    # driver_opts:
-    #   type: bind
-    #   o: bind
-    #   device: ./
-
-# networks:
-#   backend:
-#     external: true
 
 services:
   auth:

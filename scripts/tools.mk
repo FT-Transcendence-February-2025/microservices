@@ -98,7 +98,7 @@ encrypt:
 	@rm .tmp.tar.gz\
 
 # Decrypt the encrypted secrets file
-decrypt:
+decrypt: 
 	@bash -c ' \
 	read -sp "Enter decryption key: " DECRYPTION_KEY; \
 	echo; \

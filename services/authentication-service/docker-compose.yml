@@ -54,24 +54,16 @@ services:
         - "traefik.http.routers.api-auth-public.priority=90"
         # Apply middlewares: one for Host rewriting and one for path rewriting
         - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
-
         # Middleware: Change the Host header to the internal hostname (auth.domain)
         - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
-
-        # Middleware: Rewrite the incoming path.
-        # This rule strips the /api/auth prefix so that:
+        # Middleware: Rewrite the incoming path. Strips the /api/auth prefix so that:
         #   /api/auth/login  →  /api/login
-        #   /api/auth/register  →  /api/register
-        #   /api/auth/password  →  /api/password
         - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.regex=^/api/auth(.*)"
         - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.replacement=/api$1"
-
-        # --- Internal Router (Optional) ---
+        # --- Internal Router ---
         # This router allows internal microservices to call the auth service directly using auth.domain
         - "traefik.http.routers.api-auth-internal.rule=Host(`auth.${DOMAIN}`) && PathPrefix(`/api`)"
         - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
         - "traefik.http.routers.api-auth-internal.tls=true"
-
-        # Service definition: Point to the auth service’s container on port 3001
         - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"
 

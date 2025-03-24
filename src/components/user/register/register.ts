@@ -18,15 +18,15 @@ export default class Register extends HTMLElement {
 
     async handleSubmit(event: Event): Promise<void> {
         event.preventDefault();
-        const displayName = (this.querySelector('#displayName') as HTMLInputElement).value; 
-        const email = (this.querySelector('#email') as HTMLInputElement).value;
-        const password = (this.querySelector('#password') as HTMLInputElement).value;
+        // const displayName = (this.querySelector('#displayName') as HTMLInputElement).value; 
+        // const email = (this.querySelector('#email') as HTMLInputElement).value;
+        // const password = (this.querySelector('#password') as HTMLInputElement).value;
 
-        const success = await User.register(displayName, email, password);
-        if (success)
-            alert('Register successful');
-        else
-            alert('Register failed');
+        // const success = await User.register(displayName, email, password);
+        // if (success)
+        //     alert('Register successful');
+        // else
+        //     alert('Register failed');
     }
 }
 

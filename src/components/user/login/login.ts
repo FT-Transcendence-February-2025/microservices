@@ -18,14 +18,16 @@ export default class Login extends HTMLElement {
 
     async handleSubmit(event: Event): Promise<void> {
         event.preventDefault();
-        const email = (this.querySelector('#email') as HTMLInputElement).value;
-        const password = (this.querySelector('#password') as HTMLInputElement).value;
+        // const email = (this.querySelector('#email') as HTMLInputElement).value;
+        // const password = (this.querySelector('#password') as HTMLInputElement).value;
 
-        const success = await User.login(email, password);
-        if (success)
-            alert('Login successful');
-        else
-            alert('Login failed');
+        // User.login(email, password)
+        // .then(response => {
+        //     if (response.success)
+        //         alert('Login successful');
+        //     else
+        //         alert(`Login failed: ${response.status}: ${response.errorMessage}`);
+        // });
     }
 }
 

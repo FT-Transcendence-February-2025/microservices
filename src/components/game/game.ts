@@ -65,15 +65,103 @@ export default class Game extends HTMLElement {
     connectedCallback() {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
-        this.addSocketListener();
-        this.addEventListeners();
+
+        document.addEventListener("touchstart", this.handleTouchStart.bind(this));
+        document.addEventListener("touchend", this.handleTouchEnd.bind(this));
+        document.addEventListener("keyup", this.handleKeyUp.bind(this));
+        document.addEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
     disconnectedCallback() {
-        // clear listners
+        document.removeEventListener("touchstart", this.handleTouchStart);
+        document.removeEventListener("touchend", this.handleTouchEnd);
+        document.removeEventListener("keyup", this.handleKeyUp);
+        document.removeEventListener("keydown", this.handleKeyDown);
     }
 
-    addSocketListener() {
+    handleTouchStart(event: TouchEvent) : void {
+        event.preventDefault();
+
+        if (this._local) {
+            
+        }
+        else {
+            const touchX = event.touches[event.touches.length - 1].clientX;
+    
+            if (touchX < window.innerWidth / 2 && this._upPressed === false) {
+                this.sendPaddlePosition("up");
+                this._upPressed = true;
+                this._downPressed = false;
+            } 
+            else if (this._downPressed === false) {
+                this.sendPaddlePosition("down");
+                this._downPressed = true;
+                this._upPressed = false;
+            }
+        }
+    }
+
+    handleTouchEnd(event: TouchEvent) : void {
+        if (this._local) {
+
+        }
+        else {
+            event.preventDefault();
+            if (event.touches.length === 0) {
+                this.sendPaddlePosition("none");
+                this._upPressed = false;
+                this._downPressed = false;
+            }
+        }
+    }
+    
+    handleKeyUp(event: KeyboardEvent) : void{
+        if (event.key === "ArrowUp" && this._upPressed === true) {
+            this.sendPaddlePosition("none");
+            this._upPressed = false;
+        }
+        else if (event.key === "ArrowDown" && this._downPressed === true) {
+            this.sendPaddlePosition("none");
+            this._downPressed = false;
+        }
+        if (this._local) {
+            if (event.key === "w" && this._wPressed === true) {
+                this.sendPaddlePositionSecondSocket("none");
+                this._wPressed = false;
+            }
+            else if (event.key === "s" && this._sPressed === true) {
+                this.sendPaddlePositionSecondSocket("none");
+                this._downPressed = false;
+            }
+        }
+    }
+
+    handleKeyDown(event: KeyboardEvent) : void {
+        if (event.key === "ArrowUp" && this._upPressed === false) {
+            this.sendPaddlePosition("up");
+            this._upPressed = true;
+            this._downPressed = false;
+        } 
+        else if (event.key === "ArrowDown" && this._downPressed === false) {
+            this.sendPaddlePosition("down");
+            this._downPressed = true;
+            this._upPressed = false;
+        }
+        if (this._local) {
+            if (event.key === "w" && this._wPressed === false) {
+                this.sendPaddlePositionSecondSocket("up");
+                this._wPressed = true;
+                this._sPressed = false;
+            } 
+            else if (event.key === "s" && this._sPressed === false) {
+                this.sendPaddlePositionSecondSocket("down");
+                this._sPressed = true;
+                this._wPressed = false;
+            }
+        }
+    }
+
+    addSocketListener() : void {
         this._socket.onmessage = (message) => {
             try {
                 const parsedData = JSON.parse(message.data);
@@ -111,7 +199,7 @@ export default class Game extends HTMLElement {
         }
     }
 
-    updateGameState(parsedData: any) {
+    updateGameState(parsedData: any) : void {
         if (!this.isGameState(parsedData))
             return ;
         this._gameState.ball.x = parsedData.ball.x / SERVER_PLAY_FIELD_WIDTH * this._canvas.width;
@@ -226,83 +314,6 @@ export default class Game extends HTMLElement {
         this.drawBall(ball.x, ball.y);
         this.drawTrail(ball.x, ball.y);
         this.drawScore(paddleLeft.score, paddleRight.score);
-    }
-
-    addEventListeners(): void {
-        document.addEventListener("touchstart", (event) => {
-            event.preventDefault();
-            const touchX = event.touches[event.touches.length - 1].clientX;
-        
-            if (touchX < window.innerWidth / 2 && this._upPressed === false) {
-                this.sendPaddlePosition("up");
-                this._upPressed = true;
-                this._downPressed = false;
-            } 
-            else if (this._downPressed === false) {
-                this.sendPaddlePosition("down");
-                this._downPressed = true;
-                this._upPressed = false;
-            }
-        });
-
-        document.addEventListener("touchend", (event) => {
-            event.preventDefault();
-            if (event.touches.length === 0) {
-                this.sendPaddlePosition("none");
-                this._upPressed = false;
-                this._downPressed = false;
-            } 
-        });
-
-        document.addEventListener("keyup", (event) => {
-            if (event.key === "ArrowUp" && this._upPressed === true) {
-                this.sendPaddlePosition("none");
-                this._upPressed = false;
-            }
-            else if (event.key === "ArrowDown" && this._downPressed === true) {
-                this.sendPaddlePosition("none");
-                this._downPressed = false;
-            }
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowUp" && this._upPressed === false) {
-                this.sendPaddlePosition("up");
-                this._upPressed = true;
-                this._downPressed = false;
-            } 
-            else if (event.key === "ArrowDown" && this._downPressed === false) {
-                this.sendPaddlePosition("down");
-                this._downPressed = true;
-                this._upPressed = false;
-            }
-        });
-
-        if (this._local) {
-            document.addEventListener("keyup", (event) => {
-                if (event.key === "w" && this._wPressed === true) {
-                    this.sendPaddlePositionSecondSocket("none");
-                    this._wPressed = false;
-                }
-                else if (event.key === "s" && this._sPressed === true) {
-                    this.sendPaddlePositionSecondSocket("none");
-                    this._downPressed = false;
-                }
-            });
-    
-            document.addEventListener("keydown", (event) => {
-                if (event.key === "w" && this._wPressed === false) {
-                    this.sendPaddlePositionSecondSocket("up");
-                    this._wPressed = true;
-                    this._sPressed = false;
-                } 
-                else if (event.key === "s" && this._sPressed === false) {
-                    this.sendPaddlePositionSecondSocket("down");
-                    this._sPressed = true;
-                    this._wPressed = false;
-                }
-            });
-        }
     }
 }
 

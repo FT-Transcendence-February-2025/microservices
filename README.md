@@ -2,23 +2,32 @@
 
 <=== TO DO ===>
 
+APIManager:         // redirect to /login and delete tokens !!!
+User:               // remove refresh token cookie !!!
+
 components:
+- root component  // checks if user is logged in and redirects to either login or home (fetches the user data)
 - game:
-    - remove key listeners from document
+    - touch logic with local game (two player one phone)
     - not render on every package from server, but render at 60 fps and predict ball position and stuff
-- profile view (make responsive)
+- profile
+    - add avatart change logic
+    - add password change button
+
 - statistics view
 - tournament create view
 - torunament join view
 - torunament lobby
+- friend list
+
 - home button ? or navbar?
 - fullscreen button
-- friend list
--// router.addRoute({ path: '/', view: [Root] }): // checks if user is logged in and redirects to either login or home
+
 
 other:
 - add Local font files
 - try implement static asset handling with vite
+
 
 design:
 - own starfield background image (https://www.gimpusers.com/tutorials/starfield-tutorial)

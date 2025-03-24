@@ -5,6 +5,7 @@ import { userRoutes } from './routes/users.js'
 import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
+import { matchResultsRoute } from './routes/match_routes.js'
 
 const PORT = 3000
 
@@ -41,6 +42,7 @@ fastify.get('/', (request, reply) => {
 fastify.register(userRoutes)
 fastify.register(websocketHandler)
 fastify.register(matchmakingDbRoute)
+fastify.register(matchResultsRoute)
 
 // Server
 const start = async () => {

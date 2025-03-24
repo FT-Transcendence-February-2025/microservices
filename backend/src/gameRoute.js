@@ -16,8 +16,16 @@ export default async function gameRoute(fastify, options) {
     })
 
     fastify.get('/games/:matchId', { websocket: true }, (socket, req) => {
-        const matchId = req.params.matchId;
+        const matchId = parseInt(req.params.matchId);
         const playerId = parseInt(req.query.playerId);
+
+        console.log('WS Connection attempt:', {
+            matchId: req.params.matchId,
+            playerId: req.query.playerId,
+            matchIdType: typeof req.params.matchId,
+            playerIdType: typeof req.query.playerId
+        });
+        console.log('Current game instances:', Array.from(gameInstanceManager.gameInstances.keys()));
 
         if (!matchId || !playerId) {
             console.log('Invalid connection attempt: Missing matchId or playerId');

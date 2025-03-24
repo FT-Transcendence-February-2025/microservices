@@ -1,6 +1,7 @@
 import PongGame from './gameLogic.js'
 
 const GAME_LOOP_INTERVAL = 1000/60
+const PORT = 3000
 
 class GameInstanceManager {
 	constructor () {
@@ -53,7 +54,7 @@ class GameInstanceManager {
 	
 		console.log(`Player ${playerId} connected to match ${matchId} | Connected count: ${gameInstance.connectedPlayers.size}`)
 	
-		if (gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'in_progress') {
+		if (gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'pending') {
 			this.startGame(matchId)
 		}
 		return { success: true }
@@ -96,6 +97,16 @@ class GameInstanceManager {
 		}
 		console.log(`Game ended for match ${matchId}`)
 
+		if (gameInstance.gameState === 'completed') {
+			this.saveMatchResults(
+				matchId,
+				gameInstance.player1Id,
+				gameInstance.player2Id,
+				gameInstance.paddleLeft.score,
+				gameInstance.paddleRight.score
+			)
+		}
+
 		for (const playerId of gameInstance.connectedPlayers) {
 			this.playerConnections.delete(playerId)
 		}
@@ -104,6 +115,31 @@ class GameInstanceManager {
 		setTimeout(() => {
 			this.gameInstances.delete(matchId)
 		}, 5000)
+	}
+
+	async saveMatchResults(matchId, player1Id, player2Id, player1Score, player2Score) {
+		try {
+			const winnerId = player1Score > player2Score ? player1Id :
+							(player2Score > player1Score ? player2Id : null);
+
+			const response = await fetch(`http://localhost:${PORT}/matches/results`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					matchId,
+					player1Score,
+					player2Score,
+					winnerId
+				})
+		});
+
+			const result = await response.json();
+			console.log(`Match results saved for match ${matchId}: ${result.success ? 'success' : 'failed'}`);
+		} catch (error) {
+			console.error(`Error saving match results ${error.message}`)
+		}
 	}
 
 	handlePlayerInput(playerId, action) {

@@ -6,6 +6,7 @@ import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
+import matchmakingRoute from './routes/matchmaking-route.js'
 
 const PORT = 3000
 
@@ -23,8 +24,8 @@ try {
 }
 
 await fastify.register(fastifyCors, {
-  origin: ['http://authentication:3000', 'http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: ['http://user-management:3000', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT'],
   credentials: true
 })
 
@@ -43,6 +44,7 @@ fastify.register(userRoutes)
 fastify.register(websocketHandler)
 fastify.register(matchmakingDbRoute)
 fastify.register(matchesRoute, { prefix: '/matches' })
+fastify.register(matchmakingRoute)
 
 // Server
 const start = async () => {

@@ -21,7 +21,7 @@ DOCKER_BUILDKIT=1x
 all: buildAll up showAll
 
 # Build all Docker images with no cache
-buildAll: cert volumes secrets
+buildAll: cert secrets volumes
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building Images \n\n$(P_NC)";
 ifneq ($(D), 0)
 	@bash -c 'set -o pipefail; $(CMD) build --no-cache 2>&1 | tee build.log || { echo "Error: Docker compose build failed. Check build.log for details."; exit 1; }'

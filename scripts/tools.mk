@@ -23,10 +23,16 @@ pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
 	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar
+
 load-Img:
-	docker load -i alpine.tar && \
-	docker load -i node-20-alpine.tar && \
-	docker load -i traefik-v3.3.3.tar
+	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
+		echo "One or more tar files are missing. Running pull-Img..."; \
+		$(MAKE) pull-Img; \
+	fi
+	-docker load -i alpine.tar && \
+	-docker load -i node-20-alpine.tar && \
+	-docker load -i traefik-v3.3.3.tar
+
 
 # Show list of all running Docker containers
 show:
@@ -46,7 +52,7 @@ showAll:
 
 # Watch changes in the specified volumes directory
 watch:
-	@watch -n 1 ls -la $(VOLUMES)
+	@watch $(MAKE) watchC
 
 # Show all Docker containers, images, volumes, and networks every second
 watchC:

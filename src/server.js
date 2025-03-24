@@ -14,31 +14,31 @@ import emailRoute from "./routes/email-route.js";
 import verifyEmailRoute from "./routes/verify-email-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER start
-import fs from "fs";
+// import fs from "fs";
 
-// Load environment variables
-if (fs.existsSync(process.env.ENV_FILE_PATH)) {
-//   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
+// // Load environment variables
+// if (fs.existsSync(process.env.ENV_FILE_PATH)) {
+// //   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
 	dotenv.config();
-} else {
-  console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
-}
+// } else {
+//   console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
+// }
 
-// Validate required environment variables
-const requiredVariables = [
-  "ENV_FILE_PATH",
-  "NODE_ENV",
-  "DOMAIN",
-  "COOKIE_SECRET",
-];
-const missingVariables = requiredVariables.filter((key) => !process.env[key]);
+// // Validate required environment variables
+// const requiredVariables = [
+//   "ENV_FILE_PATH",
+//   "NODE_ENV",
+//   "DOMAIN",
+//   "COOKIE_SECRET",
+// ];
+// const missingVariables = requiredVariables.filter((key) => !process.env[key]);
 
-if (missingVariables.length > 0) {
-  console.error(
-    `Missing required environment variables: ${missingVariables.join(", ")}`
-  );
-  process.exit(1); // Exit the process with an error code
-}
+// if (missingVariables.length > 0) {
+//   console.error(
+//     `Missing required environment variables: ${missingVariables.join(", ")}`
+//   );
+//   process.exit(1); // Exit the process with an error code
+// }
 
 const fastify = Fastify({
 	logger: true, // Enable Fastify's built-in logger

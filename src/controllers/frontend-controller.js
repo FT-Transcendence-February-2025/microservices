@@ -1,8 +1,20 @@
 import avatarService from "../services/avatar-service.js";
+import db from "../services/database-service.js";
 import displayNameService from "../services/display-name-service.js";
 
 const frontendController = {
-	avatar: async (request, reply) => {
+	avatarView: async (request, reply) => {
+		const user = await db.getUser(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Found avatar path", filePath: user.avatar_path });
+	},
+	avatarChange: async (request, reply) => {
 		try {
 			const file = await request.file();
 			if (!file) {

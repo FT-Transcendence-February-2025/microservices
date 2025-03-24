@@ -1,4 +1,4 @@
-import { postApiData } from './APIManager.js'
+import { postApiData, postApiFormData } from './APIManager.js'
 
 interface ApiResponse {
     success: boolean;
@@ -6,18 +6,20 @@ interface ApiResponse {
 }
 
 export default class User {
-    static displayName = '';
-    static email = '';
+    static displayName: string = '';
+    static email: string = '';
+    static avatar: HTMLImageElement = new Image();
 
     static async login(email: string, password: string): Promise<ApiResponse> {
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password })
             });
+            console.log(response);
             const data = await response.json();
             
             if (data.token) {
@@ -92,9 +94,10 @@ export default class User {
 
     static async changeDisplayName(displayName: string): Promise<ApiResponse> {
         try {
-            const response = await postApiData('/api/user/display-name', JSON.stringify({ displayName }));
+            const body = JSON.stringify({ displayName });
+            const response = await postApiData('/api/user/display-name', body);
             const data = await response.json();
-    
+        
             if (response.ok) {
                 User.displayName = displayName;
                 return { success: true };
@@ -115,7 +118,9 @@ export default class User {
 
     static async changeEmail(email: string): Promise<ApiResponse> {
         try {
-            const response = await postApiData('/api/auth/email', JSON.stringify({ email }));
+            const body = JSON.stringify({ email });
+            const response = await postApiData('/api/auth/email', body);
+            
             const data = await response.json();
     
             if (response.ok) {
@@ -138,7 +143,8 @@ export default class User {
 
     static async changePassword(password: string): Promise<ApiResponse> {
         try {
-            const response = await postApiData('/api/auth/email', JSON.stringify({ password }));
+            const body = JSON.stringify({ password });
+            const response = await postApiData('/api/auth/password', body);
             const data = await response.json();
     
             if (response.ok) {
@@ -158,28 +164,30 @@ export default class User {
         }
     }
 
-    // static async changeAvatar(file: File): Promise<ApiResponse> {
+    static async changeAvatar(file: File): Promise<ApiResponse> {
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-    //     const formData = new FormData();
-    //     formData.append('avatar')
-    //     try {
-    //         const response = await postApiData('/api/user/avatar', JSON.stringify({ password }));
-    //         const data = await response.json();
+        try {
+            const response = await postApiFormData('/api/avatar-change', formData);
+            const data = await response.json();
     
-    //         if (response.ok) {
-    //             return { success: true };
-    //         }
-    //         else {
-    //             return {
-    //                 success: false,
-    //                 errorMessage: data.error || "Server returned an error.",
-    //             };
-    //         }
-    //     } catch (error: any) {
-    //         return {
-    //             success: false,
-    //             errorMessage: error.message || "An unexpected error occurred.",
-    //         };
-    //     }
-    // }
+            if (response.ok) {
+                const avatarUrl = data.filePath;
+                User.avatar.src = avatarUrl;
+                return { success: true };
+            }
+            else {
+                return {
+                    success: false,
+                    errorMessage: data.error || "Server returned an error.",
+                };
+            }
+        } catch (error: any) {
+            return {
+                success: false,
+                errorMessage: error.message || "An unexpected error occurred.",
+            };
+        }
+    }
 }

@@ -36,6 +36,18 @@ export async function postApiData(url: string, body: any) {
     return response;
 }
 
+export async function postApiFormData(url: string, body: any) {
+    const accessToken = localStorage.getItem('accessToken');
+    const response = await fetchWithToken(url, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: body
+    });
+    return response;
+}
+
 export async function getApiData(url: string) {
     const accessToken = localStorage.getItem('accessToken');
     const response = await fetchWithToken(url, {

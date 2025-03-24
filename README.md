@@ -4,6 +4,8 @@
 
 APIManager:         // redirect to /login and delete tokens !!!
 User:               // remove refresh token cookie !!!
+in User            const data = await response.json(); (run only when the server send something back)
+
 
 components:
 - root component  // checks if user is logged in and redirects to either login or home (fetches the user data)

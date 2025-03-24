@@ -11,6 +11,7 @@ export default class Profile extends HTMLElement {
     private _emailEditButton: HTMLButtonElement;
     private _emailSaveButton: HTMLButtonElement;
     private _emailInput: HTMLInputElement;
+    private _avatarUpload: HTMLInputElement;
 
     constructor() {
         super();
@@ -33,6 +34,9 @@ export default class Profile extends HTMLElement {
         this._emailInput = this.querySelector('#emailInput') as HTMLInputElement;
         if (!this._emailInput)
             throw new Error("Could not find emailInput element");
+        this._avatarUpload = this.querySelector('#avatarUpload') as HTMLInputElement;
+        if (!this._avatarUpload)
+            throw new Error("Could not find avatarUpload element");
     }
 
     connectedCallback() {
@@ -42,6 +46,21 @@ export default class Profile extends HTMLElement {
         this._emailEditButton.addEventListener('click', this.handleEmailEditButton.bind(this));
         this._displayNameSaveButton.addEventListener('click', this.handleDisplayNameSaveButton.bind(this));
         this._emailSaveButton.addEventListener('click', this.handleEmailSaveButton.bind(this));
+        this._avatarUpload.addEventListener('change', this.handleAvatarUpload.bind(this));
+    }
+
+    handleAvatarUpload(event: Event) {
+        const target = event.target as HTMLInputElement;
+        if (target.files && target.files[0]) {
+            const file = target.files[0];
+            User.changeAvatar(file)
+            .then(response => {
+                if (response.success)
+                    alert('Avatar uploaded successfully!');
+                else 
+                    alert(`Changing Avatar failed: ${response.errorMessage}`);
+            });
+        }
     }
 
     handleDisplayNameEditButton() {
@@ -58,7 +77,7 @@ export default class Profile extends HTMLElement {
                 if (response.success)
                     alert('Changed Display Name successful');
                 else
-                    alert(`Changing Display Name failed: ${response.status}: ${response.errorMessage}`);
+                    alert(`Changing Display Name failed: ${response.errorMessage}`);
             });
         }
         this._displayNameInput.readOnly = true;
@@ -74,7 +93,7 @@ export default class Profile extends HTMLElement {
                 if (response.success)
                     alert('Changed Display Name successful');
                 else
-                    alert(`Changing Display Name failed: ${response.status}: ${response.errorMessage}`);
+                    alert(`Changing Display Name failed: ${response.errorMessage}`);
             });
         }
         this._emailInput.readOnly = false;

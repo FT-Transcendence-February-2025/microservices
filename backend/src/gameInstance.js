@@ -201,7 +201,7 @@ class GameInstanceManager {
 		if (gameInstance) {
 			gameInstance.connectedPlayers.delete(playerId)
 
-			if (gameInstance.gameState === 'playing') {
+			if (gameInstance.gameState === 'in_progress') {
 				clearInterval(gameInstance.gameLoop)
 				gameInstance.gameState = 'ended'
 				this.endGame(matchId)

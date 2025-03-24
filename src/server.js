@@ -11,10 +11,10 @@ import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
-////////////////////////////////////////////////////DOCKER CONTAINER end
-import fs from "fs";
 import verifyEmailRoute from "./routes/verify-email-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
+////////////////////////////////////////////////////DOCKER CONTAINER start
+import fs from "fs";
 
 // Load environment variables
 if (fs.existsSync(process.env.ENV_FILE_PATH)) {

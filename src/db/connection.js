@@ -1,11 +1,23 @@
-import knex from 'knex';
-import config from '../../knexfile.js';
+import Database from 'better-sqlite3'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fs from 'fs'
 
-export const matchmakingDb = knex(config.matchmaking);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-/* 
-- db can be reusable later in the code
-- The connection is established lazily (only when first used)
-- Knex handles connection pooling automatically
-- The same connection can be reused across your application
-*/
+const dataDir = path.join(__dirname, '../../data')
+const dbPath = path.join(__dirname, '../../data/matchmaking.sqlite')
+
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, {
+    recursive: true
+  })
+}
+
+// Creating connection
+const db = new Database(dbPath, {
+  verbose: console.log
+})
+
+export default db

@@ -1,5 +1,5 @@
-import { connectionHandler } from './handlers/connection.js';
+import { connectionHandler } from './handlers/connection.js'
 
 export const websocketHandler = (fastify) => {
-  fastify.get('/ws', { websocket: true }, connectionHandler);
-};
+  fastify.get('/ws', { websocket: true }, connectionHandler)
+}

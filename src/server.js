@@ -1,7 +1,6 @@
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifyWebsocket from '@fastify/websocket'
-import { userRoutes } from './routes/users.js'
 import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
@@ -32,21 +31,18 @@ await fastify.register(fastifyCors, {
 // Register WebSocket
 await fastify.register(fastifyWebsocket)
 
-// Test get route to send reply message
 fastify.get('/', (request, reply) => {
   reply.send({
     message: 'Hello Fastify. Server is running!'
   })
 })
 
-// Routes
-fastify.register(userRoutes)
+
 fastify.register(websocketHandler)
 fastify.register(matchmakingDbRoute)
 fastify.register(matchesRoute, { prefix: '/matches' })
 fastify.register(matchmakingRoute)
 
-// Server
 const start = async () => {
   try {
     await fastify.listen({ port: PORT, host: '0.0.0.0' })

@@ -27,6 +27,12 @@ export const tournamentController = {
    ).lastInsertRowid
 
     console.log(`Added tournament with ID: ${tournamentId}`)
+
+    return reply.code(201).send({
+        success: true,
+        message: 'New tournament created successfully',
+        tournamentId: tournamentId
+      });
   },
 
   async postRegisterPlayer (request, reply) {

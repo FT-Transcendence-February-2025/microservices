@@ -5,7 +5,9 @@ export function initDatabase () {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL
+      user_id TEXT,
+      display_name TEXT,
+      avatar BLOB
     )
     `).run()
     

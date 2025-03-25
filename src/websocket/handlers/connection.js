@@ -58,9 +58,11 @@ const messageHandler = async (message, connection) => {
       // Add player to queue if not already in it
       if (!matchmakingQueue.find((player) => player.id === data.userId)) {
         connection.userId = data.userId
+        connection.displayName = result.displayName
         matchmakingQueue.push({
           id: data.userId,
           socket: connection.socket,
+          displayName: result.displayName,
           joinedAt: new Date()
         })
 
@@ -68,7 +70,8 @@ const messageHandler = async (message, connection) => {
         connection.socket.send(
           JSON.stringify({
             type: 'queueJoined',
-            message: 'Successfully joined matchmaking queue'
+            message: 'Successfully joined matchmaking queue',
+            displayName: result.displayName
           })
         )
 
@@ -88,11 +91,13 @@ const messageHandler = async (message, connection) => {
             const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
             const matchId = result.lastInsertRowid;
             [player1, player2].forEach((player) => {
+              const opponent = player === player1 ? player2.id : player1.id
               player.socket.send(
                 JSON.stringify({
                   type: 'matchCreated',
                   matchId,
-                  opponentId: player === player1 ? player2.id : player1.id,
+                  opponentId: opponent.id,
+                  opponentDisplayName: opponent.displayName,
                   roomCode
                 })
               )
@@ -159,8 +164,12 @@ const messageHandler = async (message, connection) => {
     break
   case 'matchAccept':
     try {
+      const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+      const displayName = currentPlayer ? currentPlayer.displayName : null
+
       console.log('Received matchAccept:', {
         userId: data.userId,
+        displayName,
         matchId: data.matchId
       })
 
@@ -192,10 +201,16 @@ const messageHandler = async (message, connection) => {
         Array.from(matchAcceptances[match.id])
       )
 
+      const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
+      const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
+      const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+
       connection.socket.send(
         JSON.stringify({
           type: 'matchAccepted',
-          message: 'You have accepted the match'
+          message: 'You have accepted the match',
+          yourName: displayName,
+          opponentName: opponentDisplayName
         })
       )
 
@@ -231,20 +246,20 @@ const messageHandler = async (message, connection) => {
         // Notify both players
         activeConnections.forEach(conn => {
           if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-            const opponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            // const opponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
             conn.socket.send(
               JSON.stringify({
                 type: 'matchStarted',
                 matchId: match.id,
-                opponentId: opponentId,
+                oppId: opponentId,
+                oppDisplayName: opponentDisplayName,
                 gameUrl: `${gameUrl}&playerId=${conn.userId}`
               })
             )
           }
         })
-
         delete matchAcceptances[match.id]
-        console.log(`Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`)
+        console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
       }
     } catch (error) {
       connection.socket.send(

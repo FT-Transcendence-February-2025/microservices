@@ -1,6 +1,6 @@
 const userManagementService = {
 	displayNameExists: async (displayName) => {
-		const response = await fetch("http://localhost:3002/user-exists", {
+		const response = await fetch("/api/user/user-exists", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ displayName })
@@ -16,7 +16,7 @@ const userManagementService = {
 		return { exists: data.exists };
 	},
 	sendIdToUserManagement: async (userId, displayName) => {
-    const response = await fetch("http://localhost:3002/new-user", {
+    const response = await fetch("/api/user/new-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, displayName })

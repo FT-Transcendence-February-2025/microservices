@@ -79,6 +79,7 @@ fastify.register(fastifyMailer, {
   }
 });
 
+<<<<<<< HEAD
 fastify.register(registrationRoute, { prefix: "/api" });
 fastify.register(loginRoute, { prefix: "/api" });
 fastify.register(emailRoute, { prefix: "/api" });
@@ -86,6 +87,22 @@ fastify.register(passwordRoute, { prefix: "/api" });
 fastify.register(refreshTokenRoute, { prefix: "/api" });
 fastify.register(logoutRoute, { prefix: "/api" });
 fastify.register(verifyEmailRoute, { prefix: "/api" });
+=======
+// fastify.register(registrationRoute, { prefix: "/api" });
+// fastify.register(loginRoute, { prefix: "/api" });
+// fastify.register(emailRoute, { prefix: "/api" });
+// fastify.register(passwordRoute, { prefix: "/api" });
+// fastify.register(refreshTokenRoute, { prefix: "/api" });
+// fastify.register(logoutRoute, { prefix: "/api" });
+// fastify.register(verifyEmailRoute, { prefix: "/api" });
+fastify.register(registrationRoute);
+fastify.register(loginRoute);
+fastify.register(emailRoute);
+fastify.register(passwordRoute);
+fastify.register(refreshTokenRoute);
+fastify.register(logoutRoute);
+fastify.register(verifyEmailRoute);
+>>>>>>> 54588a018792603a90e8182654fd488163f414b1
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

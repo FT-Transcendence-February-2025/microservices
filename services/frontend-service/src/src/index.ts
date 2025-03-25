@@ -19,6 +19,7 @@ if (!rootElement)
 
 const router = new Router(rootElement);
 
+// router.addRoute({ path: '/', view: [Root] }): // checks if user is logged in and redirects to either login or home
 router.addRoute({ path: '/', view: [Login] });
 router.addRoute({ path: '/login', view: [Login] });
 router.addRoute({ path: '/register', view: [Register] });

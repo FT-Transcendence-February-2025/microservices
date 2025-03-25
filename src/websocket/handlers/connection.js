@@ -1,3 +1,4 @@
+import { verifyUser } from '../../controllers/matchmakingControllers.js'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
 
@@ -8,7 +9,7 @@ const matchAcceptances = {} // object the tracks accepted match invitations
 
 async function startGameForMatch (match) {
   try {
-    const response = await fetch('http://localhost:3002/games', {
+    const response = await fetch('http://localhost:3003/games', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -43,12 +44,12 @@ const messageHandler = async (message, connection) => {
   case 'joinQueue':
     try {
       // Verify user exists
-      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(data.userId)
-      if (!user) {
+      const result = await verifyUser(data.userId)
+      if (result.error || !result.success) {
         connection.socket.send(
           JSON.stringify({
             type: 'error',
-            message: 'User not found'
+            message: result.error || 'User not found'
           })
         )
         return

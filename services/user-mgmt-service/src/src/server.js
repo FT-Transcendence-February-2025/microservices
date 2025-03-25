@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import dotenv from "dotenv";
+import fastifyCors from "@fastify/cors"; 	
 import newUserRoute from "./routes/authentication/new-user-route.js";
 import userExistsRoute from "./routes/authentication/user-exists-route.js";
 import avatarViewRoute from "./routes/frontend/avatar-view-route.js";
@@ -35,28 +36,36 @@ import matchmakingRoute from "./routes/matchmaking/matchmaking-route.js";
 // }
 
 const fastify = Fastify({
-	// logger: true
+	logger: true
 });
 
-////////////////////////////////////////////////////DOCKER CONTAINER end
+// ////////////////////////////////////////////////////DOCKER CONTAINER end
+fastify.register(fastifyCors, {
+	origin: [
+		`https://${process.env.DOMAIN}`,
+		`https://user.${process.env.DOMAIN}`
+	],
+	methods: ["GET", "POST", "PUT", "DELETE"],
+	credentials: true
+});
 
 // Register plugins:
 fastify.register(fastifyMultipart);
 
 // // Register routes:
-// fastify.register(newUserRoute, { prefix: "/api" });
-// fastify.register(userExistsRoute, { prefix: "/api" });
-// fastify.register(avatarViewRoute, { prefix: "/api" });
-// fastify.register(avatarChangeRoute, { prefix: "/api" });
-// fastify.register(displayNameRoute, { prefix: "/api" });
-// fastify.register(matchmakingRoute, { prefix: "/api" });
+fastify.register(newUserRoute, { prefix: "/api" });
+fastify.register(userExistsRoute, { prefix: "/api" });
+fastify.register(avatarViewRoute, { prefix: "/api" });
+fastify.register(avatarChangeRoute, { prefix: "/api" });
+fastify.register(displayNameRoute, { prefix: "/api" });
+fastify.register(matchmakingRoute, { prefix: "/api" });
 // Register routes:
-fastify.register(newUserRoute);
-fastify.register(userExistsRoute);
-fastify.register(avatarViewRoute);
-fastify.register(avatarChangeRoute);
-fastify.register(displayNameRoute);
-fastify.register(matchmakingRoute);
+// fastify.register(newUserRoute);
+// fastify.register(userExistsRoute);
+// fastify.register(avatarViewRoute);
+// fastify.register(avatarChangeRoute);
+// fastify.register(displayNameRoute);
+// fastify.register(matchmakingRoute);
 
 // fastify.route(registrationRoute);
 
@@ -71,3 +80,5 @@ fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
   }
   console.log(`Server listening at ${address}`);
 });
+
+export default fastify;

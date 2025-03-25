@@ -12,39 +12,6 @@ const SERVER_BALL_RADIUS = 15;
 const COLOR = '#f74fe6';
 const TRAIL_LENGTH = 30;
 
-<<<<<<< HEAD
-const gameState = {
-    ball: {
-      x: 0,
-      y: 0
-    },
-    paddleLeft: {
-        y: 0,
-        score: 0
-    },
-    paddleRight: {
-        y: 0,
-        score: 0
-    }
-};
-
-let upPressed = false;
-let downPressed = false;
-
-const trail: any = [];
-
-let socket: any;
-
-// try {
-//     socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
-// } catch (error) {
-//     console.log('websocket not connected')
-// }
-
-export default class Game extends HTMLElement {
-    private _canvas: HTMLCanvasElement;
-    private _ctx: CanvasRenderingContext2D;
-=======
 export default class Game extends HTMLElement {
     private _canvas: HTMLCanvasElement;
     private _ctx: CanvasRenderingContext2D;
@@ -57,7 +24,6 @@ export default class Game extends HTMLElement {
     private _sPressed: boolean;
     private _gameState;
     private _trail : any;
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
 
     constructor() {
         super();
@@ -70,8 +36,6 @@ export default class Game extends HTMLElement {
         this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
         if (!this._ctx)
             throw new Error("Could not get 2d context");
-<<<<<<< HEAD
-=======
 
         window.location.hash === '#local' ? this._local = true : this._local = false;
 
@@ -96,48 +60,12 @@ export default class Game extends HTMLElement {
             }
         };
         this._trail= [];
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
     }
 
     connectedCallback() {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
 
-<<<<<<< HEAD
-        // socket.onmessage = (message) => {
-        //     try {
-        //         const parsedData = JSON.parse(message.data);
-        //             this.updateGameState(parsedData);
-        //     } catch (error) {
-        //         console.error('Failed to parse received data:', error);
-        //     }
-        // }
-
-        // socket.onopen = () => {
-        //     console.log("Connected to WebSocket server.");
-        // };
-
-        // socket.onerror = (error) => {
-        //     console.error("WebSocket error:", error);
-        // };
-
-        // socket.onclose = () => {
-        //     console.log("WebSocket connection closed.");
-        // };
-
-        // this.addEventListeners();
-    }
-
-    updateGameState(parsedData: any) {
-        if (!this.isGameState(parsedData))
-            return ;
-        gameState.ball.x = parsedData.ball.x / SERVER_PLAY_FIELD_WIDTH * this._canvas.width;
-        gameState.ball.y = parsedData.ball.y / SERVER_PLAY_FIELD_HEIGHT * this._canvas.height;
-        gameState.paddleLeft.y = parsedData.paddleLeft.y / SERVER_PLAY_FIELD_HEIGHT * this._canvas.height;
-        gameState.paddleRight.y = parsedData.paddleRight.y / SERVER_PLAY_FIELD_HEIGHT * this._canvas.height;
-        gameState.paddleLeft.score = parsedData.paddleLeft.score;
-        gameState.paddleRight.score = parsedData.paddleRight.score;
-=======
         document.addEventListener("touchstart", this.handleTouchStart.bind(this));
         document.addEventListener("touchend", this.handleTouchEnd.bind(this));
         document.addEventListener("keyup", this.handleKeyUp.bind(this));
@@ -281,7 +209,6 @@ export default class Game extends HTMLElement {
         this._gameState.paddleLeft.score = parsedData.paddleLeft.score;
         this._gameState.paddleRight.score = parsedData.paddleRight.score;
 
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
         this.renderGame();
     }
 
@@ -306,10 +233,6 @@ export default class Game extends HTMLElement {
             type: "paddleMove",
             dir: direction,
         };
-<<<<<<< HEAD
-        if (socket.readyState === WebSocket.OPEN)
-            socket.send(JSON.stringify(data));
-=======
         if (this._socket.readyState === WebSocket.OPEN)
             this._socket.send(JSON.stringify(data));
     }
@@ -321,7 +244,6 @@ export default class Game extends HTMLElement {
         };
         if (this._secondSocket && this._secondSocket.readyState === WebSocket.OPEN)
             this._secondSocket.send(JSON.stringify(data));
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
     }
 
     drawPaddle (x: number, y: number) : void {
@@ -338,15 +260,6 @@ export default class Game extends HTMLElement {
     }
     
     drawTrail(x: number, y: number) : void {
-<<<<<<< HEAD
-        trail.push({ x, y });
-        if (trail.length > TRAIL_LENGTH)
-            trail.shift();
-        this._ctx.save();
-        for (let i = 0; i < trail.length; i++) {
-            const age = trail.length - i;
-            const alpha = Math.max(1 - age / trail.length, 0);
-=======
         this._trail.push({ x, y });
         if (this._trail.length > TRAIL_LENGTH)
             this._trail.shift();
@@ -354,17 +267,12 @@ export default class Game extends HTMLElement {
         for (let i = 0; i < this._trail.length; i++) {
             const age = this._trail.length - i;
             const alpha = Math.max(1 - age / this._trail.length, 0);
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
             const radius = SERVER_BALL_RADIUS/SERVER_PLAY_FIELD_HEIGHT * this._canvas.height * (0.5 + alpha * 0.5);
     
             this._ctx.beginPath();
             this._ctx.globalAlpha = alpha * 0.3;
             this._ctx.fillStyle = COLOR;
-<<<<<<< HEAD
-            this._ctx.arc(trail[i].x, trail[i].y, radius, 0, Math.PI * 2);
-=======
             this._ctx.arc(this._trail[i].x, this._trail[i].y, radius, 0, Math.PI * 2);
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
             this._ctx.fill();
         }
         this._ctx.restore();
@@ -396,11 +304,7 @@ export default class Game extends HTMLElement {
     }
     
     renderGame() : void {
-<<<<<<< HEAD
-        const { ball, paddleLeft, paddleRight } = gameState;
-=======
         const { ball, paddleLeft, paddleRight } = this._gameState;
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
     
         this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
         this.drawBorder();
@@ -411,60 +315,6 @@ export default class Game extends HTMLElement {
         this.drawTrail(ball.x, ball.y);
         this.drawScore(paddleLeft.score, paddleRight.score);
     }
-<<<<<<< HEAD
-
-    addEventListeners(): void {
-        document.addEventListener("touchstart", (event) => {
-            event.preventDefault();
-            const touchX = event.touches[event.touches.length - 1].clientX;
-        
-            if (touchX < window.innerWidth / 2 && upPressed === false) {
-                this.sendPaddlePosition("up");
-                upPressed = true;
-                downPressed = false;
-            } 
-            else if (downPressed === false) {
-                this.sendPaddlePosition("down");
-                downPressed = true;
-                upPressed = false;
-            }
-        });
-
-        document.addEventListener("touchend", (event) => {
-            event.preventDefault();
-            if (event.touches.length === 0) {
-                this.sendPaddlePosition("none");
-                upPressed = false;
-                downPressed = false;
-            } 
-        });
-
-        document.addEventListener("keyup", (event) => {
-            if (event.key === "ArrowUp" && upPressed === true) {
-                this.sendPaddlePosition("none");
-                upPressed = false;
-            }
-            else if (event.key === "ArrowDown" && downPressed === true) {
-                this.sendPaddlePosition("none");
-                downPressed = false;
-            }
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowUp" && upPressed === false) {
-                this.sendPaddlePosition("up");
-                upPressed = true;
-                downPressed = false;
-            } 
-            else if (event.key === "ArrowDown" && downPressed === false) {
-                this.sendPaddlePosition("down");
-                downPressed = true;
-                upPressed = false;
-            }
-        });
-    }
-=======
->>>>>>> a71674a137cf46ac2b2daa4f9e71e7c05690af72
 }
 
 customElements.define("game-canvas", Game);

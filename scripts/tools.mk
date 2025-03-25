@@ -50,13 +50,9 @@ showAll:
 	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
 	@docker network ls
 
-# Watch changes in the specified volumes directory
-watch:
-	@watch $(MAKE) watchC
-
 # Show all Docker containers, images, volumes, and networks every second
 watchC:
-	@$(CMD) ps -a; $(CMD) images
+	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
 
 # Add all changes to git
@@ -134,12 +130,6 @@ id:
 	cat /etc/subgid | grep $(USER)
 	id -u; id -g
 	cat ~/.config/docker/daemon.json
-
-# Create a temporary labeled Alpine Docker image
-alpine:
-	@docker run --name temp-alpine alpine:latest sleep 1
-	@docker commit --change "LABEL keep=true" temp-alpine alpine:latest-labeled
-	@docker rm temp-alpine
 
 # Remove all SSL certificates
 rmCert:

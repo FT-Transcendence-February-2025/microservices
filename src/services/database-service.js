@@ -50,6 +50,22 @@ const db = {
 			console.error(error);
 			return { error };
 		}
+	},
+
+	addMatch: async (userDisplayName, opponentDisplayName, userScore, opponentScore, matchDate) => {
+		try {
+			await database("match_history").insert({
+				display_name: userDisplayName, 
+				opponent_display_name: opponentDisplayName,
+				user_score: userScore,
+				opponent_score: opponentScore,
+				match_date: matchDate 
+			});
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
 	}
 };
 

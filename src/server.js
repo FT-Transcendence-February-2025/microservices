@@ -6,7 +6,7 @@ import userExistsRoute from "./routes/authentication/user-exists-route.js";
 import avatarViewRoute from "./routes/frontend/avatar-view-route.js";
 import avatarChangeRoute from "./routes/frontend/avatar-change-route.js";
 import displayNameRoute from "./routes/frontend/display-name-route.js";
-import matchmakingRoute from "./routes/matchmaking/matchmaking-route.js";
+import getUserRoute from "./routes/matchmaking/get-user-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -56,7 +56,7 @@ fastify.register(userExistsRoute);
 fastify.register(avatarViewRoute);
 fastify.register(avatarChangeRoute);
 fastify.register(displayNameRoute);
-fastify.register(matchmakingRoute);
+fastify.register(getUserRoute);
 
 // fastify.route(registrationRoute);
 

@@ -17,7 +17,7 @@ if (!fs.existsSync(dataDir)) {
 
 // Creating connection
 const db = new Database(dbPath, {
-  verbose: console.log
+  // verbose: console.log
 })
 
 export default db

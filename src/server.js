@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import cors from '@fastify/cors'
 import dotenv from 'dotenv'
 import tournamentRoutes from './routes/tournaments.js'
 import { initDatabase } from './db/schema.js'
@@ -15,6 +16,19 @@ const __dirname = path.dirname(__filename);
 const fastify = Fastify({
   logger: true
 })
+
+fastify.register(cors, {
+  origin: true, // or specify allowed origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+})
+
+// fastify.addHook('onRequest', (request, reply, done) => {
+//   console.log('Raw URL:', request.raw.url);
+//   console.log('Parsed URL:', request.url);
+//   done();
+// });
 
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, 'public'),
@@ -69,9 +83,16 @@ process.on('SIGINT', async () => {
 
 
 /*
-  -make users table init work iwth custom call
+  call regarding um:
+  -user data from um service for users table
+  -invite response with userdata
+
+  
+  -make users table init work with custom call
   -make invite route work
   -make settings route work
+
+  -add schemas to routes
 
   -when host clicked call /register to fill player table with first player aka host
   
@@ -82,7 +103,8 @@ process.on('SIGINT', async () => {
   -or host in tournament table
 
  tournament handling in routes
-  -users table init with: tournaments/
+  -start with: tournaments/
+  -init users table with: /users
   -create tournament table: /create
   -init players table: /:tournamentId/players
   -handle invites through: /:tournamentId/invite

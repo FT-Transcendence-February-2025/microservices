@@ -1,12 +1,11 @@
 export const inviteController = {
 
     async sendInvite (request, reply) {
-        console.log(`Sending invite for tournament: ${request.params}`);
         const { tournamentId } = request.params
-        const { userId } = request.body
+        console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `Sending invite for tournament: ${tournamentId}`);
         //pass status if accepted or declined
         try {
-            const response = await fetch(`path/to/um?userId=${userId}&tournamentId=${tournamentId}`)
+            const response = await fetch(`path/to/um?tournamentId=${tournamentId}`)
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
               }
@@ -34,7 +33,10 @@ export const inviteController = {
                 })
             }
 
-            reply.code(201).send({ message: 'User invited successfully', usersPos: result.lastInsertRowid });
+            reply.code(201).send({ 
+                message: 'User invited successfully', 
+                usersPos: result.lastInsertRowid 
+            });
         }
         catch (error) {
             request.log.error(error);

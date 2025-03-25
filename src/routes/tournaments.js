@@ -30,7 +30,7 @@ export default async function (fastify) {
   fastify.post('/:tournamentId/invite', inviteController.sendInvite)
 
   //fill tournament table with settings and info
-  fastify.post('/:tournamentId/settings', settingsController.setTournament)
+  fastify.post('/:tournamentId/settings', settingsController.updateTournament)
 
   // Register player for tournament
   fastify.post('/:tournamentId/register', tournamentController.postRegisterPlayer)

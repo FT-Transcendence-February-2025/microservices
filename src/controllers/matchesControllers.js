@@ -1,5 +1,20 @@
 import db from '../db/connection.js'
 
+async function updateUserStats (userId, won) {
+  const endpoint = 'http://localhost:3002/updateStats'
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, won })
+    })
+    return await response.json()
+  } catch (error) {
+    console.error('Error updating user stats:', error)
+    return { error: 'Update failed' }
+  }
+}
+
 export const matchesController = {
   async postMatchResults (request, reply) {
     try {
@@ -21,13 +36,24 @@ export const matchesController = {
           winner_id = ?
         WHERE id = ?
         `)
-
       stmt.run(player1Score, player2Score, winnerId, matchId)
 
-      return {
+      const match = db.prepare(`
+        SELECT player1_id, player2_id
+        FROM matchmaking
+        WHERE id = ?
+      `).get(matchId)
+      const loserId = match.player1_id === winnerId ? match.player2_id : match.player1_id
+
+      const winUpdate = await updateUserStats(winnerId, true)
+      const lossUpdate = await updateUserStats(loserId, false)
+
+      return reply.code(200).send({
         success: true,
-        message: 'Match result saved successfully'
-      }
+        message: 'Match result saved successfully',
+        winUpdate,
+        lossUpdate
+      })
     } catch (error) {
       console.error('Error saving match results:', error)
       return reply.code(500).send({

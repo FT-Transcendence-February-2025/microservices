@@ -241,7 +241,7 @@ const messageHandler = async (message, connection) => {
           return
         }
 
-        const gameUrl = `http://localhost:3002/?matchId=${match.id}`
+        const gameUrl = `http://localhost:3003/?matchId=${match.id}`
 
         // Notify both players
         activeConnections.forEach(conn => {

@@ -37,7 +37,6 @@ fastify.get('/', (request, reply) => {
   })
 })
 
-
 fastify.register(websocketHandler)
 fastify.register(matchmakingDbRoute)
 fastify.register(matchesRoute, { prefix: '/matches' })

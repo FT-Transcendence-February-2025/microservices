@@ -14,7 +14,7 @@ export default class Login extends HTMLElement {
         const loginForm = this.querySelector('#loginForm');
         if (loginForm)
             loginForm.addEventListener('submit', this.handleSubmit.bind(this));
-    }
+    }	
 
     async handleSubmit(event: Event): Promise<void> {
         event.preventDefault();

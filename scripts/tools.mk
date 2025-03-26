@@ -22,7 +22,8 @@ runDocker: restartDocker
 pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
-	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar
+	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
+	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
@@ -31,7 +32,8 @@ load-Img:
 	fi
 	-docker load -i alpine.tar && \
 	-docker load -i node-20-alpine.tar && \
-	-docker load -i traefik-v3.3.3.tar
+	-docker load -i traefik-v3.3.3.tar && \
+	-docker load -i nginx-alpine.tar
 
 
 # Show list of all running Docker containers

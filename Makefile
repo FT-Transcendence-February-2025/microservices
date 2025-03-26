@@ -12,6 +12,7 @@ export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
 NAME		:= ft_transcendence
 DOCKER_BUILDKIT=1x
+export  DEBUG_MODE := $(D)
 -include $(wildcard scripts/*.mk)
 # -include tools.mk network.mk gitApi.mk
 
@@ -119,6 +120,7 @@ secrets: #check_host
 # Usage: make logs c=<container_name>
 logs:
 	docker compose logs $$c
+	echo $(DEBUG_ON)
 # @docker compose config --services | xargs -I {} docker logs {}
 
 # Rebuild and restart everything

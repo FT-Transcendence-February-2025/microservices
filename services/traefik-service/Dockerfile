@@ -1,7 +1,7 @@
 FROM traefik:v3.3.3
 
 # Install curl and ca-certificates
-RUN apk add --no-cache curl ca-certificates openssl && \
+RUN apk add --no-cache curl ca-certificates openssl jq && \
 	update-ca-certificates && \
 	mkdir -p /etc/traefik
 

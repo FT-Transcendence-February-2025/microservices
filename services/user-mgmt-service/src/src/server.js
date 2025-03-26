@@ -39,7 +39,7 @@ const fastify = Fastify({
 	logger: true
 });
 
-// ////////////////////////////////////////////////////DOCKER CONTAINER end
+////////////////////////////////////////////////////DOCKER CONTAINER end
 fastify.register(fastifyCors, {
 	origin: [
 		`https://${process.env.DOMAIN}`,

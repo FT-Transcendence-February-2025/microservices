@@ -13,6 +13,7 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
+        - DEBUG_MODE=${DEBUG_MODE}
         - DNS_SERVER=8.8.8.8
     image: img_user:latest
     container_name: user
@@ -30,30 +31,42 @@ services:
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
+      DEBUG_MODE: ${DEBUG_MODE}
+    # extra_hosts:
+    #   - "auth.${DOMAIN}:auth"
+    #   - "user.${DOMAIN}:user"
     dns:
       - 8.8.8.8
       - 1.1.1.1
     networks:
       - backend
     labels:
-        - "traefik.enable=true"
-        # --- Public Router: Externally facing ---
-        # Matches any request coming to the public domain with the /api/user prefix
-        - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`)"
-        - "traefik.http.routers.api-user-public.entrypoints=websecure"
-        - "traefik.http.routers.api-user-public.tls=true"
-        - "traefik.http.routers.api-user-public.priority=85"
-        # Apply middlewares: one for Host rewriting and one for path rewriting
-        - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path"
-        # Middleware: Change the Host header to the internal hostname (user.domain)
-        - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user.${DOMAIN}"
-        # Middleware: Rewrite the incoming path.
-        #   /api/user/login  →  /api/login
-        - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user(.*)"
-        - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api$1"
-        # --- Internal Router : allows internal microservices to call the user service directly using user.domain
-        - "traefik.http.routers.api-user-internal.rule=Host(`user.${DOMAIN}`) && PathPrefix(`/api`)"
-        - "traefik.http.routers.api-user-internal.entrypoints=websecure"
-        - "traefik.http.routers.api-user-internal.tls=true"
-        - "traefik.http.services.user-service.loadbalancer.server.port=3002"
+      - "traefik.enable=true"
+      # --- Public Router: Externally facing ---
+      # Matches any request coming to the public domain with the /api/user prefix
+      - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`)"
+      - "traefik.http.routers.api-user-public.entrypoints=websecure"
+      - "traefik.http.routers.api-user-public.tls=true"
+      - "traefik.http.routers.api-user-public.priority=90"
+      # Apply middlewares: one for Host rewriting and one for path rewriting
+      - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path"
+
+      # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
+      # Matches any request coming from wildcard subdomains with /api/user prefix
+      - "traefik.http.routers.api-user-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/user`)"
+      - "traefik.http.routers.api-user-internal.entrypoints=websecure"
+      - "traefik.http.routers.api-user-internal.tls=true"
+      # Use the same middlewares to rewrite Host and Path
+      - "traefik.http.routers.api-user-internal.middlewares=change-host-to-user,rewrite-user-path"
+      # Middleware: Change the Host header to the internal hostname (user.domain)
+      - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user.${DOMAIN}"
+      # Middleware: Rewrite the incoming path. Strips the /api/user prefix so that:
+      #   /api/user/task  →  /api/task
+      - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user(.*)"
+      - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api$1"
+
+      # Service Definition: user microservice backend
+      - "traefik.http.services.user-service.loadbalancer.server.port=3002"
+
+
 

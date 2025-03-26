@@ -52,14 +52,17 @@ ft_transcendence
 6. **Frontend Service**: Provides the user interface and interacts with the API gateway.
 
 ## Setup Instructions
-
-1. Clone the repository:
+0. WSL & Docker set up:
+   Please refere to documentation
+   [Rootless Docker Guide](docs/RootlessDocker.MD)
+   
+2. Clone the repository:
    ```
-   git clone <repository-url>
+   git clone git@github.com:FT-Transcendence-February-2025/microservices.git
    cd microservices-project
    ```
 
-2. Build and start the services using Docker Compose:
+3. Build and start the services using Docker Compose:
    ```bash
    # secrets generated in tmp_extract, move .env.tmp and .envauthentication to microservices root directory
    make decrypt
@@ -70,7 +73,7 @@ ft_transcendence
    #docker-compose up --build
    ```
 
-3. Access the application through the Traefik gateway with ${IP} or ${DOMAIN}
+4. Access the application through the Traefik gateway with ${IP} or ${DOMAIN}
    ```bash
    # open private firefox window 
    make browser

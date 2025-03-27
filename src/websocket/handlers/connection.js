@@ -117,6 +117,13 @@ const messageHandler = async (message, connection) => {
             })
           }
         }
+      } else {
+        connection.socket.send(
+          JSON.stringify({
+            type: 'error',
+            message: 'You are already in the queue'
+          })
+        )
       }
     } catch (error) {
       connection.socket.send(
@@ -352,7 +359,13 @@ const closeHandler = async (connection) => {
       console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
     }
 
-    let player
+    let player = matchmakingQueue.find(
+      (player) => player.socket === connection.socket
+    )
+
+    if (!player && connection.userId) {
+      player = { id: connection.userId, socket: connection.socket }
+    }
 
     // Find player in queue
     const playerIndex = matchmakingQueue.findIndex(
@@ -374,31 +387,30 @@ const closeHandler = async (connection) => {
 
       if (match) {
         console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
+        // Update match status to cancelled
+        db.prepare(`
+          UPDATE matchmaking 
+          SET match_status = ?, ended_at = datetime('now')
+          WHERE id = ?
+        `).run('cancelled', match.id)
+
+        // Determine opponent ID
+        const opponentId = match.player1_id === player.id
+          ? match.player2_id
+          : match.player1_id
+
+        const opponent = matchmakingQueue.find((player) => player.id === opponentId)
+
+        if (opponent) {
+          opponent.socket.send(
+            JSON.stringify({
+              type: 'matchCancelled',
+              message: 'Your opponent has disconnected. Match cancelled. '
+            })
+          )
+        }
+        console.log(`Notified player ${opponentId} about match cancellation.`)
       }
-
-      // Update match status to cancelled
-      db.prepare(`
-        UPDATE matchmaking 
-        SET match_status = ?, ended_at = datetime('now')
-        WHERE id = ?
-      `).run('cancelled', match.id)
-
-      // Determine opponent ID
-      const opponentId = match.player1_id === player.id
-        ? match.player2_id
-        : match.player1_id
-
-      const opponent = matchmakingQueue.find((player) => player.id === opponentId)
-
-      if (opponent) {
-        opponent.socket.send(
-          JSON.stringify({
-            type: 'matchCancelled',
-            message: 'Your opponent has disconnected. Match cancelled. '
-          })
-        )
-      }
-      console.log(`Notified player ${opponentId} about match cancellation.`)
     }
   } catch (error) {
     console.error('WebSocket error: ', error)

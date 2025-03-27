@@ -203,7 +203,19 @@ class GameInstanceManager {
 
 			if (gameInstance.gameState === 'in_progress') {
 				clearInterval(gameInstance.gameLoop)
-				gameInstance.gameState = 'ended'
+
+				let winnerId
+				if (playerId === gameInstance.player1Id) {
+					winnerId = gameInstance.player2Id
+					gameInstance.paddleLeft.score = 0
+					gameInstance.paddleRight.score = gameInstance.paddleRight.score || 1
+				} else {
+					winnerId = gameInstance.player1Id
+					gameInstance.paddleRight.score = 0
+					gameInstance.paddleLeft.score = gameInstance.paddleRight.score || 1
+				}
+				console.log(`Player ${playerId} disconnected. Declaring player ${winnerId} the winner for match ${matchId}. `)
+				gameInstance.gameState = 'completed'
 				this.endGame(matchId)
 			}
 		}

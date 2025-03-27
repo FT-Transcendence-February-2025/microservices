@@ -12,7 +12,7 @@ export default class User {
 
     static async login(email: string, password: string): Promise<ApiResponse> {
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default class User {
         formData.append('avatar', file);
 
         try {
-            const response = await postApiFormData('/api/avatar-change', formData);
+            const response = await postApiFormData('/api/user/avatar-change', formData);
             const data = await response.json();
     
             if (response.ok) {

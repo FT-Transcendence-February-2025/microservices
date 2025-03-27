@@ -25,7 +25,9 @@ fc-login:
 tf-user:
 	docker exec -it traefik sh -c 'curl -k -X POST  https://$(shell hostname)/api/user/new-user \
 	-H "Content-Type: application/json" \
-	-d '\''{"userId": 2, "displayName": "John Doe"}'\'' | jq'
+	-d '\''{"userId": 9, "displayName": "John Doe"}'\'' | jq'
+tf-userPing:
+	docker exec -it traefik sh -c 'curl -k -X GET  https://$(shell hostname)/api/user/ | jq'
 tf-auth-port:
 	docker exec -it traefik sh -c 'curl -kX GET auth:3001''| jq'
 # ---------------------
@@ -36,6 +38,11 @@ fc-login2:
 
 ac-register:
 	docker exec -it auth sh -c 'curl -k -X POST  https://auth.$(shell hostname)/api/user/new-user \
+	-H "Content-Type: application/json" \
+	-d '\''{"userId": 1, "displayName": "John Doe"}'\'' | jq'
+
+ac-register2:
+	docker exec -it auth sh -c 'curl -k -X POST  https://$(shell hostname)/api/user/new-user \
 	-H "Content-Type: application/json" \
 	-d '\''{"userId": 1, "displayName": "John Doe"}'\'' | jq'
 

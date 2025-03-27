@@ -55,7 +55,7 @@ fastify.register(fastifyBcrypt, {
 fastify.register(fastifyCors, {
     origin: [
         `https://${process.env.DOMAIN}`,
-        `https://auth.${process.env.DOMAIN}`,
+        `http://auth.${process.env.DOMAIN}`,
 		`locahost`
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],

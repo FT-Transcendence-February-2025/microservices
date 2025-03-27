@@ -32,14 +32,13 @@ services:
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
       DEBUG_MODE: ${DEBUG_MODE}
-    # extra_hosts:
-    #   - "auth.${DOMAIN}:auth"
-    #   - "user.${DOMAIN}:user"
     dns:
       - 8.8.8.8
       - 1.1.1.1
     networks:
-      - backend
+      backend:
+       aliases:
+          - user.${DOMAIN}
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---

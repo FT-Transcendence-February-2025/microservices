@@ -253,13 +253,15 @@ const messageHandler = async (message, connection) => {
         // Notify both players
         activeConnections.forEach(conn => {
           if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-            // const opponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
+            const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
             conn.socket.send(
               JSON.stringify({
                 type: 'matchStarted',
                 matchId: match.id,
-                oppId: opponentId,
-                oppDisplayName: opponentDisplayName,
+                oppId: specificOpponentId,
+                oppDisplayName: specificOpponentDisplayName,
                 gameUrl: `${gameUrl}&playerId=${conn.userId}`
               })
             )

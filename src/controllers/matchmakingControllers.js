@@ -1,9 +1,8 @@
 export async function verifyUser (userId) {
   try {
-    const response = await fetch('http://localhost:3002/matchmaking', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
+    const response = await fetch(`http://localhost:3002/get-user/${userId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     })
     const data = await response.json()
     return { status: response.status, ...data }

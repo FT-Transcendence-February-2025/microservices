@@ -3,6 +3,26 @@ import db from "../services/database-service.js";
 import displayNameService from "../services/display-name-service.js";
 
 const frontendController = {
+	activeConnections: new Map(),
+	websocketConnections: (connection, request) => {
+		const userId = request.user.id;
+		if (!userId) {
+			connection.socket.close(4001, "Unauthorized: Missing userId");
+			return;
+		}
+
+		activeConnections.set(userId, connection);
+		console.log(`User ${userId} connected`);
+
+		connection.socket.on("close", () => {
+			activeConnections.delete(userId);
+			console.log(`User ${userId} disconnected`);
+		});
+
+		connection.socket.on("error", (error) => {
+			console.error(`WebSocket error for user ${userId}:`, error);
+		});
+	},
 	avatarView: async (request, reply) => {
 		const user = await db.getUser(request.user.id);
 		if (!user) {
@@ -40,6 +60,36 @@ const frontendController = {
 		}
 	
 		return reply.send({ success: result.success });
+	},
+	inviteFriend: async (request, reply) => {
+		const { invitedId } = request.body;
+		const result = await db.addFriendBound(request.user.id, invitedId, "pending");
+		if (result.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const connection = activeConnections.get(invitedId);
+		if (connection) {
+				connection.socket.send(JSON.stringify({ type: "notification", message }));
+		}
+
+		return reply.send({ success: "Invite request has been sent" });
+	},
+	respondFriend: async (request, reply) => {
+		const { invitingId, accepted } = request.body;
+		if (accepted) {
+			updateResult = await db.updateFriendBoundStatus("accepted");
+			if (updateResult.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+		} else {
+			deleteResult = await db.deleteFriendBound(invitingId, request.user.id);
+			if (deleteResult.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}	
+		}
+
+		return reply.send({ success: "Successfully responded to the request" });
 	}
 };
 

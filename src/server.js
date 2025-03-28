@@ -1,12 +1,14 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import dotenv from "dotenv";
+import fastifyWebsocket from "@fastify/websocket";
 import newUserRoute from "./routes/authentication/new-user-route.js";
 import userExistsRoute from "./routes/authentication/user-exists-route.js";
 import avatarViewRoute from "./routes/frontend/avatar-view-route.js";
 import avatarChangeRoute from "./routes/frontend/avatar-change-route.js";
 import displayNameRoute from "./routes/frontend/display-name-route.js";
 import getUserRoute from "./routes/matchmaking/get-user-route.js";
+import websocketRoute from "./routes/frontend/websocket-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -42,6 +44,7 @@ const fastify = Fastify({
 
 // Register plugins:
 fastify.register(fastifyMultipart);
+fastify.register(fastifyWebsocket);
 
 // // Register routes:
 // fastify.register(newUserRoute, { prefix: "/api" });
@@ -57,6 +60,7 @@ fastify.register(avatarViewRoute);
 fastify.register(avatarChangeRoute);
 fastify.register(displayNameRoute);
 fastify.register(getUserRoute);
+fastify.register(websocketRoute);
 
 // fastify.route(registrationRoute);
 

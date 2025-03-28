@@ -10,7 +10,7 @@ const registrationController = async (request, reply) => {
 		return reply.status(registrationResult.status).send({ error: registrationResult.error });
 	}
 
-	const sendResult = await userManagementService.sendIdToUserManagement(registrationResult.userId, registrationResult.displayName);
+	const sendResult = await userManagementService.sendId(registrationResult.userId, registrationResult.displayName);
 	if (sendResult.error) {
 		return reply.status(500).send({ error: "Internal Server Error" });
 	}

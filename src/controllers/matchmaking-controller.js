@@ -22,23 +22,9 @@ const matchmakingController = {
 	},
 
 	updateMatchHistory: async (request, reply) => {
-		const { userId, oponnentId, userScore, opponentScore, matchDate } = request.body;
-		const userDisplayName = await db.getUser(userId);
-		if (!userDisplayName) {
-			return reply.status(404).send({ error: "User not found" });
-		}
-		if (userDisplayName.error) {
-			return reply.status(500).send({ error: "Internal Server Error" });
-		}
-		const oponnentDisplayName = await db.getUser(oponnentId);
-		if (!oponnentDisplayName) {
-			return reply.status(404).send({ error: "Oponnent not found" });
-		}
-		if (oponnentDisplayName.error) {
-			return reply.status(500).send({ error: "Internal Server Error" });
-		}
+		const { userId, opponentId, userScore, opponentScore, matchDate } = request.body;
 
-		const addResult = await db.addMatch(userDisplayName, oponnentDisplayName, userScore, opponentScore, matchDate);
+		const addResult = await db.addMatch(userId, opponentId, userScore, opponentScore, matchDate);
 		if (addResult.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}

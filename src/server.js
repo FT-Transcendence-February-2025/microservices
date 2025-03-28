@@ -9,6 +9,8 @@ import avatarChangeRoute from "./routes/frontend/avatar-change-route.js";
 import displayNameRoute from "./routes/frontend/display-name-route.js";
 import getUserRoute from "./routes/matchmaking/get-user-route.js";
 import websocketRoute from "./routes/frontend/websocket-route.js";
+import userLogoutRoute from "./routes/authentication/user-logout-route.js";
+import getFriendsRoute from "./routes/frontend/get-friends-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -53,6 +55,9 @@ fastify.register(fastifyWebsocket);
 // fastify.register(avatarChangeRoute, { prefix: "/api" });
 // fastify.register(displayNameRoute, { prefix: "/api" });
 // fastify.register(matchmakingRoute, { prefix: "/api" });
+// fastify.register(websocketRoute, { prefix: "/api" });
+// fastify.register(userLogoutRoute, { prefix: "/api" });
+// fastify.register(getFriendsRoute, { prefix: "/api" });
 // Register routes:
 fastify.register(newUserRoute);
 fastify.register(userExistsRoute);
@@ -61,8 +66,8 @@ fastify.register(avatarChangeRoute);
 fastify.register(displayNameRoute);
 fastify.register(getUserRoute);
 fastify.register(websocketRoute);
-
-// fastify.route(registrationRoute);
+fastify.register(userLogoutRoute);
+fastify.register(getFriendsRoute);
 
 fastify.get("/", (request, reply) => {
 	return { message: "Fastify server of user-management service running" };

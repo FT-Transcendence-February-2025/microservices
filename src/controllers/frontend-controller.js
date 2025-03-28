@@ -4,7 +4,7 @@ import displayNameService from "../services/display-name-service.js";
 
 const frontendController = {
 	activeConnections: new Map(),
-	websocketConnections: (connection, request) => {
+	websocketConnections: async (connection, request) => {
 		const userId = request.user.id;
 		if (!userId) {
 			connection.socket.close(4001, "Unauthorized: Missing userId");
@@ -14,6 +14,22 @@ const frontendController = {
 		activeConnections.set(userId, connection);
 		console.log(`User ${userId} connected`);
 
+		const pendingFriendRequests = await db.findPendingInvitations(userId);
+		for (i = 0; i < pendingFriendRequests.length; i++) {
+			const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
+			if (!invitingUser) {
+				console.error(`Error in function websocketConnections. Table 'friend_list' has entry id = ${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Sending next notifications...`);
+				continue;
+			}
+			if (invitingUser.error) {
+				continue;
+			}
+			connection.socket.send(JSON.stringify({ 
+				type: "notification_friend",
+				message: `Friend request from ${invitingUser.disply_name}`
+			}));
+		}
+		
 		connection.socket.on("close", () => {
 			activeConnections.delete(userId);
 			console.log(`User ${userId} disconnected`);
@@ -23,6 +39,7 @@ const frontendController = {
 			console.error(`WebSocket error for user ${userId}:`, error);
 		});
 	},
+	// TODO: verify if its necessary, as getUser returns avatar path inside the object
 	avatarView: async (request, reply) => {
 		const user = await db.getUser(request.user.id);
 		if (!user) {
@@ -89,7 +106,15 @@ const frontendController = {
 			}	
 		}
 
-		return reply.send({ success: "Successfully responded to the request" });
+		return reply.status(200).send({ success: "Successfully responded to the request" });
+	},
+	getFriends: async (request, reply) => {
+		const friends = await db.getFriends(request.user.id);
+		if (friends.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Returning users found (can be empty)", friends });
 	}
 };
 

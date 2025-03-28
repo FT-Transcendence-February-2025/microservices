@@ -15,7 +15,7 @@ const userManagementService = {
 		const data = await response.json();
 		return { exists: data.exists };
 	},
-	sendIdToUserManagement: async (userId, displayName) => {
+	sendId: async (userId, displayName) => {
     const response = await fetch("http://localhost:3002/new-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -23,11 +23,23 @@ const userManagementService = {
     });
 
     if (!response.ok) {
-        console.error("Error in function userManagementService.sendIdToUserManagement: Error creating user in user management service:", response.error);
+        console.error("Error in function userManagementService.sendId: Error creating user in user management service:", response.error);
 				return { error: "Failed to create user in User Management Service" };
     }
 
 		return { success: "User created successfully in User Management Service" };
+	},
+	informUserLogout: async (userId) => {
+		const response = await fetch ("htttp://localhost:3002/user-logout", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ userId })
+		});
+
+		if (!response.ok) {
+			console.error("Error in function userManagementService.informUserLogout: Error informing user management about user logout:", response.error);
+			return { error: "Failed to inform user management about user logout" };
+		}
 	}
 };
 

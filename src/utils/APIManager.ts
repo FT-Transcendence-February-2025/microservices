@@ -18,6 +18,7 @@ async function fetchWithToken(url: string, options: any) {
             return fetch(url, options);
         }
         // redirect to /login and delete tokens !!!
+        localStorage.removeItem('accessToken');
         throw new Error('Unable to refresh token');
     }
     return response;

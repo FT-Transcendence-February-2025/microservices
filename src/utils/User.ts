@@ -1,16 +1,11 @@
 import { postApiData, postApiFormData } from './APIManager.js'
 
-interface ApiResponse {
-    success: boolean;
-    errorMessage?: string;
-}
-
 export default class User {
     static displayName: string = '';
     static email: string = '';
     static avatar: HTMLImageElement = new Image();
 
-    static async login(email: string, password: string): Promise<ApiResponse> {
+    static async login(email: string, password: string): Promise<boolean> {
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
@@ -19,28 +14,24 @@ export default class User {
                 },
                 body: JSON.stringify({ email, password })
             });
-            console.log(response);
-            const data = await response.json();
-            
-            if (data.token) {
+            const data = response.bodyUsed ? await response.json() : null;
+
+            if (response.ok) {
                 localStorage.setItem('accessToken', data.token);
-                return { success: true };
+                return true;
             }
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async register(displayName: string, email: string, password: string): Promise<ApiResponse> {
+    static async register(displayName: string, email: string, password: string): Promise<boolean> {
         try {
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
@@ -50,144 +41,124 @@ export default class User {
                 body: JSON.stringify({ email, displayName, password })
             });
 
-            const data = await response.json();
-
             if (response.ok)
-                return { success: true };
+                return true;
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async logout(): Promise<ApiResponse> {
+    static async logout(): Promise<boolean> {
         try {
             const response = await postApiData('/api/user/display-name', {});
-            const data = await response.json();
-    
-            if (response.ok) { 
+
+            if (response.ok) {
                 // remove refresh token cookie !!!!!
                 localStorage.removeItem('accessToken');
-                return { success: true };
+                return true;
             }
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async changeDisplayName(displayName: string): Promise<ApiResponse> {
+    static async changeDisplayName(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ displayName });
             const response = await postApiData('/api/user/display-name', body);
-            const data = await response.json();
-        
+
             if (response.ok) {
                 User.displayName = displayName;
-                return { success: true };
+                return true;
             }
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async changeEmail(email: string): Promise<ApiResponse> {
+    static async changeEmail(email: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ email });
             const response = await postApiData('/api/auth/email', body);
-            
-            const data = await response.json();
-    
+           
             if (response.ok) {
                 User.email = email;
-                return { success: true };
+                return true;
             }
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async changePassword(password: string): Promise<ApiResponse> {
+    static async changePassword(password: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ password });
             const response = await postApiData('/api/auth/password', body);
-            const data = await response.json();
-    
-            if (response.ok) {
-                return { success: true };
-            }
+
+            if (response.ok)
+                return true;
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 
-    static async changeAvatar(file: File): Promise<ApiResponse> {
+    static async changeAvatar(file: File): Promise<boolean> {
         const formData = new FormData();
         formData.append('avatar', file);
 
         try {
             const response = await postApiFormData('/api/avatar-change', formData);
-            const data = await response.json();
-    
+            const data = response.body ? await response.json() : null;
+
             if (response.ok) {
                 const avatarUrl = data.filePath;
                 User.avatar.src = avatarUrl;
-                return { success: true };
+                return true;
             }
             else {
-                return {
-                    success: false,
-                    errorMessage: data.error || "Server returned an error.",
-                };
+                const data = response.bodyUsed ? await response.json() : null;
+                const error = data ? data : response.statusText || "Server returned an error.";
+                console.error(`Login failed: ${error}`);
+                return false;
             }
         } catch (error: any) {
-            return {
-                success: false,
-                errorMessage: error.message || "An unexpected error occurred.",
-            };
+            console.error(`Login failed: ${error.message}`);
+            return false;
         }
     }
 }

@@ -39,8 +39,9 @@ export default class Game extends HTMLElement {
 
         window.location.hash === '#local' ? this._local = true : this._local = false;
 
-        this._socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
-        this._local === true ? this._secondSocket = new WebSocket(`ws://${window.location.hostname}:3001/game`) : this._secondSocket = null;
+        this._local === true ? this._secondSocket = new WebSocket(`ws://${window.location.hostname}:3000/game`) : this._secondSocket = null;
+        this._socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
+        this.addSocketListener();
         this._upPressed = false;
         this._downPressed = false;
         this._wPressed = false;
@@ -83,7 +84,7 @@ export default class Game extends HTMLElement {
         event.preventDefault();
 
         if (this._local) {
-            
+            // 
         }
         else {
             const touchX = event.touches[event.touches.length - 1].clientX;
@@ -102,11 +103,12 @@ export default class Game extends HTMLElement {
     }
 
     handleTouchEnd(event: TouchEvent) : void {
-        if (this._local) {
+        event.preventDefault();
 
+        if (this._local) {
+            
         }
         else {
-            event.preventDefault();
             if (event.touches.length === 0) {
                 this.sendPaddlePosition("none");
                 this._upPressed = false;
@@ -166,7 +168,6 @@ export default class Game extends HTMLElement {
             try {
                 const parsedData = JSON.parse(message.data);
                     this.updateGameState(parsedData);
-                console.log(parsedData);
             } catch (error) {
                 console.error('Failed to parse received data:', error);
             }

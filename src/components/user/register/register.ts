@@ -23,11 +23,11 @@ export default class Register extends HTMLElement {
         const password = (this.querySelector('#password') as HTMLInputElement).value;
 
         User.register(displayName, email, password)
-        .then(response => {
-            if (response.success)
-                alert('Login successful');
+        .then(success => {
+            if (success)
+                alert('Register successful');
             else
-                alert(`Login failed: ${response.errorMessage}`);
+                alert(`Register failed`);
         });
     }
 }

@@ -1,7 +1,7 @@
 import db from '../db/connection.js'
 
 async function updateUserStats (stats) {
-  const endpoint = 'http://localhost:3002/updateStats'
+  const endpoint = 'http://localhost:3002/update-match-history'
   try {
     const response = await fetch(endpoint, {
       method: 'POST',

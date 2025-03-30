@@ -16,7 +16,7 @@ COPY src .
 RUN npm run build
 
 # Stage 2: Serve the static files with Nginx
-FROM nginx:alpine
+FROM nginx:alpine as runtime
 
 ARG DEBUG_MODE
 

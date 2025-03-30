@@ -42,6 +42,9 @@ endif
 	@$(MAKE) --no-print showAll logs 
 	@printf "$(LF)\n$(D_GREEN)[✔] IP: $(shell ip route get 8.8.8.8 | awk '{print $$7}') $(P_NC)\n"
 
+rebuild:
+	$(CMD) down $$c;
+	$(MAKE) --no-print D=1 dcon c=$$c
 # Watch Docker events
 watchDocker:
 	@$(CMD) watch

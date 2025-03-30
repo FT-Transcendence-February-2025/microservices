@@ -1,25 +1,52 @@
+# Log file to store generated user data.
+LOG_FILE = users.csv
+
 # Default target, does nothing
 all:
 
+# Target to initialize the log file with headers if it doesn't exist.
+init-log:
+	@if [ ! -f $(LOG_FILE) ]; then \
+		echo "timestamp,email,displayName,password" > $(LOG_FILE); \
+	fi
+
 sh: 
 	docker exec -it $$c sh
-login:
-	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password"}' | jq
+login:init-log
+	@NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
+	EMAIL=$$NAME@test.com; \
+	PASS=$$NAME.123; \
+	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
+	echo "Registering user:"; \
+	echo "	Email: $$EMAIL"; \
+	echo "	Name:  $$NAME"; \
+	echo " Password: $$PASS"; \
+	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
+	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
-login2:
+login2:init-log
 	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password"}' | jq
 
-register:
-	curl -sk -X POST https://$(shell hostname)/api/auth/register \
-	-H "Content-Type: application/json" \
-	-d '{"email": "user@example.com", "displayName": "JohnDoe", "password": "securePassword123"}' | jq
+register:init-log
+	@NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
+	EMAIL=$$NAME@test.com; \
+	PASS=$$NAME.123; \
+	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
+	echo "Registering user:"; \
+	echo "	Email: $$EMAIL"; \
+	echo "	Name:  $$NAME"; \
+	echo " Password: $$PASS"; \
+	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
+	curl -k -X POST https://$(shell hostname)/api/auth/register \
+		-H "Content-Type: application/json" \
+		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$NAME\", \"password\": \"$$PASS\"}" | jq
 
 u-register:
 	curl -sk -X POST https://$(shell hostname)/api/user/new-user \
 	-H "Content-Type: application/json" \
 	-d '{"userId": 8, "displayName": "test"}' | jq
 fc-login:
-	docker exec -it front-end sh -c 'curl -sk -X POST https://$(shell hostname)/api/auth/login \
+	docker exec -it front-end sh -c 'curl -k -X POST https://$(shell hostname)/api/auth/login \
 	-H "Content-Type: application/json" \
 	-d '\''{"email": "user@example.com", "password": "securePassword123"}'\'' | jq'
 tf-user:

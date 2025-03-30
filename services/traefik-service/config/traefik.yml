@@ -2,11 +2,11 @@ entryPoints:
   web:
     address: ":80"
     # allowACMEByPass: true
-    # http:
-    #   redirections:
-    #     entryPoint:
-    #       to: websecure
-    #       scheme: https
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"

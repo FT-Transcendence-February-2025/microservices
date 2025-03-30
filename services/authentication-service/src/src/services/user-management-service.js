@@ -24,10 +24,10 @@ const userManagementService = {
 
     if (!response.ok) {
         console.error("Error in function userManagementService.sendIdToUserManagement: Error creating user in user management service:", response.error);
-				return { error: "Failed to create user in User Management Service" };
+	return { error: "Failed to create user in User Management Service" };
     }
 
-		return { success: "User created successfully in User Management Service" };
+	return { success: "User created successfully in User Management Service" };
 	}
 };
 

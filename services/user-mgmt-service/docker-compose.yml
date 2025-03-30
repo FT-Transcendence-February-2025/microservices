@@ -35,10 +35,12 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    expose:
+      - "3002"
     networks:
       backend:
        aliases:
-          - user.${DOMAIN}
+          - user
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---
@@ -52,12 +54,12 @@ services:
 
       # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
       # Matches any request coming from wildcard subdomains with /api/user prefix
-      - "traefik.http.routers.api-user-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/user`)"
-      - "traefik.http.routers.api-user-internal.entrypoints=websecure"
-      - "traefik.http.routers.api-user-internal.tls=true"
-      # Use the same middlewares to rewrite Host and Path
-      - "traefik.http.routers.api-user-internal.middlewares=change-host-to-user,rewrite-user-path"
-      # Middleware: Change the Host header to the internal hostname (user.domain)
+      # - "traefik.http.routers.api-user-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/user`)"
+      # - "traefik.http.routers.api-user-internal.entrypoints=websecure"
+      # - "traefik.http.routers.api-user-internal.tls=true"
+      # # Use the same middlewares to rewrite Host and Path
+      # - "traefik.http.routers.api-user-internal.middlewares=change-host-to-user,rewrite-user-path"
+      # # Middleware: Change the Host header to the internal hostname (user.domain)
       - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user.${DOMAIN}"
       # Middleware: Rewrite the incoming path. Strips the /api/user prefix so that:
       #   /api/user/task  →  /api/task

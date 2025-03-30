@@ -9,7 +9,17 @@ class GameInstanceManager {
 		this.playerConnections = new Map()
 	}
 
-	createGameInstance(matchId, player1Id, player2Id) {
+	async createGameInstance(matchId, player1Id, player2Id, isLocal = true) {
+		const response = await fetch (`http://localhost:3003/get-user/${player1Id}`, {
+			method: 'GET',
+			headers: { 'Content-Type': 'application/json' }
+		});
+		if (response.status !== 200) {
+			return {
+				success: false,
+				message: 'Host verification failed'
+			}
+		}
 		if (this.gameInstances.has(matchId)) {
 			return {
 				success: false,
@@ -25,6 +35,7 @@ class GameInstanceManager {
 
 		gameInstance.connectedPlayers = new Set()
 		gameInstance.gameState = 'pending'
+		gameInstance.isLocal = isLocal
 
 		this.gameInstances.set(matchId, gameInstance)
 
@@ -42,7 +53,7 @@ class GameInstanceManager {
 			}
 		}
 	
-		if (gameInstance.player1Id != playerId && gameInstance.player2Id != playerId) {
+		if (!gameInstance.isLocal && gameInstance.player1Id != playerId && gameInstance.player2Id != playerId) {
 			return {
 				success: false,
 				message: 'Player not part of this match'
@@ -54,7 +65,11 @@ class GameInstanceManager {
 	
 		console.log(`Player ${playerId} connected to match ${matchId} | Connected count: ${gameInstance.connectedPlayers.size}`)
 	
-		if (gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'pending') {
+		if (gameInstance.isLocal && gameInstance.connectedPlayers.size === 1 && gameInstance.gameState === 'pending') {
+			setTimeout(() => {
+				this.startGame(matchId)
+			}, 1000)
+		} else if (!gameInstance.islocal && gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'pending') {
 			this.startGame(matchId)
 		}
 		return { success: true }
@@ -97,7 +112,7 @@ class GameInstanceManager {
 		}
 		console.log(`Game ended for match ${matchId}`)
 
-		if (gameInstance.gameState === 'completed') {
+		if (gameInstance.gameState === 'completed' && !gameInstance.isLocal) {
 			this.saveMatchResults(
 				matchId,
 				gameInstance.player1Id,
@@ -160,14 +175,19 @@ class GameInstanceManager {
 				message: 'Game instance not found'
 			}
 		}
-		const paddle = playerId == gameInstance.player1Id ? gameInstance.paddleLeft : gameInstance.paddleRight
-
+		
 		const directionMap = {
 			'up': -1,
 			'down': 1,
 			'none': 0
 		}
-		paddle.dir = directionMap[action.dir]
+		if (gameInstance.isLocal && action.side) {
+			const paddle = action.side === 'left' ?  gameInstance.paddleLeft : gameInstance.paddleRight
+			paddle.dir = directionMap[action.dir]
+		} else {
+			const paddle = playerId == gameInstance.player1Id ? gameInstance.paddleLeft : gameInstance.paddleRight
+			paddle.dir = directionMap[action.dir]
+		}
 		return { success: true }
 	}
 

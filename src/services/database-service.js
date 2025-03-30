@@ -10,7 +10,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	getUserByEmail: async (email) => {
 		try {
 			return await database("users").where({ email }).first();
@@ -19,7 +18,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	getUserById: async (id) => {
 		try {
 			return await database("users").where({ id }).first();
@@ -28,7 +26,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	getUserByDisplayName: async (displayName) => {
 		try {
 			return await database("users").where({ display_name: displayName }).first();
@@ -37,7 +34,15 @@ const db = {
 			return { error };
 		}
 	},
-
+	deleteUser: async (userId) => {
+		try {
+			await database("users").where({ id: userId }).del();
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
 	updateEmail: async (id, newEmail) => {
 		try {
 			await database("users")
@@ -49,7 +54,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	updatePassword: async (id, newPassword) => {
 		try {
 			await database("users")
@@ -61,7 +65,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	updateEmailVerified: async (id, verified) => {
 		try {
 			await database("users")
@@ -73,7 +76,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	getDevice: async (deviceHash) => {
 		try {
 			return await database("devices").where({ device_hash: deviceHash }).first();
@@ -82,7 +84,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	addDevice: async (userId, deviceHash, token, expiresAt) => {
 		try {
 			await database("devices").insert({ user_id: userId, device_hash: deviceHash, token, expires_at: expiresAt });
@@ -92,24 +93,22 @@ const db = {
 			return { error };
 		}
 	},
-
 	updateToken: async (userId, deviceHash, newToken, newExpiresAt) => {
-  try {
-    const updatedRows = await database("devices")
-      .where({ user_id: userId, device_hash: deviceHash })
-      .update({ token: newToken, expires_at: newExpiresAt });
+  	try {
+			const updatedRows = await database("devices")
+				.where({ user_id: userId, device_hash: deviceHash })
+				.update({ token: newToken, expires_at: newExpiresAt });
 
-    if (updatedRows === 0) {
-      return { error: "Device not found" };
-    }
+			if (updatedRows === 0) {
+				return { error: "Device not found" };
+			}
 
-    return { success: true };
-  } catch (error) {
-    console.error(error);
-    return { error };
-  }
-},
-
+    	return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
 	deleteDevice: async (userId, deviceHash) => {
 		try {
 			await database("devices").where({ user_id: userId, device_hash: deviceHash }).del();
@@ -119,7 +118,6 @@ const db = {
 			return { error };
 		}
 	},
-
 	deleteExpiredTokens: async () => {
 		console.log("Running scheduled expired token removal...");
 		try {

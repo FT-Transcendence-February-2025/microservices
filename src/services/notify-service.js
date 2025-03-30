@@ -16,7 +16,7 @@ const notifyService = {
       await mailer.sendMail(options);
       return { success: "Email sent" };
     } catch (error) {
-      fastify.log.error(error);
+			console.error("Error in function sendEmail: ", error);
       return { status: 500, error: "Something went wrong" };
     }
   }

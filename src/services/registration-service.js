@@ -39,6 +39,7 @@ const registrationService = {
 		const link = `http://auth:3001/verify-email/${confirmationToken}`;
 		const sendResult = await notifyService.sendEmail({ type: "confirm", receiver: email, link });
 		if (sendResult.error) {
+			await db.deleteUser(user.id);
 			return { status: sendResult.status, error: sendResult.error };
 		}
 
@@ -55,6 +56,7 @@ const generateConfirmationToken = (userId, action, expirationMinutes) => {
   const timestamp = Math.floor(Date.now() / 1000);
 
   const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
+
   hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
   const signature = hmac.digest('hex').substr(0, 8);
 

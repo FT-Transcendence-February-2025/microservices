@@ -22,7 +22,8 @@ runDocker: restartDocker
 pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
-	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar
+	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
+	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
@@ -31,7 +32,8 @@ load-Img:
 	fi
 	-docker load -i alpine.tar && \
 	-docker load -i node-20-alpine.tar && \
-	-docker load -i traefik-v3.3.3.tar
+	-docker load -i traefik-v3.3.3.tar && \
+	-docker load -i nginx-alpine.tar
 
 
 # Show list of all running Docker containers
@@ -50,13 +52,9 @@ showAll:
 	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
 	@docker network ls
 
-# Watch changes in the specified volumes directory
-watch:
-	@watch $(MAKE) watchC
-
 # Show all Docker containers, images, volumes, and networks every second
 watchC:
-	@$(CMD) ps -a; $(CMD) images
+	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
 
 # Add all changes to git
@@ -134,12 +132,6 @@ id:
 	cat /etc/subgid | grep $(USER)
 	id -u; id -g
 	cat ~/.config/docker/daemon.json
-
-# Create a temporary labeled Alpine Docker image
-alpine:
-	@docker run --name temp-alpine alpine:latest sleep 1
-	@docker commit --change "LABEL keep=true" temp-alpine alpine:latest-labeled
-	@docker rm temp-alpine
 
 # Remove all SSL certificates
 rmCert:

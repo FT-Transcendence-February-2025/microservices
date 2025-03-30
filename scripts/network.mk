@@ -81,7 +81,8 @@ testWeb:
 # Open firefox in private window with specific URLs
 browser:
 #	firefox --private-windows -url  "127.0.0.1" "$(shell hostname)" "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" "localhost:8080" &
-	firefox --private-window  --url "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" "localhost:8080" &
+	firefox --private-window "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" &
+#"localhost:8080" &
 
 
 # Perform various tests related to 42wolfsburg.de domain

@@ -16,11 +16,14 @@ COPY src .
 RUN npm run build
 
 # Stage 2: Serve the static files with Nginx
-FROM nginx:alpine
+FROM nginx:alpine as runtime
+
+ARG DEBUG_MODE
+
+RUN if [ "$DEBUG_MODE" = "1" ]; then apk update && apk add --no-cache curl openssl jq; fi
 
 # Update package list and install Nginx and OpenSSL
-RUN apk update && apk add --no-cache curl openssl \
-    && rm -rf /var/cache/apk/* \
+RUN rm -rf /var/cache/apk/* \
     && rm /etc/nginx/conf.d/default.conf \
     && rm /usr/share/nginx/html/index.html
 
@@ -31,6 +34,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY ./nginx/conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./nginx/conf/default.conf /etc/nginx/conf.d/default.conf
 
+WORKDIR /usr/share/nginx
 # Expose port 3000
 EXPOSE 3000
 

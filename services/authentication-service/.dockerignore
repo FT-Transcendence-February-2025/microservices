@@ -1,2 +1,20 @@
-Dockerfile
 .dockerignore
+# Ignore node_modules
+node_modules/
+
+# Ignore Dockerfile
+Dockerfile
+
+# Ignore git files
+.git/
+.gitignore
+
+# Ignore the build files
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore environment variables
+.env

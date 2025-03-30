@@ -13,13 +13,13 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
+        - DEBUG_MODE=${DEBUG_MODE}
         - DNS_SERVER=8.8.8.8
     image: img_authentication:latest
     container_name: auth
     hostname: auth
     volumes:
       - authentication-vol:/usr/src/app
-    # working_dir: /usr/src/app
     restart: unless-stopped
     secrets:
       - envFile
@@ -31,31 +31,46 @@ services:
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
+      DEBUG_MODE: ${DEBUG_MODE}
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    expose:
+      - "3001"
     networks:
-      - backend
+      backend:
+       aliases:
+          - auth
+    # command: sh -c 'echo "$(hostname -i) auth.$DOMAIN" >> /etc/hosts && exec npm run dev'
     labels:
-        - "traefik.enable=true"
-        # --- Public Router: Externally facing ---
-        # Matches any request coming to the public domain with the /api/auth prefix
-        - "traefik.http.routers.api-auth-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/auth`)"
-        - "traefik.http.routers.api-auth-public.entrypoints=websecure"
-        - "traefik.http.routers.api-auth-public.tls=true"
-        - "traefik.http.routers.api-auth-public.priority=90"
-        # Apply middlewares: one for Host rewriting and one for path rewriting
-        - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
-        # Middleware: Change the Host header to the internal hostname (auth.domain)
-        - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
-        # Middleware: Rewrite the incoming path. Strips the /api/auth prefix so that:
-        #   /api/auth/login  →  /api/login
-        - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.regex=^/api/auth(.*)"
-        - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.replacement=/api$1"
-        # --- Internal Router ---
-        # This router allows internal microservices to call the auth service directly using auth.domain
-        - "traefik.http.routers.api-auth-internal.rule=Host(`auth.${DOMAIN}`) && PathPrefix(`/api`)"
-        - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
-        - "traefik.http.routers.api-auth-internal.tls=true"
-        - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"
+    - "traefik.enable=true"
 
+    # --- Public Router: Externally facing ---
+    # Matches any request coming to the public domain with the /api/auth prefix
+    - "traefik.http.routers.api-auth-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/auth`)"
+    - "traefik.http.routers.api-auth-public.entrypoints=websecure"
+    - "traefik.http.routers.api-auth-public.tls=true"
+    - "traefik.http.routers.api-auth-public.priority=90"
+    # Apply middlewares: one for Host rewriting and one for path rewriting
+    - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
+
+    # # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
+    # # Matches any request coming from wildcard subdomains with /api/auth prefix
+    # - "traefik.http.routers.api-auth-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/auth`)"
+    # - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
+    # - "traefik.http.routers.api-auth-internal.tls=true"
+    # # Use the same middlewares to rewrite Host and Path
+    # - "traefik.http.routers.api-auth-internal.middlewares=change-host-to-auth,rewrite-auth-path"
+    # Middleware: Change the Host header to the internal hostname (auth.domain)
+    - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
+    # Middleware: Rewrite the incoming path. Strips the /api/auth prefix so that:
+    #   /api/auth/login  →  /api/login
+    - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.regex=^/api/auth(.*)"
+    - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.replacement=/api$1"
+    # - "traefik.http.routers.api-auth-internal.middlewares=auth-ip-whitelist"
+    # - "traefik.http.middlewares.auth-ip-whitelist.ipwhitelist.sourcerange=172.18.0.0/24"
+    # Service Definition: Authentication microservice backend
+    - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"
+
+
+  # - "traefik.http.middlewares.api-headers.headers.accesscontrolallowmethods=GET,POST,OPTIONS"

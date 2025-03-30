@@ -36,7 +36,7 @@ const registrationService = {
 		}
 
 		const confirmationToken = generateConfirmationToken(user.id, "email_confirmation", 10);
-		const link = `http://localhost:3001/verify-email/${confirmationToken}`;
+		const link = `http://auth:3001/verify-email/${confirmationToken}`;
 		const sendResult = await notifyService.sendEmail({ type: "confirm", receiver: email, link });
 		if (sendResult.error) {
 			return { status: sendResult.status, error: sendResult.error };

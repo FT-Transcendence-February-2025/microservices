@@ -15,4 +15,5 @@ secrets/
 # services/user-management-service
 .settings/
 *.tar
+users.csv
 

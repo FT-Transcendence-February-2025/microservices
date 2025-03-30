@@ -55,7 +55,8 @@ fastify.register(fastifyBcrypt, {
 fastify.register(fastifyCors, {
     origin: [
         `https://${process.env.DOMAIN}`,
-        `https://auth.${process.env.DOMAIN}`
+        `http://auth.${process.env.DOMAIN}`,
+		`locahost`
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
@@ -86,6 +87,13 @@ fastify.register(passwordRoute, { prefix: "/api" });
 fastify.register(refreshTokenRoute, { prefix: "/api" });
 fastify.register(logoutRoute, { prefix: "/api" });
 fastify.register(verifyEmailRoute, { prefix: "/api" });
+// fastify.register(registrationRoute);
+// fastify.register(loginRoute);
+// fastify.register(emailRoute);
+// fastify.register(passwordRoute);
+// fastify.register(refreshTokenRoute);
+// fastify.register(logoutRoute);
+// fastify.register(verifyEmailRoute);
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

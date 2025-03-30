@@ -12,6 +12,7 @@ export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
 NAME		:= ft_transcendence
 DOCKER_BUILDKIT=1x
+export  DEBUG_MODE := $(D)
 -include $(wildcard scripts/*.mk)
 # -include tools.mk network.mk gitApi.mk
 
@@ -41,6 +42,9 @@ endif
 	@$(MAKE) --no-print showAll logs 
 	@printf "$(LF)\n$(D_GREEN)[✔] IP: $(shell ip route get 8.8.8.8 | awk '{print $$7}') $(P_NC)\n"
 
+rebuild:
+	$(CMD) down $$c;
+	$(MAKE) --no-print D=1 dcon c=$$c
 # Watch Docker events
 watchDocker:
 	@$(CMD) watch
@@ -119,6 +123,7 @@ secrets: #check_host
 # Usage: make logs c=<container_name>
 logs:
 	docker compose logs $$c
+	echo $(DEBUG_ON)
 # @docker compose config --services | xargs -I {} docker logs {}
 
 # Rebuild and restart everything

@@ -9,7 +9,7 @@ const matchAcceptances = {} // object the tracks accepted match invitations
 
 async function startGameForMatch (match) {
   try {
-    const response = await fetch('http://localhost:3003/games', {
+    const response = await fetch('http://localhost:3002/games', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -17,7 +17,8 @@ async function startGameForMatch (match) {
       body: JSON.stringify({
         matchId: match.id,
         player1Id: match.player1_id,
-        player2Id: match.player2_id
+        player2Id: match.player2_id,
+        isLocal: false
       })
     })
 

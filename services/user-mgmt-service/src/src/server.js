@@ -10,6 +10,7 @@ import displayNameRoute from "./routes/frontend/display-name-route.js";
 import getUserRoute from "./routes/matchmaking/get-user-route.js";
 import websocketRoute from "./routes/frontend/websocket-route.js";
 import userLogoutRoute from "./routes/authentication/user-logout-route.js";
+import pino from "pino";
 import getFriendsRoute from "./routes/frontend/get-friends-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
@@ -39,8 +40,16 @@ import getFriendsRoute from "./routes/frontend/get-friends-route.js";
 // }
 
 const fastify = Fastify({
-	// logger: true
-});
+	logger: {
+	  transport: {
+		target: 'pino-pretty', // Use pino-pretty for pretty printing.
+		options: {
+		  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
+		  colorize: true, // Colorize output in development.
+		}
+	  }
+	}
+  });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 
@@ -49,25 +58,25 @@ fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
 
 // // Register routes:
-// fastify.register(newUserRoute, { prefix: "/api" });
-// fastify.register(userExistsRoute, { prefix: "/api" });
-// fastify.register(avatarViewRoute, { prefix: "/api" });
-// fastify.register(avatarChangeRoute, { prefix: "/api" });
-// fastify.register(displayNameRoute, { prefix: "/api" });
+fastify.register(newUserRoute, { prefix: "/api" });
+fastify.register(userExistsRoute, { prefix: "/api" });
+fastify.register(avatarViewRoute, { prefix: "/api" });
+fastify.register(avatarChangeRoute, { prefix: "/api" });
+fastify.register(displayNameRoute, { prefix: "/api" });
 // fastify.register(matchmakingRoute, { prefix: "/api" });
-// fastify.register(websocketRoute, { prefix: "/api" });
-// fastify.register(userLogoutRoute, { prefix: "/api" });
-// fastify.register(getFriendsRoute, { prefix: "/api" });
+fastify.register(websocketRoute, { prefix: "/api" });
+fastify.register(userLogoutRoute, { prefix: "/api" });
+fastify.register(getFriendsRoute, { prefix: "/api" });
 // Register routes:
-fastify.register(newUserRoute);
-fastify.register(userExistsRoute);
-fastify.register(avatarViewRoute);
-fastify.register(avatarChangeRoute);
-fastify.register(displayNameRoute);
-fastify.register(getUserRoute);
-fastify.register(websocketRoute);
-fastify.register(userLogoutRoute);
-fastify.register(getFriendsRoute);
+// fastify.register(newUserRoute);
+// fastify.register(userExistsRoute);
+// fastify.register(avatarViewRoute);
+// fastify.register(avatarChangeRoute);
+// fastify.register(displayNameRoute);
+// fastify.register(getUserRoute);
+// fastify.register(websocketRoute);
+// fastify.register(userLogoutRoute);
+// fastify.register(getFriendsRoute);
 
 fastify.get("/", (request, reply) => {
 	return { message: "Fastify server of user-management service running" };

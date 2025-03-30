@@ -12,6 +12,7 @@ const authenticationController = {
 		const { userId, displayName } = request.body;
 		const newUserResult = await db.addUser(userId, displayName, DEFAULT_AVATAR_PATH, 0, 0);
 		if (newUserResult.error) {
+			console.error("Error while creating new user ", newUserResult.error);
 			return reply.status(newUserResult.status).send({ error: "Internal Server Error" });
 		}
 	

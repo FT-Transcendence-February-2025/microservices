@@ -66,11 +66,11 @@ const db = {
 		}
 	},
 	// Friend list table:
-	addFriendBound: async (user1Id, user2Id, status) => {
+	addFriendBound: async (invitingId, invitedId, status) => {
 		try {
 			await database("friend_list").insert({
-				user1_id: user1Id, 
-				user2_id: user2Id,
+				inviting_id: invitingId, 
+				invited_id: invitedId,
 				status
 			});
 			return { success: true };
@@ -79,12 +79,12 @@ const db = {
 			return { error };
 		}
 	},
-	updateFriendBoundStatus: async (user1Id, user2Id, status) => {
+	updateFriendBoundStatus: async (invitingId, invitedId, status) => {
 		try {
 			await database("friend_list")
 				.where(() => {
-					this.where({ user1_id: user1Id, user2_id: user2Id })
-						.orWhere({ user1_id: user2Id, user2_id: user1Id });
+					this.where({ inviting_id: invitingId, invited_id: invitedId })
+						.orWhere({ inviting_id: invitedId, invited_id: invitingId });
 				})
 				.update({ status })
 			return { success: true };
@@ -93,14 +93,35 @@ const db = {
 			return { error };
 		}
 	},
-	deleteFriendBound: async (user1Id, user2Id) => {
+	deleteFriendBound: async (invitingId, invitedId) => {
 		try {
 			await database("friend_list").
 				where(() => {
-					this.where({ user1_id: user1Id, user2_id: user2Id })
-						.orWhere({ user1_id: user2Id, user2_id: user1Id });
+					this.where({ inviting_id: invitingId, invited_id: invitedId })
+						.orWhere({ inviting_id: invitedId, invited_id: invitingId });
 				}).del();
 			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+	getPendingInvitations: async (invitedId) => {
+		try {
+			return await database("friend_list")
+				.where({ invited_id: invitedId, status: "pending" });
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+	getFriends: async (user) => {
+		try {
+			return await database("friend_list").
+				where(() => {
+					this.where({ inviting_id: user, status: "accepted" })
+						.orWhere({ invited_id: user, status: "accepted" });
+				});
 		} catch (error) {
 			console.error(error);
 			return { error };

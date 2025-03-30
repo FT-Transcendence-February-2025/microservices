@@ -106,7 +106,7 @@ const db = {
 			return { error };
 		}
 	},
-	findPendingInvitations: async (invitedId) => {
+	getPendingInvitations: async (invitedId) => {
 		try {
 			return await database("friend_list")
 				.where({ invited_id: invitedId, status: "pending" });

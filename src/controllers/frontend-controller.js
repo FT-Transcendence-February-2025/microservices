@@ -14,7 +14,7 @@ const frontendController = {
 		activeConnections.set(userId, connection);
 		console.log(`User ${userId} connected`);
 
-		const pendingFriendRequests = await db.findPendingInvitations(userId);
+		const pendingFriendRequests = await db.getPendingInvitations(userId);
 		for (i = 0; i < pendingFriendRequests.length; i++) {
 			const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
 			if (!invitingUser) {

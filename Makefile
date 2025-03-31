@@ -14,7 +14,6 @@ NAME		:= ft_transcendence
 DOCKER_BUILDKIT=1x
 export  DEBUG_MODE := $(D)
 -include $(wildcard scripts/*.mk)
-# -include tools.mk network.mk gitApi.mk
 
 #------------------ RULES -----------------------#
 

@@ -38,9 +38,7 @@ services:
     expose:
       - "3002"
     networks:
-      backend:
-       aliases:
-          - user
+      - backend
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---

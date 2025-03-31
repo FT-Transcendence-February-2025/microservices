@@ -3,7 +3,7 @@
 include:
   - services/authentication-service/docker-compose.yml
   - services/user-mgmt-service/docker-compose.yml
-  # - services/game-service/docker-compose.yml
+  - services/match-service/docker-compose.yml
   # - services/backend-service/docker-compose.yml
   - services/traefik-service/docker-compose.yml
   - services/frontend-service/docker-compose.yml

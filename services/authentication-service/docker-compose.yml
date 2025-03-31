@@ -38,9 +38,7 @@ services:
     expose:
       - "3001"
     networks:
-      backend:
-       aliases:
-          - auth
+      - backend
     # command: sh -c 'echo "$(hostname -i) auth.$DOMAIN" >> /etc/hosts && exec npm run dev'
     labels:
     - "traefik.enable=true"

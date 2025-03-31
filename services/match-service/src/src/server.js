@@ -8,7 +8,7 @@ import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 
-const PORT = 3000
+const PORT = 3003
 
 const fastify = Fastify({
   logger: true
@@ -24,7 +24,7 @@ try {
 }
 
 await fastify.register(fastifyCors, {
-  origin: ['http://user-management:3000', 'http://localhost:3000'],
+  origin: ['http://user:3000', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT'],
   credentials: true
 })

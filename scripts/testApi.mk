@@ -24,7 +24,7 @@ login:init-log
 	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
 	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
-login2:init-log
+login2:init-log # Should return error
 	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password"}' | jq
 
 register:init-log
@@ -80,3 +80,4 @@ tf-auth:
 	-H "Content-Type: application/json" \
 	-H "Host: auth.$(shell hostname)" \
 	-d '{"email": "user@example.com", "password": "securePassword123"}'
+# -----------------------------------

@@ -152,19 +152,7 @@ cert:
 # docker rm alpine
 testCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
-# docker run --rm -v /sgoinfre/$USER/data:/certs -it debian:bullseye sh -c 'apt-get update && apt-get install -y libnss3-tools curl && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/privkey.key -cert-file /certs/fullchain.crt ${USER}.pong.42.fr'
-#	@mkcert -key-file secrets/$(arg)/privkey.key -cert-file secrets/$(arg)/fullchain.crt ${USER}.pong.42.fr
 
-# Generate SSL certificates using Certbot
-# cerbot:
-# 	$(call createDir,$(SSL))
-# 	@HOST=$(shell hostname -s) ; \
-# 	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt]; then \
-# 		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
-# 	else \
-# 		rm -rf $(SSL)/*; \
-# 		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/etc/letsencrypt -v $(SSL):/var/lib/letsencrypt -v $(SSL):/var/log/letsencrypt -p 80:80 -p 443:443 certbot/certbot sh -c "certbot certonly --standalone -d $(shell hostname) && cp /etc/letsencrypt/live/$(shell hostname)/privkey.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).key && cp /etc/letsencrypt/live/$(shell hostname)/fullchain.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).crt"; \
-# 	fi
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

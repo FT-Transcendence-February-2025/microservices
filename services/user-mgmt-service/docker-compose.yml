@@ -70,4 +70,3 @@ services:
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"
 
 
-

@@ -93,6 +93,10 @@ export default async function gameRoute(fastify, options) {
             return reply.code(400).send(result);
         }
         const gameUrl = `http://localhost:3002/index.html?matchId=${matchId}&playerId=${player1Id}&isLocal=true`
-        return reply.code(200).send({ ...result, gameUrl});
+        return reply.code(200).send({ 
+            statusCode: 200,
+            gameUrl,
+            messsage: "Local game instance created and host verified successfully."
+        });
     });
 }

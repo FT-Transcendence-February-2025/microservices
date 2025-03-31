@@ -2,7 +2,7 @@ import gameInstanceManager from './gameInstance.js'
 
 export default async function gameRoute(fastify, options) {
     fastify.post('/games', async (request, reply) => {
-        const { matchId, player1Id, player2Id } = request.body
+        const { matchId, player1Id, player2Id, isLocal } = request.body
 
         if (!matchId || !player1Id || !player2Id) {
             return reply.code(400).send({
@@ -11,7 +11,7 @@ export default async function gameRoute(fastify, options) {
                 message: 'Missing required parameters'
             })
         };
-        const result = gameInstanceManager.createGameInstance(matchId, player1Id, player2Id);
+        const result = await gameInstanceManager.createGameInstance(matchId, player1Id, player2Id, isLocal);
         return result;
     })
 
@@ -75,5 +75,24 @@ export default async function gameRoute(fastify, options) {
             connectedPlayers: Array.from(instance.connectedPlayers),
             gameState: instance.gameState
         })));
+    });
+
+    fastify.post('/games/local', async (request, reply) => {
+        const { matchId, player1Id, player2Id } = request.body
+
+        if (!matchId || !player1Id || !player2Id) {
+            return reply.code(400).send({
+                statusCode: 400,
+                success: false,
+                message: 'Missing required parameters'
+            })
+        };
+
+        const result = await gameInstanceManager.createGameInstance(matchId, player1Id, player2Id, true);
+        if (!result.success) {
+            return reply.code(400).send(result);
+        }
+        const gameUrl = `http://localhost:3002/index.html?matchId=${matchId}&playerId=${player1Id}&isLocal=true`
+        return reply.code(200).send({ ...result, gameUrl});
     });
 }

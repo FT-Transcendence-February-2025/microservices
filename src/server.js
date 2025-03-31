@@ -81,16 +81,21 @@ process.on('SIGINT', async () => {
   }
 })
 
-
 /*
+
+  -get userId in body when service gets called
   call regarding um:
   -user data from um service for users table
   -invite response with userdata
+  -how to handle the userid at beginning
 
-  
-  -make users table init work with custom call
-  -make invite route work
-  -make settings route work
+  -call user info through userdata route
+
+  -meeting: invite handling and join handling
+      -invites, send out invite
+         -if accepted tm route add-user gets called from um
+      -join: friends list  and random on main tm frontend
+         - accept player that wants to join 
 
   -add schemas to routes
 
@@ -123,7 +128,7 @@ process.on('SIGINT', async () => {
 */
 
 /*
- after push from 42 computer, in order to run on laptop:
+after push from 42 computer, in order to run on laptop:
 
  # Download and install nvm:
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash

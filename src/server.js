@@ -81,15 +81,9 @@ process.on('SIGINT', async () => {
   }
 })
 
-/*
+/*TODO:
 
   -get userId in body when service gets called
-  call regarding um:
-  -user data from um service for users table
-  -invite response with userdata
-  -how to handle the userid at beginning
-
-  -call user info through userdata route
 
   -meeting: invite handling and join handling
       -invites, send out invite
@@ -98,18 +92,13 @@ process.on('SIGINT', async () => {
          - accept player that wants to join 
 
   -add schemas to routes
-
-  -when host clicked call /register to fill player table with first player aka host
   
   -create join route for users to join a tournament from their friends, who are online (gets send to tournaments hosts -> also a reason to maybe add host to tournament table)(or only tournaments that are hosted by friends get listed as joinable)
      - for that create route that gets called and needs a bool to set to true so response says accepted and data gets saved, timer to set the bool if still on false response says declined automaticaly, if the host didnt decline
   
-   -how do iknow when a userid or playerid is host when in both tables all players are listed, maybe players table for each tournament with host as first player
-  -or host in tournament table
-
  tournament handling in routes
   -start with: tournaments/
-  -init users table with: /users
+  -add users table with: /addUser
   -create tournament table: /create
   -init players table: /:tournamentId/players
   -handle invites through: /:tournamentId/invite

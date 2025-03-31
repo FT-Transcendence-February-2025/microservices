@@ -46,11 +46,11 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Register failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Register failed: ${error.message}`);
             return false;
         }
     }
@@ -67,11 +67,11 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Logout failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Logout failed: ${error.message}`);
             return false;
         }
     }
@@ -88,11 +88,11 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Changing DisplayName failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Changing DisplayName failed: ${error.message}`);
             return false;
         }
     }
@@ -109,18 +109,18 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Changing email failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Changing email failed: ${error.message}`);
             return false;
         }
     }
 
-    static async changePassword(password: string): Promise<boolean> {
+    static async changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
         try {
-            const body = JSON.stringify({ password });
+            const body = JSON.stringify({ currentPassword: oldPassword, newPassword: newPassword });
             const response = await postApiData('/api/auth/password', body);
 
             if (response.ok)
@@ -128,11 +128,11 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Changing Password failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Changing Password failed: ${error.message}`);
             return false;
         }
     }
@@ -153,11 +153,11 @@ export default class User {
             else {
                 const data = response.bodyUsed ? await response.json() : null;
                 const error = data ? data : response.statusText || "Server returned an error.";
-                console.error(`Login failed: ${error}`);
+                console.error(`Changing Avatar failed: ${error}`);
                 return false;
             }
         } catch (error: any) {
-            console.error(`Login failed: ${error.message}`);
+            console.error(`Changing Avatar failed: ${error.message}`);
             return false;
         }
     }

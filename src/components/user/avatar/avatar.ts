@@ -22,6 +22,19 @@ export default class Avatar extends HTMLElement {
         avatarButton.addEventListener('click', () => {
             userDropdown.classList.toggle('hidden');
         });
+        const logoutLink = this.querySelector('#logoutLink');
+        if (logoutLink)
+            logoutLink.addEventListener('click', this.handleLogout.bind(this)); 
+    }
+
+    handleLogout() {
+        User.logout()
+        .then(success => {
+            if (success)
+                alert('Logout successful');
+            else
+                alert(`Logout failed!`);
+        });
     }
 }
 

@@ -1,10 +1,10 @@
-import SettingsTemplate from './settings.html?raw';
+import AccountTemplate from './account.html?raw';
 import User from '../../../utils/User';
 
 const template = document.createElement('template');
-template.innerHTML = SettingsTemplate;
+template.innerHTML = AccountTemplate;
 
-export default class Settings extends HTMLElement {
+export default class Account extends HTMLElement {
     private _displayNameEditButton: HTMLButtonElement;
     private _displayNameSaveButton: HTMLButtonElement;
     private _displayNameInput: HTMLInputElement;
@@ -12,6 +12,10 @@ export default class Settings extends HTMLElement {
     private _emailSaveButton: HTMLButtonElement;
     private _emailInput: HTMLInputElement;
     private _avatarUpload: HTMLInputElement;
+    private _passwordChangeButton: HTMLButtonElement;
+    private _passwordSaveButton: HTMLButtonElement;
+    private _oldPasswordInput: HTMLInputElement;
+    private _newPasswordInput: HTMLInputElement;
 
     constructor() {
         super();
@@ -37,6 +41,18 @@ export default class Settings extends HTMLElement {
         this._avatarUpload = this.querySelector('#avatarUpload') as HTMLInputElement;
         if (!this._avatarUpload)
             throw new Error("Could not find avatarUpload element");
+        this._passwordChangeButton = this.querySelector('#passwordChangeButton') as HTMLButtonElement;
+        if (!this._passwordChangeButton)
+            throw new Error("Could not find passwordChangeButton element");
+        this._passwordSaveButton = this.querySelector('#passwordSaveButton') as HTMLButtonElement;
+        if (!this._passwordSaveButton)
+            throw new Error("Could not find passwordSaveButton element");
+        this._oldPasswordInput = this.querySelector('#oldPasswordInput') as HTMLInputElement;
+        if (!this._oldPasswordInput)
+            throw new Error("Could not find oldPasswordInput element");
+        this._newPasswordInput = this.querySelector('#newPasswordInput') as HTMLInputElement;
+        if (!this._newPasswordInput)
+            throw new Error("Could not find newPasswordInput element");
     }
 
     connectedCallback() {
@@ -47,6 +63,8 @@ export default class Settings extends HTMLElement {
         this._displayNameSaveButton.addEventListener('click', this.handleDisplayNameSaveButton.bind(this));
         this._emailSaveButton.addEventListener('click', this.handleEmailSaveButton.bind(this));
         this._avatarUpload.addEventListener('change', this.handleAvatarUpload.bind(this));
+        this._passwordChangeButton.addEventListener('click', this.handleChangePasswordButton.bind(this));
+        this._passwordSaveButton.addEventListener('click', this.handlePasswordSaveButton.bind(this));
     }
 
     handleAvatarUpload(event: Event) {
@@ -63,6 +81,36 @@ export default class Settings extends HTMLElement {
                     alert(`Changing Display Name failed!`);
             });
         }
+    }
+
+    handleChangePasswordButton() {
+        const passwordContainer = this.querySelector('#passwordInputs');
+        if (passwordContainer)
+            passwordContainer.classList.remove('hidden');
+        this._passwordSaveButton.classList.remove('hidden');
+        this._passwordChangeButton.classList.add('hidden');
+    }
+
+
+    handlePasswordSaveButton() {
+        let oldPassword = this._oldPasswordInput.value;
+        let newPassword = this._newPasswordInput.value;
+        if (oldPassword && newPassword) {
+            User.changePassword(oldPassword, newPassword)
+            .then(success => {
+                if (success)
+                    alert('Changing Password successful');
+                else
+                    alert(`Changing Password failed!`);
+            });
+        }
+        this._oldPasswordInput.value = '';
+        this._newPasswordInput.value = '';
+        const passwordContainer = this.querySelector('#passwordInputs');
+        if (passwordContainer)
+            passwordContainer.classList.add('hidden');
+        this._passwordSaveButton.classList.add('hidden');
+        this._passwordChangeButton.classList.remove('hidden');
     }
 
     handleDisplayNameEditButton() {
@@ -112,4 +160,4 @@ export default class Settings extends HTMLElement {
     }
 }
 
-customElements.define("user-settings", Settings);
+customElements.define("account-settings", Account);

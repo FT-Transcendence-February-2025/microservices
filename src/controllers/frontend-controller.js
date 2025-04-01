@@ -46,17 +46,33 @@ const frontendController = {
 			connection.close(1011, "Internal Server Error"); // 1011 = Server Error
 		}
 	},
-	// TODO: verify if its necessary, as getUser returns avatar path inside the object
-	avatarView: async (request, reply) => {
-		const user = await db.getUser(request.user.id);
-		if (!user) {
+	getUserProfile: async (request, reply) => {
+		const { userId } = request.params;
+
+		const requestedUser = await db.getUser(userId);
+		if (!requestedUser) {
 			return reply.status(404).send({ error: "User not found" });
 		}
-		if (user.error) {
+		if (requestedUser.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		return reply.status(200).send({ success: "Found avatar path", filePath: user.avatar_path });
+		const friends = await db.areFriends(request.user.id, requestedUser.id);
+		if (!friends) {
+			return reply.status(403).send({ error: "Requesting user is not a friend of the requested user" })
+		}
+
+		const connection = frontendController.activeConnections.get(requestedUser.id);
+		const online = connection ? true : false; 
+
+		return reply.status(200).send({ 
+			success: "Found user profile",
+			displayName: requestedUser.display_name,
+			avatarPath: requestedUser.avatar_path,
+			wins: requestedUser.wins,
+			loses: requestedUser.loses,
+			online
+		});
 	},
 	avatarChange: async (request, reply) => {
 		try {

@@ -13,7 +13,7 @@ init-log:
 sh: 
 	docker exec -it $$c sh
 login:init-log
-	@NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
+	NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
 	EMAIL=$$NAME@test.com; \
 	PASS=$$NAME.123; \
 	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
@@ -28,7 +28,9 @@ login2:init-log
 	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password"}' | jq
 
 register:init-log
-	@NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
+	-docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
+	@echo
+	NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
 	EMAIL=$$NAME@test.com; \
 	PASS=$$NAME.123; \
 	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
@@ -64,7 +66,7 @@ fc-login2:
 	-d '\''{"email": "user@example.com", "password": "securePassword123"}'\'' | jq'
 
 ac-register:
-	docker exec -it auth sh -c 'curl -k -X POST  https://auth.$(shell hostname)/api/user/new-user \
+	docker exec -it auth sh -c 'curl -k -X POST  https://user:3002/api/user/new-user \
 	-H "Content-Type: application/json" \
 	-d '\''{"userId": 1, "displayName": "John Doe"}'\'' | jq'
 

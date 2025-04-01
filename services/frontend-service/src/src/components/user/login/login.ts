@@ -22,11 +22,11 @@ export default class Login extends HTMLElement {
         const password = (this.querySelector('#password') as HTMLInputElement).value;
 
         User.login(email, password)
-        .then(response => {
-            if (response.success)
+        .then(success => {
+            if (success)
                 alert('Login successful');
             else
-                alert(`Login failed: ${response.errorMessage}`);
+                alert(`Login failed`);
         });
     }
 }

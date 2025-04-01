@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const AUTH_SERVICE_URL = 'http://authentication:3000';
+const AUTH_SERVICE_URL = 'http://auth:3000';
 
 export class User {
   static async findById(id) {

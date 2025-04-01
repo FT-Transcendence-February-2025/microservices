@@ -41,8 +41,16 @@ if (missingVariables.length > 0) {
 }
 
 const fastify = Fastify({
-	logger: true, // Enable Fastify's built-in logger
-});
+	logger: {
+	  transport: {
+		target: 'pino-pretty', // Use pino-pretty for pretty printing.
+		options: {
+		  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
+		  colorize: true, // Colorize output in development.
+		}
+	  }
+	}
+  });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 

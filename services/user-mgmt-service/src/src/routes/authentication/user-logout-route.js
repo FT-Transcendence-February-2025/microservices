@@ -1,9 +1,9 @@
-import matchmakingController from "../../controllers/matchmaking-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js"
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/matchmaking",
+		url: "/user-logout",
 		schema: {
 			body: {
 				type: "object",
@@ -19,12 +19,17 @@ export default async function (fastify, opts) {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" },
-						displayName: { type: "string" }
+						success: { type: "string" }
+					}
+				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
 					}
 				}
 			}
 		},
-		handler: matchmakingController.getDisplayName	
-	});
+		handler: authenticationController.makeUserOffline
+		});
 };

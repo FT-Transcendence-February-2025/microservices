@@ -8,8 +8,16 @@ import { websocketHandler } from './websocket/index.js';
 const PORT = 3000;
 
 const fastify = Fastify({
-  logger: true,
-});
+	logger: {
+	  transport: {
+		target: 'pino-pretty', // Use pino-pretty for pretty printing.
+		options: {
+		  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
+		  colorize: true, // Colorize output in development.
+		}
+	  }
+	}
+  });
 
 await fastify.register(fastifyCors, {
   origin: ['http://authentication:3000', 'http://localhost:3000'],

@@ -4,7 +4,7 @@ import jwtTr from "jwt-validator-tr";
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/avatar-change",
+		url: "/avatar",
 		schema: {
 			response : {
 				200: {

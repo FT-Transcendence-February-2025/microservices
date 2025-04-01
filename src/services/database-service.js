@@ -133,32 +133,49 @@ const db = {
 			return { error };
 		}
 	},
+	areFriends: async (user1, user2) => {
+    try {
+			const friendEntry = await database("friend_list")
+				.where((QueryBuilder) => {
+					QueryBuilder
+						.where({ inviting_id: user1, invited_id: user2 })
+						.orWhere({ inviting_id: user2, invited_id: user1 });
+				})
+				.andWhere({ status: "accepted" })
+				.first();
+
+			return !!friendEntry;
+    } catch (error) {
+			console.error("Error in function db.areFriends: ", error);
+			return { error };
+    }
+},
 	getFriends: async (userId) => {
     try {
-        const friendList = await database("friend_list")
-            .where((qb) => {
-                qb.where({ inviting_id: userId, status: "accepted" })
-                  .orWhere({ invited_id: userId, status: "accepted" });
-            });
+			const friendList = await database("friend_list")
+				.where((qb) => {
+					qb.where({ inviting_id: userId, status: "accepted" })
+						.orWhere({ invited_id: userId, status: "accepted" });
+				});
 
-        const friendIds = friendList.map((entry) =>
-            entry.inviting_id === userId ? entry.invited_id : entry.inviting_id
-        );
+			const friendIds = friendList.map((entry) =>
+				entry.inviting_id === userId ? entry.invited_id : entry.inviting_id
+			);
 
-        const friends = await database("users").whereIn("id", friendIds);
+			const friends = await database("users").whereIn("id", friendIds);
 
-				const sanitizedFriends = friends.map((friend) => ({
-					id: friend.id,
-					displayName: friend.display_name,
-					avatarPath: friend.avatar_path,
-					wins: friend.wins,
-					loses: friend.loses,
-			}));
+			const sanitizedFriends = friends.map((friend) => ({
+				id: friend.id,
+				displayName: friend.display_name,
+				avatarPath: friend.avatar_path,
+				wins: friend.wins,
+				loses: friend.loses,
+		}));
 
-        return sanitizedFriends;
+			return sanitizedFriends;
     } catch (error) {
-        console.error("Error in function db.getFriends: ", error);
-        return { error };
+			console.error("Error in function db.getFriends: ", error);
+			return { error };
     }
 }
 };

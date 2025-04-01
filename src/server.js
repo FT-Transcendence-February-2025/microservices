@@ -4,16 +4,17 @@ import dotenv from "dotenv";
 import fastifyWebsocket from "@fastify/websocket";
 import newUserRoute from "./routes/authentication/new-user-route.js";
 import userExistsRoute from "./routes/authentication/user-exists-route.js";
-import avatarViewRoute from "./routes/frontend/avatar-view-route.js";
-import avatarChangeRoute from "./routes/frontend/avatar-change-route.js";
+import avatarRoute from "./routes/frontend/avatar-route.js";
 import displayNameRoute from "./routes/frontend/display-name-route.js";
-import getUserRoute from "./routes/get-user-route.js";
+import getUserRoute from "./routes/matchmaking/get-user-route.js";
 import websocketRoute from "./routes/frontend/websocket-route.js";
 import userLogoutRoute from "./routes/authentication/user-logout-route.js";
 import getFriendsRoute from "./routes/frontend/get-friends-route.js";
 import getMatchHistoryRoute from "./routes/matchmaking/get-match-history-route.js";
 import inviteFriendRoute from "./routes/frontend/invite-friend-route.js";
 import respondFriendRoute from "./routes/frontend/respond-friend-route.js";
+import inviteGameRoute from "./routes/matchmaking/invite-game-route.js";
+import profileRoute from "./routes/frontend/profile-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -54,8 +55,7 @@ fastify.register(fastifyWebsocket);
 // // Register routes:
 // fastify.register(newUserRoute, { prefix: "/api" });
 // fastify.register(userExistsRoute, { prefix: "/api" });
-// fastify.register(avatarViewRoute, { prefix: "/api" });
-// fastify.register(avatarChangeRoute, { prefix: "/api" });
+// fastify.register(avatarRoute, { prefix: "/api" });
 // fastify.register(displayNameRoute, { prefix: "/api" });
 // fastify.register(matchmakingRoute, { prefix: "/api" });
 // fastify.register(websocketRoute, { prefix: "/api" });
@@ -64,11 +64,12 @@ fastify.register(fastifyWebsocket);
 // fastify.register(getMatchHistoryRoute, { prefix: "/api" });
 // fastify.register(inviteFriendRoute, { prefix: "/api" });
 // fastify.register(respondFriendRoute, { prefix: "/api" });
+// fastify.register(inviteGameRoute, { prefix: "/api" });
+// fastify.register(profileRoute, { prefix: "/api" });
 // Register routes:
 fastify.register(newUserRoute);
 fastify.register(userExistsRoute);
-fastify.register(avatarViewRoute);
-fastify.register(avatarChangeRoute);
+fastify.register(avatarRoute);
 fastify.register(displayNameRoute);
 fastify.register(getUserRoute);
 fastify.register(websocketRoute);
@@ -77,6 +78,8 @@ fastify.register(getFriendsRoute);
 fastify.register(getMatchHistoryRoute);
 fastify.register(inviteFriendRoute);
 fastify.register(respondFriendRoute);
+fastify.register(inviteGameRoute);
+fastify.register(profileRoute);
 
 fastify.get("/", (request, reply) => {
 	return { message: "Fastify server of user-management service running" };

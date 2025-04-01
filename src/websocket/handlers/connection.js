@@ -1,3 +1,4 @@
+import { verifyUser } from '../../controllers/matchmakingControllers.js'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
 
@@ -16,7 +17,8 @@ async function startGameForMatch (match) {
       body: JSON.stringify({
         matchId: match.id,
         player1Id: match.player1_id,
-        player2Id: match.player2_id
+        player2Id: match.player2_id,
+        isLocal: false
       })
     })
 
@@ -43,12 +45,12 @@ const messageHandler = async (message, connection) => {
   case 'joinQueue':
     try {
       // Verify user exists
-      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(data.userId)
-      if (!user) {
+      const result = await verifyUser(data.userId)
+      if (result.error || !result.success) {
         connection.socket.send(
           JSON.stringify({
             type: 'error',
-            message: 'User not found'
+            message: result.error || 'User not found'
           })
         )
         return
@@ -57,9 +59,11 @@ const messageHandler = async (message, connection) => {
       // Add player to queue if not already in it
       if (!matchmakingQueue.find((player) => player.id === data.userId)) {
         connection.userId = data.userId
+        connection.displayName = result.displayName
         matchmakingQueue.push({
           id: data.userId,
           socket: connection.socket,
+          displayName: result.displayName,
           joinedAt: new Date()
         })
 
@@ -67,7 +71,8 @@ const messageHandler = async (message, connection) => {
         connection.socket.send(
           JSON.stringify({
             type: 'queueJoined',
-            message: 'Successfully joined matchmaking queue'
+            message: 'Successfully joined matchmaking queue',
+            displayName: result.displayName
           })
         )
 
@@ -87,11 +92,13 @@ const messageHandler = async (message, connection) => {
             const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
             const matchId = result.lastInsertRowid;
             [player1, player2].forEach((player) => {
+              const opponent = player === player1 ? player2.id : player1.id
               player.socket.send(
                 JSON.stringify({
                   type: 'matchCreated',
                   matchId,
-                  opponentId: player === player1 ? player2.id : player1.id,
+                  opponentId: opponent.id,
+                  opponentDisplayName: opponent.displayName,
                   roomCode
                 })
               )
@@ -111,6 +118,13 @@ const messageHandler = async (message, connection) => {
             })
           }
         }
+      } else {
+        connection.socket.send(
+          JSON.stringify({
+            type: 'error',
+            message: 'You are already in the queue'
+          })
+        )
       }
     } catch (error) {
       connection.socket.send(
@@ -158,8 +172,12 @@ const messageHandler = async (message, connection) => {
     break
   case 'matchAccept':
     try {
+      const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+      const displayName = currentPlayer ? currentPlayer.displayName : null
+
       console.log('Received matchAccept:', {
         userId: data.userId,
+        displayName,
         matchId: data.matchId
       })
 
@@ -191,10 +209,16 @@ const messageHandler = async (message, connection) => {
         Array.from(matchAcceptances[match.id])
       )
 
+      const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
+      const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
+      const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+
       connection.socket.send(
         JSON.stringify({
           type: 'matchAccepted',
-          message: 'You have accepted the match'
+          message: 'You have accepted the match',
+          yourName: displayName,
+          opponentName: opponentDisplayName
         })
       )
 
@@ -225,25 +249,27 @@ const messageHandler = async (message, connection) => {
           return
         }
 
-        const gameUrl = `http://localhost:3002/?matchId=${match.id}`
+        const gameUrl = `http://localhost:3003/?matchId=${match.id}`
 
         // Notify both players
         activeConnections.forEach(conn => {
           if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-            const opponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+            const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
+            const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
             conn.socket.send(
               JSON.stringify({
                 type: 'matchStarted',
                 matchId: match.id,
-                opponentId: opponentId,
+                oppId: specificOpponentId,
+                oppDisplayName: specificOpponentDisplayName,
                 gameUrl: `${gameUrl}&playerId=${conn.userId}`
               })
             )
           }
         })
-
         delete matchAcceptances[match.id]
-        console.log(`Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`)
+        console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
       }
     } catch (error) {
       connection.socket.send(
@@ -336,7 +362,13 @@ const closeHandler = async (connection) => {
       console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
     }
 
-    let player
+    let player = matchmakingQueue.find(
+      (player) => player.socket === connection.socket
+    )
+
+    if (!player && connection.userId) {
+      player = { id: connection.userId, socket: connection.socket }
+    }
 
     // Find player in queue
     const playerIndex = matchmakingQueue.findIndex(
@@ -358,31 +390,30 @@ const closeHandler = async (connection) => {
 
       if (match) {
         console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
+        // Update match status to cancelled
+        db.prepare(`
+          UPDATE matchmaking 
+          SET match_status = ?, ended_at = datetime('now')
+          WHERE id = ?
+        `).run('cancelled', match.id)
+
+        // Determine opponent ID
+        const opponentId = match.player1_id === player.id
+          ? match.player2_id
+          : match.player1_id
+
+        const opponent = matchmakingQueue.find((player) => player.id === opponentId)
+
+        if (opponent) {
+          opponent.socket.send(
+            JSON.stringify({
+              type: 'matchCancelled',
+              message: 'Your opponent has disconnected. Match cancelled. '
+            })
+          )
+        }
+        console.log(`Notified player ${opponentId} about match cancellation.`)
       }
-
-      // Update match status to cancelled
-      db.prepare(`
-        UPDATE matchmaking 
-        SET match_status = ?, ended_at = datetime('now')
-        WHERE id = ?
-      `).run('cancelled', match.id)
-
-      // Determine opponent ID
-      const opponentId = match.player1_id === player.id
-        ? match.player2_id
-        : match.player1_id
-
-      const opponent = matchmakingQueue.find((player) => player.id === opponentId)
-
-      if (opponent) {
-        opponent.socket.send(
-          JSON.stringify({
-            type: 'matchCancelled',
-            message: 'Your opponent has disconnected. Match cancelled. '
-          })
-        )
-      }
-      console.log(`Notified player ${opponentId} about match cancellation.`)
     }
   } catch (error) {
     console.error('WebSocket error: ', error)

@@ -5,9 +5,8 @@ import * as crypto from "crypto";
 const refreshTokenService = async (refreshToken, userAgent) => {
 	try {
 		const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY);
-
 		const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
-		const device = await db.getDevice(deviceHash);
+		const device = await db.getDevice(decoded.userId, deviceHash);
 		if (device.error) {
 			return { status: 500, error: "Internal Server Error" };
 		}

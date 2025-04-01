@@ -36,7 +36,7 @@ const authenticationController = {
 		if (!connection) {
 			return reply.status(404).send({ error: "User not found on online list" });
 		}
-		connection.socket.close(1000, "User logged out");
+		connection.close(1000, "User logged out");
 		frontendController.activeConnections.delete(userId);
 
 		return reply.status(200).send({ success: "User status changed to offline" });

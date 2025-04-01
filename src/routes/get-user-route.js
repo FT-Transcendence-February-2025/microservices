@@ -1,4 +1,4 @@
-import matchmakingController from "../../controllers/matchmaking-controller.js";
+import matchmakingController from "../controllers/matchmaking-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

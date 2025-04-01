@@ -100,8 +100,8 @@ const db = {
 	updateFriendBoundStatus: async (invitingId, invitedId, status) => {
 		try {
 			await database("friend_list")
-				.where(() => {
-					this.where({ inviting_id: invitingId, invited_id: invitedId })
+				.where((QueryBuilder) => {
+					QueryBuilder.where({ inviting_id: invitingId, invited_id: invitedId })
 						.orWhere({ inviting_id: invitedId, invited_id: invitingId });
 				})
 				.update({ status })
@@ -114,8 +114,8 @@ const db = {
 	deleteFriendBound: async (invitingId, invitedId) => {
 		try {
 			await database("friend_list").
-				where(() => {
-					this.where({ inviting_id: invitingId, invited_id: invitedId })
+				where((QueryBuilder) => {
+					QueryBuilder.where({ inviting_id: invitingId, invited_id: invitedId })
 						.orWhere({ inviting_id: invitedId, invited_id: invitingId });
 				}).del();
 			return { success: true };
@@ -133,18 +133,34 @@ const db = {
 			return { error };
 		}
 	},
-	getFriends: async (user) => {
-		try {
-			return await database("friend_list").
-				where(() => {
-					this.where({ inviting_id: user, status: "accepted" })
-						.orWhere({ invited_id: user, status: "accepted" });
-				});
-		} catch (error) {
-			console.error("Error in function db.getFriends: ", error);
-			return { error };
-		}
-	}
+	getFriends: async (userId) => {
+    try {
+        const friendList = await database("friend_list")
+            .where((qb) => {
+                qb.where({ inviting_id: userId, status: "accepted" })
+                  .orWhere({ invited_id: userId, status: "accepted" });
+            });
+
+        const friendIds = friendList.map((entry) =>
+            entry.inviting_id === userId ? entry.invited_id : entry.inviting_id
+        );
+
+        const friends = await database("users").whereIn("id", friendIds);
+
+				const sanitizedFriends = friends.map((friend) => ({
+					id: friend.id,
+					displayName: friend.display_name,
+					avatarPath: friend.avatar_path,
+					wins: friend.wins,
+					loses: friend.loses,
+			}));
+
+        return sanitizedFriends;
+    } catch (error) {
+        console.error("Error in function db.getFriends: ", error);
+        return { error };
+    }
+}
 };
 
 export default db;

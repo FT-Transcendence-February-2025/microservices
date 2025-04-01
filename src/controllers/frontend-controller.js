@@ -6,30 +6,31 @@ const frontendController = {
 	activeConnections: new Map(),
 	websocketConnections: async (connection, request) => {
 		try {
-			const userId = request.user.id;
-			if (!userId) {
-				connection.close(4001, "Unauthorized: Missing userId");
-				return;
-			}
+			frontendController.activeConnections.set(request.user.id, connection);
+			console.log(`User ${request.user.id} connected`);
 
-			frontendController.activeConnections.set(userId, connection);
-			console.log(`User ${userId} connected`);
-
-			// Fetch pending friend requests
-			const pendingFriendRequests = await db.getPendingInvitations(userId);
+			// Fetch and send pending friend requests
+			const pendingFriendRequests = await db.getPendingInvitations(request.user.id);
 			for (let i = 0; i < pendingFriendRequests.length; i++) {
 				const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
 				if (!invitingUser || invitingUser.error) {
-					console.error(`Error in function frontendController.websocketConnections. Table 'friend_list' has entry id = ${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Sending next notifications...`);
+					console.error(`Error in function frontendController.websocketConnections. Table 'friend_list' has entry id =
+						${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Skipping this
+						notification...`);
 					continue;
 				}
-				connection.send(JSON.stringify({ 
-					type: "notification_friend_request",
-					invitingUser: {
-						id: invitingUser.id,
-						displayName: invitingUser.display_name
-					}
-				}));
+				try {
+					connection.send(JSON.stringify({ 
+						type: "notification_friend_request",
+						invitingUser: {
+							id: invitingUser.id,
+							displayName: invitingUser.display_name
+						}
+					}));
+				} catch (error) {
+					console.error(`Error in function frontendController in function connection.send: `, error, `. Skipping this 
+						notification...`);
+				}
 			}
 
 			connection.on("close", () => {
@@ -87,7 +88,15 @@ const frontendController = {
 	inviteFriend: async (request, reply) => {
 		const { invitedId } = request.body;
 
-		const existingBound = await db.getFriendBound(request.user.id, invitedId);
+		const invitingUser = await db.getUser(request.user.id);
+		if (!invitingUser) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (invitingUser.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const existingBound = await db.getFriendBound(invitingUser.id, invitedId);
 		if (existingBound) {
 			if (existingBound.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
@@ -95,14 +104,24 @@ const frontendController = {
 			return reply.status(409).send({ error: "Friend request already sent" });
 		}
 
-		const result = await db.addFriendBound(request.user.id, invitedId, "pending");
+		const result = await db.addFriendBound(invitingUser.id, invitedId, "pending");
 		if (result.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const connection = frontendController.activeConnections.get(invitedId);			
+		const connection = frontendController.activeConnections.get(invitedId);	
 		if (connection) {
-			connection.send(JSON.stringify({ type: "notification", message }));
+			try {
+				connection.send(JSON.stringify({ 
+					type: "notification_friend_request",
+					invitingUser: {
+						id: invitingUser.id,
+						displayName: invitingUser.display_name
+					}
+				}))
+			} catch (error) {
+				console.error("Error in function frontendController.inviteFriend in function connection.send: ", error);
+			}
 		}
 
 		return reply.send({ success: "Invite request has been sent" });
@@ -110,15 +129,16 @@ const frontendController = {
 	respondFriend: async (request, reply) => {
 		const { invitingId, accepted } = request.body;
 		if (accepted) {
-			updateResult = await db.updateFriendBoundStatus("accepted");
+			const updateResult = await db.updateFriendBoundStatus(invitingId, request.user.id, "accepted");
 			if (updateResult.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
 			}
 		} else {
-			deleteResult = await db.deleteFriendBound(invitingId, request.user.id);
+			console.log("will delete request as its rejected");
+			const deleteResult = await db.deleteFriendBound(invitingId, request.user.id);
 			if (deleteResult.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
-			}	
+			}
 		}
 
 		return reply.status(200).send({ success: "Successfully responded to the request" });

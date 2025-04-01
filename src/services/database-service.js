@@ -6,7 +6,7 @@ const db = {
 			await database("users").insert({ email, password, email_verified: emailVerified });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.createUser: ", error);
 			return { error };
 		}
 	},
@@ -14,7 +14,7 @@ const db = {
 		try {
 			return await database("users").where({ email }).first();
 		} catch (error) {
-
+			console.error("Error in function db.getUserByEmail: ", error);
 			return { error };
 		}
 	},
@@ -22,7 +22,7 @@ const db = {
 		try {
 			return await database("users").where({ id }).first();
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.getUserById: ", error);
 			return { error };
 		}
 	},
@@ -30,7 +30,7 @@ const db = {
 		try {
 			return await database("users").where({ display_name: displayName }).first();
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.getUserByDisplayName: ", error);
 			return { error };
 		}
 	},
@@ -50,7 +50,7 @@ const db = {
 				.update({ email: newEmail });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updateEmail: ", error);
 			return { error };
 		}
 	},
@@ -61,7 +61,7 @@ const db = {
 				.update({ password: newPassword });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updatePassword: ", error);
 			return { error };
 		}
 	},
@@ -72,15 +72,15 @@ const db = {
 				.update({ email_verified: verified });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updateEmailVerified: ", error);
 			return { error };
 		}
 	},
-	getDevice: async (deviceHash) => {
+	getDevice: async (userId, deviceHash) => {
 		try {
-			return await database("devices").where({ device_hash: deviceHash }).first();
+			return await database("devices").where({ user_id: userId, device_hash: deviceHash }).first();
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.getDevice: ", error);
 			return { error };
 		}
 	},
@@ -89,7 +89,7 @@ const db = {
 			await database("devices").insert({ user_id: userId, device_hash: deviceHash, token, expires_at: expiresAt });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.addDevice: ", error);
 			return { error };
 		}
 	},
@@ -99,22 +99,23 @@ const db = {
 				.where({ user_id: userId, device_hash: deviceHash })
 				.update({ token: newToken, expires_at: newExpiresAt });
 
-			if (updatedRows === 0) {
-				return { error: "Device not found" };
-			}
+    if (updatedRows === 0) {
+			console.error("Error in function db.updateToken: device not found in table.");
+      return { error: "Device not found" };
+    }
 
-    	return { success: true };
-		} catch (error) {
-			console.error(error);
-			return { error };
-		}
-	},
+    return { success: true };
+  } catch (error) {
+		console.error("Error in function db.updateToken: ", error);
+    return { error };
+  }
+},
 	deleteDevice: async (userId, deviceHash) => {
 		try {
 			await database("devices").where({ user_id: userId, device_hash: deviceHash }).del();
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.deleteDevice: ", error);
 			return { error };
 		}
 	},
@@ -128,8 +129,8 @@ const db = {
 
 			console.log(`Deleted ${deletedRows} expired tokens.`);
     } catch (error) {
-			console.error(error);
-			console.error("Error deleting expired tokens:", error);
+			console.error("Error in function db.deleteExpiredTokens: ", error);
+			return { error };
     }
 	}
 };

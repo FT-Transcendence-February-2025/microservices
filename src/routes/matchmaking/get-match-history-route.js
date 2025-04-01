@@ -3,7 +3,7 @@ import matchmakingController from "../../controllers/matchmaking-controller.js";
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "GET",
-		url: "/get-user/:userId",
+		url: "/get-match-history/:userId",
 		schema: {
 			params: {
 				type: "object",
@@ -20,15 +20,21 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						success: { type: "string" },
-						displayName: { type: "string" },
-						avatarPath: { type: "string" },
-						wins: {
-							type: "number",
-							multipleOf: 1
-						},
-						loses: {
-							type: "number",
-							multipleOf: 1
+						matches: {
+							type: "array",
+							items: {
+								type: "object",
+								properties: {
+									userDisplayName: { type: "string" },
+									opponentDisplayName: { type: "string" },
+									userScore: { type: "number" },
+									opponentScore: { type: "number" },
+									matchDate: { 
+										type: "string",
+										format: "date-time"
+									}
+								}
+							}
 						}
 					}
 				},
@@ -42,6 +48,7 @@ export default async function (fastify, opts) {
 				}
 			}
 		},
-		handler: matchmakingController.getUser	
+		handler: matchmakingController.getMatchHistory
 	});
+
 };

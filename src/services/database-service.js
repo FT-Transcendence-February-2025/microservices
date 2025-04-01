@@ -7,7 +7,7 @@ const db = {
 			await database("users").insert({ id, display_name: displayName, avatar_path: avatarPath, wins, loses });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.addUser: ", error);
 			return { error };
 		}
 	},
@@ -23,7 +23,7 @@ const db = {
 
       return await query.first();
     } catch (error) {
-      console.error(error);
+      console.error("Error in function db.getUser: ", error);
       return { error };
     }
 	},
@@ -34,7 +34,7 @@ const db = {
 				.update({ display_name: newDisplayName });
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updateDisplayName: ", error);
 			return { error };
 		}
 	},
@@ -45,23 +45,31 @@ const db = {
 				.update({ avatar_path: avatarPath })
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updateAvatarPath: ", error);
 			return { error };
 		}
 	},
 	// Match history table:
-	addMatch: async (userId, opponentId, userScore, opponentScore, matchDate) => {
+	addMatch: async (userDisplayName, opponentDisplayName, userScore, opponentScore, matchDate) => {
 		try {
 			await database("match_history").insert({
-				user_id: userId, 
-				opponent_id: opponentId,
+				user_display_name: userDisplayName, 
+				opponent_display_name: opponentDisplayName,
 				user_score: userScore,
 				opponent_score: opponentScore,
 				match_date: matchDate 
 			});
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.addMatch: ", error);
+			return { error };
+		}
+	},
+	getUserMatchHistory: async (userId) => {
+		try {
+			return await database("match_history").where({ user_id: userId });
+		} catch (error) {
+			console.error("Error in function db.getUserMatchHistory: ", error);
 			return { error };
 		}
 	},
@@ -72,10 +80,20 @@ const db = {
 				inviting_id: invitingId, 
 				invited_id: invitedId,
 				status
-			});
+		});
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.addFriendBound: ", error);
+			return { error };
+		}
+	},
+	getFriendBound: async (invitingId, invitedId) => {
+		try {
+			return await database("friend_list")
+				.where({ inviting_id: invitingId, invited_id: invitedId })
+				.first();
+		} catch (error) {
+			console.error("Error in function db.getFriendBound: ", error);
 			return { error };
 		}
 	},
@@ -89,7 +107,7 @@ const db = {
 				.update({ status })
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.updateFriendBoundStatus: ", error);
 			return { error };
 		}
 	},
@@ -102,7 +120,7 @@ const db = {
 				}).del();
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.deleteFriendBound: ", error);
 			return { error };
 		}
 	},
@@ -111,7 +129,7 @@ const db = {
 			return await database("friend_list")
 				.where({ invited_id: invitedId, status: "pending" });
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.getPendingInvitations: ", error);
 			return { error };
 		}
 	},
@@ -123,11 +141,10 @@ const db = {
 						.orWhere({ invited_id: user, status: "accepted" });
 				});
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.getFriends: ", error);
 			return { error };
 		}
 	}
 };
-
 
 export default db;

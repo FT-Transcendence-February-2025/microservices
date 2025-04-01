@@ -5,39 +5,45 @@ import displayNameService from "../services/display-name-service.js";
 const frontendController = {
 	activeConnections: new Map(),
 	websocketConnections: async (connection, request) => {
-		const userId = request.user.id;
-		if (!userId) {
-			connection.socket.close(4001, "Unauthorized: Missing userId");
-			return;
-		}
-
-		activeConnections.set(userId, connection);
-		console.log(`User ${userId} connected`);
-
-		const pendingFriendRequests = await db.getPendingInvitations(userId);
-		for (i = 0; i < pendingFriendRequests.length; i++) {
-			const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
-			if (!invitingUser) {
-				console.error(`Error in function websocketConnections. Table 'friend_list' has entry id = ${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Sending next notifications...`);
-				continue;
+		try {
+			const userId = request.user.id;
+			if (!userId) {
+				connection.close(4001, "Unauthorized: Missing userId");
+				return;
 			}
-			if (invitingUser.error) {
-				continue;
-			}
-			connection.socket.send(JSON.stringify({ 
-				type: "notification_friend",
-				message: `Friend request from ${invitingUser.disply_name}`
-			}));
-		}
-		
-		connection.socket.on("close", () => {
-			activeConnections.delete(userId);
-			console.log(`User ${userId} disconnected`);
-		});
 
-		connection.socket.on("error", (error) => {
-			console.error(`WebSocket error for user ${userId}:`, error);
-		});
+			frontendController.activeConnections.set(userId, connection);
+			console.log(`User ${userId} connected`);
+
+			// Fetch pending friend requests
+			const pendingFriendRequests = await db.getPendingInvitations(userId);
+			for (let i = 0; i < pendingFriendRequests.length; i++) {
+				const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
+				if (!invitingUser || invitingUser.error) {
+					console.error(`Error in function frontendController.websocketConnections. Table 'friend_list' has entry id = ${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Sending next notifications...`);
+					continue;
+				}
+				connection.send(JSON.stringify({ 
+					type: "notification_friend_request",
+					invitingUser: {
+						id: invitingUser.id,
+						displayName: invitingUser.display_name
+					}
+				}));
+			}
+
+			connection.on("close", () => {
+				frontendController.activeConnections.delete(userId);
+				console.log(`User ${userId} disconnected`);
+			});
+
+			connection.on("error", (error) => {
+				console.error(`WebSocket error for user ${userId}:`, error);
+			});
+		} catch (error) {
+			console.error("Error in websocketConnections:", error);
+			connection.close(1011, "Internal Server Error"); // 1011 = Server Error
+		}
 	},
 	// TODO: verify if its necessary, as getUser returns avatar path inside the object
 	avatarView: async (request, reply) => {
@@ -80,14 +86,23 @@ const frontendController = {
 	},
 	inviteFriend: async (request, reply) => {
 		const { invitedId } = request.body;
+
+		const existingBound = await db.getFriendBound(request.user.id, invitedId);
+		if (existingBound) {
+			if (existingBound.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(409).send({ error: "Friend request already sent" });
+		}
+
 		const result = await db.addFriendBound(request.user.id, invitedId, "pending");
 		if (result.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const connection = activeConnections.get(invitedId);
+		const connection = frontendController.activeConnections.get(invitedId);			
 		if (connection) {
-				connection.socket.send(JSON.stringify({ type: "notification", message }));
+			connection.send(JSON.stringify({ type: "notification", message }));
 		}
 
 		return reply.send({ success: "Invite request has been sent" });

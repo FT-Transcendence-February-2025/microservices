@@ -34,6 +34,15 @@ const db = {
 			return { error };
 		}
 	},
+	deleteUser: async (userId) => {
+		try {
+			await database("users").where({ id: userId }).del();
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
 	updateEmail: async (id, newEmail) => {
 		try {
 			await database("users")
@@ -85,10 +94,10 @@ const db = {
 		}
 	},
 	updateToken: async (userId, deviceHash, newToken, newExpiresAt) => {
-  try {
-    const updatedRows = await database("devices")
-      .where({ user_id: userId, device_hash: deviceHash })
-      .update({ token: newToken, expires_at: newExpiresAt });
+  	try {
+			const updatedRows = await database("devices")
+				.where({ user_id: userId, device_hash: deviceHash })
+				.update({ token: newToken, expires_at: newExpiresAt });
 
     if (updatedRows === 0) {
 			console.error("Error in function db.updateToken: device not found in table.");

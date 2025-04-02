@@ -1,19 +1,43 @@
-// TODO: update this
+import db from '../db/connection.js'
 
 export const tournamentMatchesController = {
   async postTournamentMatch (request, reply) {
-    const { tournamentID, _round, matches } = request.body
+    const { tournamentID, schedule } = request.body
+    if (!tournamentID || !schedule) {
+      return reply.code(400).send({
+        success: false,
+        message: 'Missing required parameters'
+      })
+    }
 
-    console.log.info(`Received tournament matches for tournamentID = ${tournamentID}`)
-    console.log.info(matches)
+    try {
+      const insertStmt = db.prepare(`
+          INSERT INTO tournament_matches (tournament_id, round, player1_id, player2_id, created_at)
+          VALUES (?, ?, ?, ?, datetime('now'))
+        `)
 
-    // Here you can integrate with your websocket connection logic. For example,
-    // iterate over the matches and send a connection or handshake message to the players.
-    // Example: websocketHandler.broadcastToPlayers(matches)
+      const insertMany = db.transaction((schedule) => {
+        for (let roundIndex = 0; roundIndex < schedule.length; roundIndex++) {
+          const roundMatches = schedule[roundIndex]
+          const round = roundIndex + 1
+          for (const match of roundMatches) {
+            const [player1Id, player2Id] = match
+            insertStmt.run(tournamentID, round, player1Id, player2Id)
+          }
+        }
+      })
 
-    return reply.code(200).send({
-      statusCode: 200,
-      message: 'Matches processes, awaiting players acceptance'
-    })
+      insertMany(schedule)
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Tournament matches saved successfully'
+      })
+    } catch (error) {
+      console.error('Error saving tournament matches:', error)
+      return reply.code(500).send({
+        success: false, message: 'Error saving tournament matches'
+      })
+    }
   }
 }

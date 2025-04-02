@@ -1,21 +1,20 @@
-import jwtTr from "jwt-validator-tr";
 import frontendController from "../../controllers/frontend-controller.js";
+import jwtTr from "jwt-validator-tr";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/respond-friend",
+		url: "/remove-friend",
 		schema: {
 			body: {
 				type: "object",
 				properties: {
-					invitingId: {
+					idToRemove: {
 						type: "number",
 						multipleOf: 1
-					},
-					accepted: { type: "boolean" }
+					}
 				},
-				required: ["invitingId", "accepted"]
+				required: ["idToRemove"]
 			},
 			response: {
 				200: {
@@ -24,24 +23,10 @@ export default async function (fastify, opts) {
 						success: { type: "string" }
 					},
 					required: ["success"]
-				},
-				400: {
-					type: "object",
-					properties: {
-						error: { type: "string" }
-					},
-					required: ["error"]
-				},
-				500: {
-					type: "object",
-					properties: {
-						error: { type: "string" }
-					},
-					required: ["error"]
 				}
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: frontendController.respondFriend
+		handler: frontendController.removeFriend
 	});
 };

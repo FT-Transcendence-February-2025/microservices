@@ -172,104 +172,131 @@ const messageHandler = async (message, connection) => {
     break
   case 'matchAccept':
     try {
-      const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
-      const displayName = currentPlayer ? currentPlayer.displayName : null
+      if (data.tournamentID) {
+        const tournamentMatch = db.prepare(`
+          SELECT * FROM tournament_matches
+          WHERE tournament_id = ? AND match_status = ? AND id = ?
+            AND (player1_id = ? OR player2_id = ?)
+          `).get(data.tournamentID, 'pending', data.matchId, data.userId, data.userId)
 
-      console.log('Received matchAccept:', {
-        userId: data.userId,
-        displayName,
-        matchId: data.matchId
-      })
-
-      const match = db.prepare(`
-        SELECT * FROM matchmaking 
-        WHERE match_status = ? AND id = ? 
-        AND (player1_id = ? OR player2_id = ?)
-      `).get('pending', data.matchId, data.userId, data.userId)
-
-      console.log('Found match:', match)
-
-      if (!match) {
-        connection.socket.send(
-          JSON.stringify({
-            type: 'error',
-            message: 'Match not found or no longer available'
-          })
-        )
-        return
-      }
-
-      if (!matchAcceptances[match.id]) {
-        console.log('Creating acceptance tracker for match', match.id)
-        matchAcceptances[match.id] = new Set()
-      }
-      matchAcceptances[match.id].add(data.userId)
-      console.log(
-        'Current accepted Players for match', match.id, ':',
-        Array.from(matchAcceptances[match.id])
-      )
-
-      const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
-      const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
-      const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
-
-      connection.socket.send(
-        JSON.stringify({
-          type: 'matchAccepted',
-          message: 'You have accepted the match',
-          yourName: displayName,
-          opponentName: opponentDisplayName
-        })
-      )
-
-      // Check if both players have accepted
-      if (
-        matchAcceptances[match.id].has(match.player1_id) &&
-        matchAcceptances[match.id].has(match.player2_id)
-      ) {
-        console.log('Both players accepted, starting match')
-        db.prepare(`
-        UPDATE matchmaking 
-        SET match_status = ?, started_at = datetime('now') 
-        WHERE id = ?
-      `).run('in_progress', match.id)
-
-        const gameStarted = await startGameForMatch(match)
-
-        if (!gameStarted) {
-          console.error(`Game creation failed for match ${match.id}. Notifying players...`)
-          activeConnections.forEach(conn => {
-            conn.socket.send(
-              JSON.stringify({
-                type: 'error',
-                message: `Failed to create game for match ${match.id}`
-              })
-            )
-          })
+        if (!tournamentMatch) {
+          connection.socket.send(
+            JSON.stringify({
+              type: 'error',
+              message: 'Tournament match not found or no longer available'
+            })
+          )
           return
         }
 
-        const gameUrl = `http://localhost:3003/?matchId=${match.id}`
+        db.prepare(`
+          UPDATE tournament_matches
+          SET match_status = 'in_progress', started_at = datetime('now')
+          WHERE id = ?
+          `).run(data.matchId)
 
-        // Notify both players
-        activeConnections.forEach(conn => {
-          if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-            const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
-            const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
-            const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
-            conn.socket.send(
-              JSON.stringify({
-                type: 'matchStarted',
-                matchId: match.id,
-                oppId: specificOpponentId,
-                oppDisplayName: specificOpponentDisplayName,
-                gameUrl: `${gameUrl}&playerId=${conn.userId}`
-              })
-            )
-          }
+        connection.socket.send(
+          JSON.stringify({
+            type: 'tournamentMatchAccepted',
+            message: 'You have accepted the tournament match'
+          })
+        )
+      } else {
+        const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+        const displayName = currentPlayer ? currentPlayer.displayName : null
+
+        console.log('Received matchAccept:', {
+          userId: data.userId,
+          displayName,
+          matchId: data.matchId
         })
-        delete matchAcceptances[match.id]
-        console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
+
+        const match = db.prepare(`
+          SELECT * FROM matchmaking 
+          WHERE match_status = ? AND id = ? 
+          AND (player1_id = ? OR player2_id = ?)
+        `).get('pending', data.matchId, data.userId, data.userId)
+
+        console.log('Found match:', match)
+
+        if (!match) {
+          connection.socket.send(
+            JSON.stringify({
+              type: 'error',
+              message: 'Match not found or no longer available'
+            })
+          )
+          return
+        }
+
+        if (!matchAcceptances[match.id]) {
+          console.log('Creating acceptance tracker for match', match.id)
+          matchAcceptances[match.id] = new Set()
+        }
+        matchAcceptances[match.id].add(data.userId)
+        console.log(
+          'Current accepted Players for match', match.id, ':',
+          Array.from(matchAcceptances[match.id])
+        )
+
+        const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
+        const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
+        const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+
+        connection.socket.send(
+          JSON.stringify({
+            type: 'matchAccepted',
+            message: 'You have accepted the match',
+            yourName: displayName,
+            opponentName: opponentDisplayName
+          })
+        )
+
+        if (matchAcceptances[match.id] && matchAcceptances[match.id].size >= 1) {
+          console.log('Starting match...')
+          db.prepare(`
+          UPDATE matchmaking 
+          SET match_status = ?, started_at = datetime('now') 
+          WHERE id = ?
+        `).run('in_progress', match.id)
+
+          const gameStarted = await startGameForMatch(match)
+
+          if (!gameStarted) {
+            console.error(`Game creation failed for match ${match.id}. Notifying players...`)
+            activeConnections.forEach(conn => {
+              conn.socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  message: `Failed to create game for match ${match.id}`
+                })
+              )
+            })
+            return
+          }
+
+          const gameUrl = `http://localhost:3003/?matchId=${match.id}`
+
+          // Notify both players
+          activeConnections.forEach(conn => {
+            if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
+              const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
+              const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
+              const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
+              conn.socket.send(
+                JSON.stringify({
+                  type: 'matchStarted',
+                  matchId: match.id,
+                  oppId: specificOpponentId,
+                  oppDisplayName: specificOpponentDisplayName,
+                  gameUrl: `${gameUrl}&playerId=${conn.userId}`
+                })
+              )
+            }
+          })
+          delete matchAcceptances[match.id]
+          console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
+        }
       }
     } catch (error) {
       connection.socket.send(

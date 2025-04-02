@@ -7,27 +7,32 @@ export function initDatabase () {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       player1_id INTEGER NOT NULL,
       player2_id INTEGER NOT NULL,
-      tournamentId INTEGER DEFAULT 0,
-      current_round INTEGER DEFAULT 0,
       match_status TEXT CHECK(match_status IN ('pending', 'in_progress', 'completed', 'cancelled')) DEFAULT 'pending',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      started_at DATETIME,
-      ended_at DATETIME,
       winner_id INTEGER,
       player1_score INTEGER DEFAULT 0,
       player2_score INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      started_at DATETIME,
+      ended_at DATETIME,
       room_code TEXT UNIQUE
     )
   `).run()
 
-  // Users table
-  // db.prepare(`
-  //   CREATE TABLE IF NOT EXISTS users (
-  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //     username TEXT NOT NULL UNIQUE,
-  //     email TEXT NOT NULL UNIQUE,
-  //     password TEXT NOT NULL,
-  //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  //   )
-  // `).run()
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS tournament_matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tournament_id INTEGER NOT NULL,
+      round INTEGER NOT NULL,
+      player1_id INTEGER NOT NULL,
+      player2_id INTEGER NOT NULL,
+      match_status TEXT CHECK(match_status IN('pending', 'in_progress', 'completed', 'cancelled')) DEFAULT 'pending',
+      winner_id INTEGER,
+      player1_score INTEGER DEFAULT 0,
+      player2_score INTEGER DEFAULT 0,
+      created_at DATETIME,
+      started_at DATETIME,
+      ended_at DATETIME,
+      room_code TEXT UNIQUE
+    )
+    `).run()
 }

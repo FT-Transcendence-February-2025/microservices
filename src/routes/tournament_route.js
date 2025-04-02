@@ -6,19 +6,18 @@ const tournamentMatchSchema = {
     properties: {
       tournamentID: { type: 'number', multipleOf: 1 },
       round: { type: 'number', multipleOf: 1 },
-      matches: {
+      schedule: {
         type: 'array',
         items: {
-          type: 'object',
-          properties: {
-            player1Id: { type: 'number', multipleOf: 1 },
-            player2Id: { type: 'number', multipleOf: 1 }
-          },
-          required: ['player1Id', 'player2Id']
+          type: 'array',
+          items: {
+            type: 'array',
+            items: { type: 'number', multipleOf: 1 }
+          }
         }
       }
     },
-    required: ['tournamentID', 'matches', 'round']
+    required: ['tournamentID', 'schedule', 'round']
   },
   response: {
     200: {

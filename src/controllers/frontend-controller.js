@@ -34,12 +34,12 @@ const frontendController = {
 			}
 
 			connection.on("close", () => {
-				frontendController.activeConnections.delete(userId);
-				console.log(`User ${userId} disconnected`);
+				frontendController.activeConnections.delete(request.user.id);
+				console.log(`User ${request.user.id} disconnected`);
 			});
 
 			connection.on("error", (error) => {
-				console.error(`WebSocket error for user ${userId}:`, error);
+				console.error(`WebSocket error for user ${request.user.id}:`, error);
 			});
 		} catch (error) {
 			console.error("Error in websocketConnections:", error);
@@ -104,15 +104,26 @@ const frontendController = {
 	inviteFriend: async (request, reply) => {
 		const { invitedId } = request.body;
 
+		if (request.user.id === invitedId) {
+			return reply.status(400).send({ error: "Users cannot invite themselves to friends" });
+		}
 		const invitingUser = await db.getUser(request.user.id);
 		if (!invitingUser) {
-			return reply.status(404).send({ error: "User not found" });
+			return reply.status(404).send({ error: "Inviting user not found" });
 		}
 		if (invitingUser.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const existingBound = await db.getFriendBound(invitingUser.id, invitedId);
+		const invitedUser = await db.getUser(invitedId);
+		if (!invitedUser) {
+			return reply.status(404).send({ error: "Invited user not found" });
+		}
+		if (invitedUser.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const existingBound = await db.getFriendBoundInvSpecific(invitingUser.id, invitedId);
 		if (existingBound) {
 			if (existingBound.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
@@ -142,15 +153,38 @@ const frontendController = {
 
 		return reply.send({ success: "Invite request has been sent" });
 	},
+	removeFriend: async (request, reply) => {
+		const { idToRemove } = request.body;
+
+		const friends = await db.getFriendBoundAccepted(request.user.id, idToRemove);
+		if (!friends) {
+			return reply.status(400).send({ error: "Users are not friends already" });
+		}
+
+		const deleteResult = await db.deleteFriendBound(request.user.id, idToRemove);
+		if (deleteResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: `User id=${idToRemove} removed from friends` });
+	},
 	respondFriend: async (request, reply) => {
 		const { invitingId, accepted } = request.body;
+
+		const friends = await db.getFriendBoundAccepted(invitingId, request.user.id);
+		if (friends) {
+			if (friends.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "User already accepted the invitation" });
+		}
+		
 		if (accepted) {
 			const updateResult = await db.updateFriendBoundStatus(invitingId, request.user.id, "accepted");
 			if (updateResult.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
 			}
 		} else {
-			console.log("will delete request as its rejected");
 			const deleteResult = await db.deleteFriendBound(invitingId, request.user.id);
 			if (deleteResult.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });

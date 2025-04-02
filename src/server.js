@@ -15,6 +15,8 @@ import inviteFriendRoute from "./routes/frontend/invite-friend-route.js";
 import respondFriendRoute from "./routes/frontend/respond-friend-route.js";
 import inviteGameRoute from "./routes/matchmaking/invite-game-route.js";
 import profileRoute from "./routes/frontend/profile-route.js";
+import inviteTournamentRoute from "./routes/tournament/invite-tournament-route.js";
+import removeFriendRoute from "./routes/frontend/remove-friend.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -66,6 +68,8 @@ fastify.register(fastifyWebsocket);
 // fastify.register(respondFriendRoute, { prefix: "/api" });
 // fastify.register(inviteGameRoute, { prefix: "/api" });
 // fastify.register(profileRoute, { prefix: "/api" });
+// fastify.register(inviteTournamentRoute, { prefix: "/api" });
+// fastify.register(removeFriendRoute, { prefix: "/api" });
 // Register routes:
 fastify.register(newUserRoute);
 fastify.register(userExistsRoute);
@@ -80,6 +84,8 @@ fastify.register(inviteFriendRoute);
 fastify.register(respondFriendRoute);
 fastify.register(inviteGameRoute);
 fastify.register(profileRoute);
+fastify.register(inviteTournamentRoute);
+fastify.register(removeFriendRoute);
 
 fastify.get("/", (request, reply) => {
 	return { message: "Fastify server of user-management service running" };

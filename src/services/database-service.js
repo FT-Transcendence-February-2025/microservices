@@ -87,13 +87,27 @@ const db = {
 			return { error };
 		}
 	},
-	getFriendBound: async (invitingId, invitedId) => {
+	getFriendBoundAccepted: async (id1, id2) => {
+		try {
+			return await database("friend_list")
+				.where((QueryBuilder) => {
+					QueryBuilder.where({ inviting_id: id1, invited_id: id2 })
+						.orWhere({ inviting_id: id2, invited_id: id1 });
+				})
+				.andWhere({ status: "accepted" })
+				.first();
+		} catch (error) {
+			console.error("Error in function db.getFriendBoundAccepted: ", error);
+			return { error };
+		}
+	},
+	getFriendBoundInvSpecific: async (invitingId, invitedId) => {
 		try {
 			return await database("friend_list")
 				.where({ inviting_id: invitingId, invited_id: invitedId })
 				.first();
 		} catch (error) {
-			console.error("Error in function db.getFriendBound: ", error);
+			console.error("Error in function db.getFriendBoundInvSpecific: ", error);
 			return { error };
 		}
 	},
@@ -111,12 +125,12 @@ const db = {
 			return { error };
 		}
 	},
-	deleteFriendBound: async (invitingId, invitedId) => {
+	deleteFriendBound: async (id1, id2) => {
 		try {
 			await database("friend_list").
 				where((QueryBuilder) => {
-					QueryBuilder.where({ inviting_id: invitingId, invited_id: invitedId })
-						.orWhere({ inviting_id: invitedId, invited_id: invitingId });
+					QueryBuilder.where({ inviting_id: id1, invited_id: id2 })
+						.orWhere({ inviting_id: id2, invited_id: id1 });
 				}).del();
 			return { success: true };
 		} catch (error) {

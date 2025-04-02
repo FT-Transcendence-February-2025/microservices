@@ -7,7 +7,7 @@ import gameRoute from './gameRoute.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const PORT = 3000;
+const PORT = 3002;
 const HOST = "0.0.0.0";
 
 const fastify = Fastify({

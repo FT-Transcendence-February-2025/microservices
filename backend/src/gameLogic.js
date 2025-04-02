@@ -13,27 +13,29 @@ const BALL_RADIUS = 15;
 const WINNING_SCORE = 11;
 const SCORE_DIFFERENCE = 2;
 
-const pongGame = {
-    ball: {
-        x: PLAY_FIELD_WIDTH/2,
-        y: PLAY_FIELD_HEIGHT/2,
-        speed: BALL_START_SPEED,
-        angle: Math.PI / 4 * (1 + 2 * Math.floor(Math.random() * 4)),
-        spin: 0,
-        lastCollision: null
-    },
-    paddleLeft: {
-        y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
-        dir: 0, 
-        score: 0 
-    },
-    paddleRight: {
-        y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
-        dir: 0, 
-        score: 0 
-    },
-    isGameOver: false,
-
+class pongGame {
+    constructor () {
+        this.ball = {
+            x: PLAY_FIELD_WIDTH/2,
+            y: PLAY_FIELD_HEIGHT/2,
+            speed: BALL_START_SPEED,
+            angle: Math.PI / 4 * (1 + 2 * Math.floor(Math.random() * 4)),
+            spin: 0,
+            lastCollision: null
+        }
+        this.paddleLeft = {
+            y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
+            dir: 0, 
+            score: 0 
+        }
+        this.paddleRight = {
+            y: PLAY_FIELD_HEIGHT/2 - PADDLE_HEIGHT/2, 
+            dir: 0, 
+            score: 0 
+        },
+        this.isGameOver = false
+    }
+    
     resetBall() {
         this.ball.x = PLAY_FIELD_WIDTH/2;
         this.ball.y = PLAY_FIELD_HEIGHT/2;
@@ -46,7 +48,7 @@ const pongGame = {
             this.ball.angle = Math.random() < 0.5 ? Math.PI / 4 : (3 * Math.PI) / 4;
         this.ball.spin = 0;
         this.ball.lastCollision = null;
-    },
+    }
     
     getGameState() {
         return {
@@ -63,20 +65,20 @@ const pongGame = {
                 score: this.paddleRight.score
             }
         };
-    },
+    }
 
     updatePaddle(paddle)
     {
         if (paddle.dir)
             paddle.y = Math.max(0, Math.min(PLAY_FIELD_HEIGHT - PADDLE_HEIGHT, paddle.y + paddle.dir * PADDLE_SPEED));
-    },
+    }
 
     updateBall() {
         this.ball.x += Math.cos(this.ball.angle) * this.ball.speed;
         this.ball.y += Math.sin(this.ball.angle) * this.ball.speed;
         this.ball.angle += this.ball.spin;
         this.ball.spin *= 0.98; // Gradually reduce spin
-    },
+    }
 
     ballHitsPaddles() {
         if (this.ball.x - BALL_RADIUS <= PADDLE_WIDTH && 
@@ -89,7 +91,7 @@ const pongGame = {
             return this.paddleRight;
         else
             return false;
-    },
+    }
 
     calculateNewAngle(paddle) {
         const hitPosition = (this.ball.y - paddle.y) / PADDLE_HEIGHT;
@@ -110,7 +112,7 @@ const pongGame = {
         else if (newAngle > PI_5_4 && newAngle < PI_7_4)
             return newAngle < 3 * Math.PI / 2 ? PI_5_4 : PI_7_4;
         return newAngle;
-    },
+    }
     
     checkCollisions() {
         // Top and bottom wall
@@ -126,13 +128,13 @@ const pongGame = {
             this.ball.spin = paddle.dir * PADDLE_SPEED * 0.00075;
             this.ball.lastCollision = paddle; 
         }
-    },
+    }
 
     checkWin() {
         if ((this.paddleLeft.score >= WINNING_SCORE && this.paddleLeft.score >= this.paddleRight.score + SCORE_DIFFERENCE) 
             || (this.paddleRight.score >= WINNING_SCORE && this.paddleRight.score >= this.paddleLeft.score + SCORE_DIFFERENCE))
             this.isGameOver = true;
-    },
+    }
 
     checkScoring() {
         const isLeftSideScore = this.ball.x - BALL_RADIUS <= 0;
@@ -146,7 +148,7 @@ const pongGame = {
             this.resetBall();
             this.checkWin();
         }
-    },
+    }
 
     update(gameLoop) {
         if (this.isGameOver)

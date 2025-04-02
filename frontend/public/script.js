@@ -28,7 +28,17 @@ const gameState = {
 };
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
-const socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
+let matchId = null;
+let playerId = null;
+const urlParams = new URLSearchParams(window.location.search);
+const isLocalGame = urlParams.get('isLocal') === 'true';
+if (urlParams.has('matchId') && urlParams.has('playerId')) {
+    matchId = urlParams.get('matchId');
+    playerId = urlParams.get('playerId');
+}
+const socket = matchId && playerId
+    ? new WebSocket(`ws://${window.location.hostname}:3002/games/${matchId}?playerId=${playerId}`)
+    : new WebSocket(`ws://${window.location.hostname}:3002/games`);
 function updateGameState(parsedData) {
     if (!isGameState(parsedData))
         return;
@@ -60,16 +70,18 @@ socket.onclose = () => {
 };
 let upPressed = false;
 let downPressed = false;
+let wPressed = false;
+let sPressed = false;
 document.addEventListener("touchstart", (event) => {
     event.preventDefault();
     const touchX = event.touches[event.touches.length - 1].clientX;
     if (touchX < window.innerWidth / 2 && upPressed === false) {
-        sendPaddlePosition("up");
+        sendPaddlePosition("up", "right");
         upPressed = true;
         downPressed = false;
     }
     else if (downPressed === false) {
-        sendPaddlePosition("down");
+        sendPaddlePosition("down", "right");
         downPressed = true;
         upPressed = false;
     }
@@ -77,31 +89,51 @@ document.addEventListener("touchstart", (event) => {
 document.addEventListener("touchend", (event) => {
     event.preventDefault();
     if (event.touches.length === 0) {
-        sendPaddlePosition("none");
+        sendPaddlePosition("none", "right");
         upPressed = false;
         downPressed = false;
     }
 });
 document.addEventListener("keyup", (event) => {
     if (event.key === "ArrowUp" && upPressed === true) {
-        sendPaddlePosition("none");
+        sendPaddlePosition("none", "right");
         upPressed = false;
     }
     else if (event.key === "ArrowDown" && downPressed === true) {
-        sendPaddlePosition("none");
+        sendPaddlePosition("none", "right");
         downPressed = false;
+    }
+    if (isLocalGame) {
+        if (event.key.toLowerCase() === 'w' && wPressed) {
+            sendPaddlePosition("none", "left");
+            wPressed = false;
+        }
+        else if (event.key.toLowerCase() === "s" && sPressed) {
+            sendPaddlePosition("none", "left");
+            sPressed = false;
+        }
     }
 });
 document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowUp" && upPressed === false) {
-        sendPaddlePosition("up");
+        sendPaddlePosition("up", "right");
         upPressed = true;
         downPressed = false;
     }
     else if (event.key === "ArrowDown" && downPressed === false) {
-        sendPaddlePosition("down");
+        sendPaddlePosition("down", "right");
         downPressed = true;
         upPressed = false;
+    }
+    if (isLocalGame) {
+        if (event.key.toLowerCase() === 'w' && wPressed === false) {
+            sendPaddlePosition("up", "left");
+            wPressed = true;
+        }
+        else if (event.key.toLowerCase() === "s" && sPressed === false) {
+            sendPaddlePosition("down", "left");
+            sPressed = true;
+        }
     }
 });
 function isGameState(obj) {
@@ -117,10 +149,11 @@ function isGameState(obj) {
         typeof obj.paddleRight.y === 'number' &&
         typeof obj.paddleRight.score === 'number');
 }
-function sendPaddlePosition(direction) {
+function sendPaddlePosition(direction, side) {
     const data = {
         type: "paddleMove",
         dir: direction,
+        side: side
     };
     if (socket.readyState === WebSocket.OPEN)
         socket.send(JSON.stringify(data));

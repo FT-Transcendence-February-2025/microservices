@@ -1,79 +1,102 @@
-import PongGame from './gameLogic.js';
-
-const GAME_LOOP_INTERVAL = 1000/60; // 60fps
-
-const playerSlots = [null, null];
-
-let gameState = 'waiting';
+import gameInstanceManager from './gameInstance.js'
 
 export default async function gameRoute(fastify, options) {
-    fastify.get('/game', { websocket: true }, (socket, req) => {
-        const availableSlot = playerSlots.findIndex(slot => slot === null);
+    fastify.post('/games', async (request, reply) => {
+        const { matchId, player1Id, player2Id, isLocal } = request.body
 
-        if (availableSlot === -1) {
-            console.log(`Can't connect client from ${req.socket.remoteAddress}: Game is full`);
-            socket.close();
-            return;
+        if (!matchId || !player1Id || !player2Id) {
+            return reply.code(400).send({
+                statusCode: 400,
+                success: false,
+                message: 'Missing required parameters'
+            })
+        };
+        const result = await gameInstanceManager.createGameInstance(matchId, player1Id, player2Id, isLocal);
+        return result;
+    })
+
+    fastify.get('/games/:matchId', { websocket: true }, (socket, req) => {
+        const matchId = parseInt(req.params.matchId);
+        const playerId = parseInt(req.query.playerId);
+
+        console.log('WS Connection attempt:', {
+            matchId: req.params.matchId,
+            playerId: req.query.playerId,
+            matchIdType: typeof req.params.matchId,
+            playerIdType: typeof req.query.playerId
+        });
+        console.log('Current game instances:', Array.from(gameInstanceManager.gameInstances.keys()));
+
+        if (!matchId || !playerId) {
+            console.log('Invalid connection attempt: Missing matchId or playerId');
+            socket.close(1008, 'Invalid connection parameters');
+            return
         }
 
-        const playerId = availableSlot + 1;
-        socket.playerId = playerId;
-        playerSlots[availableSlot] = socket;
-        console.log(`New Client connected from ${req.socket.remoteAddress} as player[${playerId}]`);
+        // Register the player's connection
+        const registration = gameInstanceManager.connectedPlayersToGame(playerId, matchId, socket);
+        if (!registration.success) {
+            socket.close(1008, registration.message)
+            return
+        }
 
-        socket.on('message', (data) => { 
+        console.log(`Player ${playerId} connected to game ${matchId}`);
+
+        socket.on('message', (data) => {
             try {
-                const message = JSON.parse(data.toString());
+                const message = JSON.parse(data.toString())
 
-                if (isValidMessage(message)) {
-                    const paddle = socket.playerId === 1 ? PongGame.paddleLeft : PongGame.paddleRight;
-                    const directionMap = {
-                        'up': -1,
-                        'down': 1,
-                        'none': 0
-                    };
-                    paddle.dir = directionMap[message.dir];
-                }
+                if (message && message.type === 'paddleMove' &&
+                    ['up', 'down', 'none'].includes(message.dir)) {
+                        gameInstanceManager.handlePlayerInput(playerId, message);
+                    }
             } catch (error) {
                 console.error(`Error processing message: ${error}`);
             }
         });
 
         socket.on('close', () => {
-            playerSlots[socket.playerId - 1] = null;
-            console.log(`Client closed connection from ${req.socket.remoteAddress} as player[${socket.playerId}]`);
+            console.log(`Player ${playerId} disconnected from game ${matchId}`);
+            gameInstanceManager.disconnectPlayer(playerId);
         });
 
         socket.on('error', (error) => {
             console.error(`WebSocket error: ${error}`);
+            gameInstanceManager.disconnectPlayer(playerId);
         });
-
-        if (playerSlots[0] && playerSlots[1] && gameState != 'playing')
-        {
-            gameState = 'playing';
-            const gameLoop = setInterval(() => {
-                PongGame.update(gameLoop);
-                broadcastGameState(PongGame.getGameState(), fastify);
-            }, GAME_LOOP_INTERVAL);
-        }
     });
-}
 
-function isValidMessage(message) {
-    return (
-        message &&
-        typeof message === 'object' &&
-        message.type === 'paddleMove' &&
-        ['up', 'down', 'none'].includes(message.dir)
-    );
-}
+    // Debug route
+    fastify.get('/debug/games', async (request, reply) => {
+        reply.send(Array.from(gameInstanceManager.gameInstances.values()).map(instance => ({
+            matchId: instance.matchId,
+            player1Id: instance.player1Id,
+            player2Id: instance.player2Id,
+            connectedPlayers: Array.from(instance.connectedPlayers),
+            gameState: instance.gameState
+        })));
+    });
 
-function broadcastGameState(gameState, fastify) {
-    const server = fastify.websocketServer;
-    const gameStateJSON = JSON.stringify(gameState);
-    
-    for (const client of server.clients) {
-        if (client.readyState === 1)
-            client.send(gameStateJSON);
-    }
+    fastify.post('/games/local', async (request, reply) => {
+        const { matchId, player1Id, player2Id } = request.body
+
+        if (!matchId || !player1Id || !player2Id) {
+            return reply.code(400).send({
+                statusCode: 400,
+                success: false,
+                message: 'Missing required parameters'
+            })
+        };
+
+        const result = await gameInstanceManager.createGameInstance(matchId, player1Id, player2Id, true);
+        if (!result.success) {
+            return reply.code(400).send(result);
+        }
+        const gameUrl = `http://localhost:3002/index.html?matchId=${matchId}&playerId=${player1Id}&isLocal=true`
+        return reply.code(200).send({ 
+            statusCode: 200,
+            gameUrl,
+            messsage: "Local game instance created and host verified successfully."
+        });
+    });
 }

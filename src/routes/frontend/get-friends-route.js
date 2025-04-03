@@ -24,8 +24,8 @@ export default async function (fastify, opts) {
 								}
 							}
 						},
+					},
 					required: ["success", "friends"]
-					}
 				},
 				500: {
 					type: "object",

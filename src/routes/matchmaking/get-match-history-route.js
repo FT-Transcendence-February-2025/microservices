@@ -36,15 +36,22 @@ export default async function (fastify, opts) {
 								}
 							}
 						}
-					}
+					},
+					required: ["success", "matches"]
 				},
 				404: {
 					type: "object",
-					properties: { error: { type: "string" }}
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				},
 				500: {
 					type: "object",
-					properties: { error: { type: "string" }}
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				}
 			}
 		},

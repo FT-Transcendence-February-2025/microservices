@@ -23,14 +23,16 @@ export default async function (fastify, opts) {
 									loses: { type: "number" }
 								}
 							}
-						}
+						},
+					required: ["success", "friends"]
 					}
 				},
 				500: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
-					}
+					},
+					required: ["error"]
 				}
 			}
 		},

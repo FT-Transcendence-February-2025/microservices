@@ -25,15 +25,22 @@ export default async function (fastify, opts) {
 						wins: { type: "number" },
 						loses: { type: "number" },
 						online: { type: "boolean" }
-					}
+					},
+					required: ["success", "displayName", "avatarPath", "wins", "loses", "online"]
 				},
 				404: {
 					type: "object",
-					properties: { error: { type: "string" }}
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				},
 				500: {
 					type: "object",
-					properties: { error: { type: "string" }}
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				}
 			}
 		},

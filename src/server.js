@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import dotenv from "dotenv";
 import fastifyWebsocket from "@fastify/websocket";
+import checkAndCreateTables from "./database/migrations/create-tables.js";
 import newUserRoute from "./routes/authentication/new-user-route.js";
 import userExistsRoute from "./routes/authentication/user-exists-route.js";
 import avatarRoute from "./routes/frontend/avatar-route.js";
@@ -87,14 +88,29 @@ fastify.register(profileRoute);
 fastify.register(inviteTournamentRoute);
 fastify.register(removeFriendRoute);
 
-fastify.get("/", (request, reply) => {
-	return { message: "Fastify server of user-management service running" };
-});
+const tablesToCheck = ["friend_list", "match_history", "users"];
 
-fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
-  if (error) {
-    console.error(error);
+const startServer = async () => {
+  try {
+    // Ensure all required tables exist before starting the server.
+    await checkAndCreateTables(tablesToCheck);
+
+    // Start the Fastify server.
+    fastify.get("/", (request, reply) => {
+			return { message: "Fastify server of user-management service running" };
+		});
+
+    fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
+			if (error) {
+				console.error(error);
+				process.exit(1);
+			}
+			console.log(`Server listening at ${address}`);
+		});
+  } catch (error) {
+    console.error("Error starting server:", error);
     process.exit(1);
   }
-  console.log(`Server listening at ${address}`);
-});
+};
+
+startServer();

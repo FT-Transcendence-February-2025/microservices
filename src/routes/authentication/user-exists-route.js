@@ -17,7 +17,8 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						exists: { type: "boolean" }
-					}
+					},
+					required: ["exists"]
 				}
 			}
 		},

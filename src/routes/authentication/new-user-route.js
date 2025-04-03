@@ -20,7 +20,8 @@ export default async function (fastify, opts) {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						success: { type: "string" },
+						required: ["success"]
 					}
 				}
 			}

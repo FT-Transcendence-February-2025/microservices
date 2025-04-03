@@ -64,9 +64,9 @@ const start = async () => {
   }
 }
 
-fastify.addHook('onClose', async () => {
-  await deletionController.deleteTournaments();
-})
+// fastify.addHook('onClose', async () => {
+//   await deletionController.deleteTournaments();
+// })
 
 start()
 
@@ -83,8 +83,11 @@ process.on('SIGINT', async () => {
 
 /*TODO:
 
-  -get userId in body when service gets called
-
+  -handle adding players to tournament
+  -get schedule
+  -update tournament
+  -handle tournament time
+  -handle deleting info via status
   -meeting: invite handling and join handling
       -invites, send out invite
          -if accepted tm route add-user gets called from um

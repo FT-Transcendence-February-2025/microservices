@@ -13,6 +13,8 @@ export const usersController = {
                 method: 'GET'
             })
             if (!response.ok) {
+                const userdata = await response.json()
+                console.log(userdata)
                 throw new Error(`HTTP error! status: ${response.status}`);
               }
             const userdata = await response.json()

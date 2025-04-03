@@ -6,7 +6,7 @@ export const tournamentService = {
   registerPlayer (tournamentId, playerId) {
     try {
       // User exists?
-      const userExists = db.prepare('SELECT id FROM users WHERE id = ?').get(playerId)
+      const userExists = db.prepare('SELECT user_id FROM users WHERE user_id = ?').get(playerId)
       console.log(`USER: ${JSON.stringify(userExists)}`)
       if (!userExists) {
         return {
@@ -25,13 +25,20 @@ export const tournamentService = {
           message: `Cannot register for tournament ID ${tournamentId}: tournament does not exists`
         }
       }
-
       // Insert player into tournament
       try {
-        db.prepare(
-          'INSERT INTO players (player_id, tournament_id) VALUES (?, ?)'
-        ).run(playerId, tournamentId)
-
+        const insertPlayer = db.prepare(`
+          INSERT INTO players
+          (player_id, tournament_id, joined_at)
+          VALUES(?, ?, ?)
+          `);
+          
+        const result = insertPlayer.run(
+            parseInt(playerId),
+            parseInt(tournamentId),
+            new Date().toISOString()
+        );
+        console.log(`Player inserted in Position: ${result.lastInsertRowid}`);
         return {
           success: true,
           message: `Player ${playerId} successfully registered for tournament ${tournamentId}`
@@ -47,6 +54,7 @@ export const tournamentService = {
         throw error
       }
     } catch (error) {
+      console.log(`Player insertion failed`)
       return {
         success: false,
         error: 'Database error',
@@ -82,9 +90,9 @@ export const tournamentService = {
 
       // Join players and users table to get player info
       const players = db.prepare(`
-        SELECT u.id, u.name, p.joined_at
+        SELECT u.user_id, u.display_name, p.joined_at
         FROM players p
-        JOIN users u ON p.player_id = u.id
+        JOIN users u ON p.player_id = u.user_id
         WHERE p.tournament_id = ?
         `).all(tournamentId)
 

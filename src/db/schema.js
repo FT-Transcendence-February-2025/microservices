@@ -4,22 +4,20 @@ export function initDatabase () {
   // Users table for testing
   db.prepare(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT,
+      user_id INTEGER NOT NULL,
       display_name TEXT,
-      avatar BLOB
+      avatar TEXT
     )
     `).run()
     
     // Players table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS players (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
       player_id INTEGER NOT NULL,
       tournament_id INTEGER NOT NULL,
       joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(player_id, tournament_id),
-      FOREIGN KEY (player_id) REFERENCES users(id),
+      FOREIGN KEY (player_id) REFERENCES users(user_id),
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
     )
     `).run()
@@ -45,7 +43,6 @@ export function initDatabase () {
   // Scores table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS scores (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
       tournament_id INTEGER NOT NULL,
       round_number INTEGER NOT NULL,
       match_index INTEGER NOT NULL,
@@ -53,7 +50,7 @@ export function initDatabase () {
       score TEXT NOT NULL,
       completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-      FOREIGN KEY (winner_id) REFERENCES users(id),
+      FOREIGN KEY (winner_id) REFERENCES users(user_id),
       UNIQUE(tournament_id, round_number, match_index)
     )
     `).run()

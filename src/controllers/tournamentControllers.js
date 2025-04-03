@@ -5,7 +5,7 @@ import db from '../db/database.js'
 export const tournamentController = {
 
   async generateTournament (request, reply){
-    
+    const { userId } = request.body;
     const insertTournament = db.prepare(`
       INSERT INTO tournaments
       (name, created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, created_at, started_at, ended_at)
@@ -14,7 +14,7 @@ export const tournamentController = {
 
     const tournamentId = insertTournament.run(
       objects.tournaments.name,
-      objects.tournaments.created_by,
+      userId,
       objects.tournaments.current_round,
       objects.tournaments.size,
       objects.tournaments.registration_start_time,

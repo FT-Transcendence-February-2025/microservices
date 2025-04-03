@@ -12,7 +12,7 @@ export const inviteController = {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ tournamentId }) //change to tournamentId in um service
+            body: JSON.stringify({ tournamentId })
             })
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

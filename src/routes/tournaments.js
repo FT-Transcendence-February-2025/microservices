@@ -18,13 +18,39 @@ export default async function (fastify) {
   });
   
   //add to users table
-  fastify.post('/adduser', usersController.addUser)
+  fastify.post('/addUser', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+          userId: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            usersPos: { type: 'number' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    },
+    handler: usersController.addUser
+  })
   
   // Invite players
   fastify.post('/:tournamentId/invite', inviteController.sendInvite)
   
   //fill tournament table with settings and info
-  fastify.post('/:tournamentId/settings', settingsController.updateTournament)
+  fastify.post('/:tournamentId/updateTournament', settingsController.updateTournament)
   
   // Get all players in tournament
   fastify.get('/:tournamentId/players', playersController.getAllPlayers)
@@ -36,7 +62,7 @@ export default async function (fastify) {
   fastify.get('/:tournamentId/players/:playerId/matches', tournamentController.getPlayerMatches)
 
   // Genarate new Tournament
-  fastify.post('/create', tournamentController.generateTournament)
+  fastify.post('/host', tournamentController.generateTournament)
   
   // Start tournament
   fastify.post('/:tournamentId/start', tournamentController.startTournament)

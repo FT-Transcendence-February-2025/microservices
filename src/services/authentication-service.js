@@ -54,7 +54,7 @@ const authenticationService = async (email, password, userAgent) => {
     const accessToken = jwt.sign(
       { userId: user.id },
       process.env.SECRET_KEY,
-      { expiresIn: "15m" }
+      { expiresIn: "10h" }
     );
 
     return { refreshToken, accessToken, cookieOptions };

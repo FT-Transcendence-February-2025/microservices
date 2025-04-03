@@ -3,6 +3,7 @@ import fastifyBcrypt from "fastify-bcrypt";
 import dotenv from "dotenv";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
+import checkAndCreateTables from "./database/migrations/create-tables.js";
 import cron from "node-cron";
 import db from "./services/database-service.js";
 import registrationRoute from "./routes/registration-route.js";
@@ -94,22 +95,40 @@ fastify.register(refreshTokenRoute);
 fastify.register(logoutRoute);
 fastify.register(verifyEmailRoute);
 
-cron.schedule("0 */12 * * *", async () => {
-	await db.deleteExpiredTokens();
-});
-await db.deleteExpiredTokens();
+const tablesToCheck = ["devices", "users"];
 
-fastify.get("/", (request, reply) => {
-  return { message: "Fastify server of authentication-service running" };
-});
+const startServer = async () => {
+  try {
+    // Ensure all required tables exist before starting the server.
+    await checkAndCreateTables(tablesToCheck);
 
-fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
-  if (error) {
-    console.error(error);
+    // Run scheduled refresh token check and delete expired tokens.
+    cron.schedule("0 */12 * * *", async () => {
+      await db.deleteExpiredTokens();
+    });
+
+    // Perform an initial cleanup of expired tokens.
+    await db.deleteExpiredTokens();
+
+    // Start the Fastify server.
+    fastify.get("/", (request, reply) => {
+      return { message: "Fastify server of authentication-service running" };
+    });
+
+    fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
+      if (error) {
+        console.error(error);
+        process.exit(1);
+      }
+      console.log(`Server listening at ${address}`);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
     process.exit(1);
   }
-  console.log(`Server listening at ${address}`);
-});
+};
+
+startServer();
 
 export default fastify;
 

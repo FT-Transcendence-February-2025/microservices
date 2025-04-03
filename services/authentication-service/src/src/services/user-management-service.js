@@ -30,7 +30,7 @@ const userManagementService = {
 		return { success: "User created successfully in User Management Service" };
 	},
 	informUserLogout: async (userId) => {
-		const response = await fetch ("htttp://user:3002/api/user-logout", {
+		const response = await fetch ("http://user:3002/api/user-logout", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId })

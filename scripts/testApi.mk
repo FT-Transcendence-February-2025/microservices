@@ -43,10 +43,11 @@ register:init-log
 		-H "Content-Type: application/json" \
 		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$NAME\", \"password\": \"$$PASS\"}" | jq
 
-u-register:
+u-register: # should not #user-exist #user-logout
 	curl -sk -X POST https://$(shell hostname)/api/user/new-user \
 	-H "Content-Type: application/json" \
 	-d '{"userId": 8, "displayName": "test"}' | jq
+
 fc-login:
 	docker exec -it front-end sh -c 'curl -k -X POST https://$(shell hostname)/api/auth/login \
 	-H "Content-Type: application/json" \

@@ -37,6 +37,35 @@ async function startGameForMatch (match) {
   }
 }
 
+function addPlayerToQueue (data, connection, displayName, tournament = false) {
+  if (matchmakingQueue.find((player) => player.id === data.userId)) {
+    connection.socket.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'You are already in the queue addPlayerToQueue function'
+      })
+    )
+    return false
+  }
+
+  connection.userId = data.userId
+  connection.displayName = displayName
+
+  const playerEntry = {
+    id: data.userId,
+    socket: connection.socket,
+    displayName,
+    joinedAt: new Date()
+  }
+
+  if (tournament) {
+    playerEntry.tournamentId = data.tournamentId
+    playerEntry.tournament = true
+  }
+  matchmakingQueue.push(playerEntry)
+  return true
+}
+
 const messageHandler = async (message, connection) => {
   // Converts the message from a string to a JavaScript object.
   const data = JSON.parse(message.toString())
@@ -56,17 +85,63 @@ const messageHandler = async (message, connection) => {
         return
       }
 
-      // Add player to queue if not already in it
-      if (!matchmakingQueue.find((player) => player.id === data.userId)) {
-        connection.userId = data.userId
-        connection.displayName = result.displayName
-        matchmakingQueue.push({
-          id: data.userId,
-          socket: connection.socket,
-          displayName: result.displayName,
-          joinedAt: new Date()
-        })
+      // tournament joinQueue branch
+      if (data.tournamentId) {
+        if (addPlayerToQueue(data, connection, result.displayName, true)) {
+          connection.socket.send(
+            JSON.stringify({
+              type: 'tournamentQueueJoined',
+              message: 'Successfully joined tournament queue',
+              displayName: result.displayName
+            })
+          )
+        }
 
+        if (matchmakingQueue.length >= 2) {
+          const player1 = matchmakingQueue.shift()
+          const player2 = matchmakingQueue.shift()
+
+          try {
+            const roomCode = `MATCH_${Date.now()}`
+            const stmt = db.prepare(`
+              UPDATE tournament_matches
+              SET match_status = ?, room_code = ?
+              WHERE tournament_id = ? AND player1_id = ? AND player2_id = ? AND match_status = 'pending'
+            `)
+            stmt.run('pending', roomCode, data.tournamentId, player1.id, player2.id);
+            [player1, player2].forEach((player) => {
+              const opponent = player === player1 ? player2.id : player1.id
+              player.socket.send(
+                JSON.stringify({
+                  type: 'tournamentMatchCreated',
+                  // round
+                  opponentId: opponent.id,
+                  opponentDisplayName: opponent.displayName,
+                  roomCode
+                })
+              )
+            })
+          } catch (error) {
+            console.error('Erro creating tournament match:', error)
+            matchmakingQueue.unshift(player2)
+            matchmakingQueue.unshift(player1);
+
+            [player1, player2].forEach((player) => {
+              player.socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  message: 'Failed to create tournament match'
+                })
+              )
+            })
+          }
+        }
+
+        return
+      }
+
+      // Normal joinQueue branch
+      if (addPlayerToQueue(data, connection, result.displayName)) {
         // Send queueJoined message
         connection.socket.send(
           JSON.stringify({
@@ -75,56 +150,49 @@ const messageHandler = async (message, connection) => {
             displayName: result.displayName
           })
         )
+      }
 
-        // Check if we can make a match
-        if (matchmakingQueue.length >= 2) {
-          // Match first 2 players in queue
-          const player1 = matchmakingQueue.shift() // shift() removes and returns the first two players from the queue
-          const player2 = matchmakingQueue.shift()
+      // Check if we can make a match
+      if (matchmakingQueue.length >= 2) {
+        // Match first 2 players in queue
+        const player1 = matchmakingQueue.shift() // shift() removes and returns the first two players from the queue
+        const player2 = matchmakingQueue.shift()
 
-          try {
-            const roomCode = `MATCH_${Date.now()}`
-            // Create match record
-            const stmt = db.prepare(`
-              INSERT INTO matchmaking (player1_id, player2_id, match_status, room_code, created_at) 
-              VALUES (?, ?, ?, ?, datetime('now'))
-            `)
-            const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
-            const matchId = result.lastInsertRowid;
-            [player1, player2].forEach((player) => {
-              const opponent = player === player1 ? player2.id : player1.id
-              player.socket.send(
-                JSON.stringify({
-                  type: 'matchCreated',
-                  matchId,
-                  opponentId: opponent.id,
-                  opponentDisplayName: opponent.displayName,
-                  roomCode
-                })
-              )
-            })
-          } catch (error) {
-            console.error('Error creating match:', error)
-            matchmakingQueue.unshift(player2)
-            matchmakingQueue.unshift(player1);
-
-            [player1, player2].forEach((player) => {
-              player.socket.send(
-                JSON.stringify({
-                  type: 'error',
-                  message: 'Failed to create match'
-                })
-              )
-            })
-          }
-        }
-      } else {
-        connection.socket.send(
-          JSON.stringify({
-            type: 'error',
-            message: 'You are already in the queue'
+        try {
+          const roomCode = `MATCH_${Date.now()}`
+          // Create match record
+          const stmt = db.prepare(`
+            INSERT INTO matchmaking (player1_id, player2_id, match_status, room_code, created_at) 
+            VALUES (?, ?, ?, ?, datetime('now'))
+          `)
+          const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
+          const matchId = result.lastInsertRowid;
+          [player1, player2].forEach((player) => {
+            const opponent = player === player1 ? player2.id : player1.id
+            player.socket.send(
+              JSON.stringify({
+                type: 'matchCreated',
+                matchId,
+                opponentId: opponent.id,
+                opponentDisplayName: opponent.displayName,
+                roomCode
+              })
+            )
           })
-        )
+        } catch (error) {
+          console.error('Error creating match:', error)
+          matchmakingQueue.unshift(player2)
+          matchmakingQueue.unshift(player1);
+
+          [player1, player2].forEach((player) => {
+            player.socket.send(
+              JSON.stringify({
+                type: 'error',
+                message: 'Failed to create match'
+              })
+            )
+          })
+        }
       }
     } catch (error) {
       connection.socket.send(
@@ -172,12 +240,13 @@ const messageHandler = async (message, connection) => {
     break
   case 'matchAccept':
     try {
-      if (data.tournamentID) {
+      // Tournament Match Acceptance
+      if (data.tournamentId) {
         const tournamentMatch = db.prepare(`
           SELECT * FROM tournament_matches
           WHERE tournament_id = ? AND match_status = ? AND id = ?
             AND (player1_id = ? OR player2_id = ?)
-          `).get(data.tournamentID, 'pending', data.matchId, data.userId, data.userId)
+          `).get(data.tournamentId, 'pending', data.matchId, data.userId, data.userId)
 
         if (!tournamentMatch) {
           connection.socket.send(
@@ -202,6 +271,7 @@ const messageHandler = async (message, connection) => {
           })
         )
       } else {
+        // Normal Match Acceptance
         const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
         const displayName = currentPlayer ? currentPlayer.displayName : null
 

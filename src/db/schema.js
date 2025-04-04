@@ -4,7 +4,7 @@ export function initDatabase () {
   // Users table for testing
   db.prepare(`
     CREATE TABLE IF NOT EXISTS users (
-      user_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL PRIMARY KEY,
       display_name TEXT,
       avatar TEXT
     )
@@ -50,7 +50,6 @@ export function initDatabase () {
       score TEXT NOT NULL,
       completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-      FOREIGN KEY (winner_id) REFERENCES users(user_id),
       UNIQUE(tournament_id, round_number, match_index)
     )
     `).run()

@@ -1,55 +1,53 @@
 import db from '../db/database.js'
 
-export const settingsController = {
+export const updateController = {
   async updateTournament (request, reply) {
     console.log(`Sets tournament...`);
     const { tournamentId } = request.params
     const { name,
-            created_by,
             current_round,
             size,
             registration_start_time,
             registration_deadline,
             winner_id,
             schedule,
-            created_at,
             started_at,
             ended_at 
     } = request.body;
     const query = `
       UPDATE tournaments 
       SET name = ?,
-          created_by = ?,
           current_round = ?,
           size = ?,
           registration_start_time = ?,
           registration_deadline = ?,
           winner_id = ?,
           schedule = ?,
-          created_at = ?,
           started_at = ?,
           ended_at = ?
       WHERE id = ?`
     try {
       const results = db.prepare(query).run(
         name,
-        created_by,
         current_round,
         size,
         registration_start_time,
         registration_deadline,
         winner_id,
         schedule,
-        created_at,
         started_at,
         ended_at,
         tournamentId
       );
 
       if (results.changes > 0) {
-        reply.send('Tournament updated successfully');
+        reply.code(200).send({
+          message: 'Tournament updated successfully',
+        });
       } else {
-        reply.code(404).send('Tournament not found');
+        reply.code(404).send({
+          message: 'Tournament not found'
+        });
       }
     } catch (error) {
       console.error('Error updating tournament:', error);

@@ -4,9 +4,9 @@ export const playersController = {
     
   async registerPlayer (request, reply) {
     const { tournamentId } = request.params
-    const { playerId } = request.body
+    const { userId } = request.body
 
-    const result = tournamentService.registerPlayer(tournamentId, playerId)
+    const result = tournamentService.registerPlayer(tournamentId, userId)
 
     if (!result.success) {
       return reply.code(400).send({

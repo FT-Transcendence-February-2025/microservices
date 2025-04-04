@@ -1,22 +1,28 @@
-export function generateRoundRobin (players) {
-  const n = players.length
-  const rounds = n - 1
-  const matchesPerRound = n / 2
+export function generateRoundRobin(players) {
+  const n = players.length;
+  const rounds = n % 2 === 0 ? n - 1 : n;
+  // For even numbers: n - 1 rounds; for odd numbers: n rounds
+  const schedule = [];
 
-  const schedule = []
+  const isOdd = n % 2 !== 0;
+  const extendedPlayers = isOdd ? [...players, null] : players; // Add "null" as the ghost player
 
   for (let round = 0; round < rounds; round++) {
-    const matchesThisRound = []
-    for (let match = 0; match < matchesPerRound; match++) {
-      const home = (round + match) % (n - 1)
-      const away = (n - 1 - match + round) % (n - 1)
-      if (match === 0) {
-        matchesThisRound.push([players[n - 1], players[home]])
-      } else {
-        matchesThisRound.push([players[home], players[away]])
+      const matchesThisRound = [];
+      for (let i = 0; i < extendedPlayers.length / 2; i++) {
+          const home = extendedPlayers[i];
+          const away = extendedPlayers[extendedPlayers.length - i - 1];
+
+          // Skip matches involving the ghost player (null)
+          if (home !== null && away !== null) {
+              matchesThisRound.push([home, away]);
+          }
       }
-    }
-    schedule.push(matchesThisRound)
+
+      // Rotate players clockwise except for the first player
+      extendedPlayers.splice(1, 0, extendedPlayers.pop());
+      schedule.push(matchesThisRound);
   }
-  return schedule
+
+  return schedule;
 }

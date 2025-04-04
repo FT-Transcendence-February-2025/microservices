@@ -3,16 +3,15 @@ import db from './database.js'
 
 export const tournamentService = {
   // Player registration
-  registerPlayer (tournamentId, playerId) {
+  registerPlayer (tournamentId, userId) {
     try {
       // User exists?
-      const userExists = db.prepare('SELECT user_id FROM users WHERE user_id = ?').get(playerId)
-      console.log(`USER: ${JSON.stringify(userExists)}`)
+      const userExists = db.prepare('SELECT user_id FROM users WHERE user_id = ?').get(userId)
       if (!userExists) {
         return {
           success: false,
           error: 'User not found',
-          message: `Cannot register player ID ${playerId}`
+          message: `Cannot register player ID ${userId}`
         }
       }
 
@@ -34,21 +33,21 @@ export const tournamentService = {
           `);
           
         const result = insertPlayer.run(
-            parseInt(playerId),
-            parseInt(tournamentId),
+            userId,
+            tournamentId,
             new Date().toISOString()
         );
-        console.log(`Player inserted in Position: ${result.lastInsertRowid}`);
+        console.log(`Player ${userId} inserted in Position: ${result.lastInsertRowid}`);
         return {
           success: true,
-          message: `Player ${playerId} successfully registered for tournament ${tournamentId}`
+          message: `Player ${userId} successfully registered for tournament ${tournamentId}`
         }
       } catch (error) {
         if (error.message.includes('UNIQUE constraint failed')) {
           return {
             success: false,
             error: 'Already registered',
-            message: `Player ${playerId} is already registered for tournament ${tournamentId}`
+            message: `Player ${userId} is already registered for tournament ${tournamentId}`
           }
         }
         throw error
@@ -68,7 +67,6 @@ export const tournamentService = {
       const result = db.prepare(
         'DELETE FROM players WHERE tournament_id = ? AND player_id = ?'
       ).run(tournamentId, playerId)
-
       return result.changes > 0
     } catch (error) {
       console.error(`Error unregistering player: ${error.message}`)
@@ -106,19 +104,24 @@ export const tournamentService = {
       }
     }
   },
+  
   startTournament (tournamentId) {
     try {
-      const players = this.getAllPlayers(tournamentId)
+      const players = db.prepare(`
+        SELECT player_id 
+        FROM players 
+        WHERE tournament_id = ?
+    `).all(tournamentId);
 
-      if (!players.success || players.players.length < 2) {
-        return {
-          success: false,
-          error: 'Not enough players',
-          message: 'At least 2 players required to start tournament'
-        }
+      if (!players || players.length < 2) {
+          return {
+              success: false,
+              error: 'Not enough players',
+              message: 'At least 2 players required to start tournament'
+          };
       }
 
-      const playersIds = players.players.map(player => player.id)
+      const playersIds = players.map(player => player.player_id)
       const schedule = generateRoundRobin(playersIds)
 
       db.prepare(`

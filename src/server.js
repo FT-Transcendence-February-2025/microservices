@@ -35,7 +35,7 @@ fastify.register(fastifyStatic, {
   prefix: '/', // Serve files at the root URL
 });
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3003
 
 // Initialize database
 try {
@@ -83,35 +83,10 @@ process.on('SIGINT', async () => {
 
 /*TODO:
 
-  -handle adding players to tournament
-  -get schedule
-  -update tournament
   -handle tournament time
   -handle deleting info via status
-  -meeting: invite handling and join handling
-      -invites, send out invite
-         -if accepted tm route add-user gets called from um
-      -join: friends list  and random on main tm frontend
-         - accept player that wants to join 
-
-  -add schemas to routes
-  
-  -create join route for users to join a tournament from their friends, who are online (gets send to tournaments hosts -> also a reason to maybe add host to tournament table)(or only tournaments that are hosted by friends get listed as joinable)
-     - for that create route that gets called and needs a bool to set to true so response says accepted and data gets saved, timer to set the bool if still on false response says declined automaticaly, if the host didnt decline
-  
- tournament handling in routes
-  -start with: tournaments/
-  -add users table with: /addUser
-  -create tournament table: /create
-  -init players table: /:tournamentId/players
-  -handle invites through: /:tournamentId/invite
-  -handle settings through: /:tournamentId/settings
-  -register new player for tournament: /:tournamentId/register
-
- invites:
- -list friends, get from um
- -invite button next to friend, when clicked, send request with current tmID
- -(maybe with via access code)
+  -join: friends list  and random on main tm frontend
+      - accept player that wants to join
 
  -when done with invites and settings on build click, fill tm table
 

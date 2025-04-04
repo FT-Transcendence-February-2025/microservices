@@ -4,8 +4,7 @@ const tournamentMatchSchema = {
   body: {
     type: 'object',
     properties: {
-      tournamentID: { type: 'number', multipleOf: 1 },
-      round: { type: 'number', multipleOf: 1 },
+      tournamentId: { type: 'number', multipleOf: 1 },
       schedule: {
         type: 'array',
         items: {
@@ -17,7 +16,7 @@ const tournamentMatchSchema = {
         }
       }
     },
-    required: ['tournamentID', 'schedule', 'round']
+    required: ['tournamentId', 'schedule']
   },
   response: {
     200: {

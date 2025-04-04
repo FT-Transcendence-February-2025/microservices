@@ -13,7 +13,7 @@ export const tournamentMatchesController = {
     try {
       const insertStmt = db.prepare(`
           INSERT INTO tournament_matches (tournament_id, round, player1_id, player2_id, created_at, room_code)
-          VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
+          VALUES (?, ?, ?, ?, datetime('now', 'localtime'), NULL)
         `)
 
       const insertMany = db.transaction((schedule) => {

@@ -2,8 +2,8 @@ import db from '../db/connection.js'
 
 export const tournamentMatchesController = {
   async postTournamentMatch (request, reply) {
-    const { tournamentID, schedule } = request.body
-    if (!tournamentID || !schedule) {
+    const { tournamentId, schedule } = request.body
+    if (!tournamentId || !schedule) {
       return reply.code(400).send({
         success: false,
         message: 'Missing required parameters'
@@ -12,8 +12,8 @@ export const tournamentMatchesController = {
 
     try {
       const insertStmt = db.prepare(`
-          INSERT INTO tournament_matches (tournament_id, round, player1_id, player2_id, created_at)
-          VALUES (?, ?, ?, ?, datetime('now'))
+          INSERT INTO tournament_matches (tournament_id, round, player1_id, player2_id, created_at, room_code)
+          VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
         `)
 
       const insertMany = db.transaction((schedule) => {
@@ -22,7 +22,7 @@ export const tournamentMatchesController = {
           const round = roundIndex + 1
           for (const match of roundMatches) {
             const [player1Id, player2Id] = match
-            insertStmt.run(tournamentID, round, player1Id, player2Id)
+            insertStmt.run(tournamentId, round, player1Id, player2Id)
           }
         }
       })

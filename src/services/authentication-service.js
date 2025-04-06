@@ -36,7 +36,7 @@ const authenticationService = async (email, password, userAgent) => {
 
 		const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-		const device = await db.getDevice(deviceHash);
+		const device = await db.getDevice(user.id, deviceHash);
 		if (device && device.error) {
       return { status: 500, error: "Internal Server Error" };
 		}
@@ -54,12 +54,12 @@ const authenticationService = async (email, password, userAgent) => {
     const accessToken = jwt.sign(
       { userId: user.id },
       process.env.SECRET_KEY,
-      { expiresIn: "15m" }
+      { expiresIn: "10h" }
     );
 
     return { refreshToken, accessToken, cookieOptions };
   } catch (error) {
-		console.error(error);
+		console.error("Error in token creation, in function authenticationService: ", error);
     return { status: 500, error: "Internal Server Error" };
   }
 };

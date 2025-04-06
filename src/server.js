@@ -69,7 +69,7 @@ fastify.register(fastifyCors, {
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
-});
+});	
 
 
 fastify.register(fastifyCookie, {

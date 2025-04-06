@@ -1,5 +1,20 @@
 import db from '../db/connection.js'
 
+async function updateUserStats (stats) {
+  const endpoint = 'http://localhost:3002/update-match-history'
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stats)
+    })
+    return await response.json()
+  } catch (error) {
+    console.error('Error updating user statistics:', error)
+    return { error: 'Statistics update failed' }
+  }
+}
+
 export const matchesController = {
   async postMatchResults (request, reply) {
     try {
@@ -21,13 +36,48 @@ export const matchesController = {
           winner_id = ?
         WHERE id = ?
         `)
-
       stmt.run(player1Score, player2Score, winnerId, matchId)
 
-      return {
-        success: true,
-        message: 'Match result saved successfully'
+      const match = db.prepare(`
+        SELECT player1_id, player2_id, created_at, started_at, ended_at
+        FROM matchmaking
+        WHERE id = ?
+      `).get(matchId)
+      const loserId = match.player1_id === winnerId ? match.player2_id : match.player1_id
+
+      let winnerScore, loserScore
+      if (match.player1_id === winnerId) {
+        winnerScore = player1Score
+        loserScore = player2Score
+      } else {
+        winnerScore = player2Score
+        loserScore = player1Score
       }
+
+      const winnerStats = {
+        userId: winnerId,
+        opponentId: loserId,
+        userScore: winnerScore,
+        opponentScore: loserScore,
+        matchDate: match.ended_at
+      }
+
+      const loserStats = {
+        userId: loserId,
+        opponentId: winnerId,
+        userScore: loserScore,
+        opponentScore: winnerScore,
+        matchDate: match.ended_at
+      }
+      const winUpdate = await updateUserStats(winnerStats)
+      const lossUpdate = await updateUserStats(loserStats)
+
+      return reply.code(200).send({
+        success: true,
+        message: 'Match result and user statistics updated successfully',
+        winUpdate,
+        lossUpdate
+      })
     } catch (error) {
       console.error('Error saving match results:', error)
       return reply.code(500).send({

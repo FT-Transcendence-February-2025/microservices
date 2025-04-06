@@ -7,7 +7,7 @@ import MainMenu from "./components/menu/mainMenu/mainMenu.js"
 import PlayMenu from "./components/menu/playMenu/playMenu.js"
 import TournamentMenu from "./components/menu/tournamentMenu/tournamentMenu.js"
 import Avatar from "./components/user/avatar/avatar.js"
-import Settings from './components/user/settings/settings.js';
+import Account from './components/user/account/account.js';
 import Profile from './components/user/profile/profile.js';
 import Game from "./components/game/game.js"
 import Queue from "./components/menu/queue/queue.js"
@@ -30,7 +30,7 @@ router.addRoute({ path: '/tournament', view: [TournamentMenu, Avatar] });
 router.addRoute({ path: '/game', view: [Game] });
 router.addRoute({ path: '/queue', view: [Queue] });
 router.addRoute({ path: '/profile', view: [Profile, Avatar] });
-router.addRoute({ path: '/settings', view: [Settings, Avatar] });
+router.addRoute({ path: '/account', view: [Account, Avatar] });
 
 router.setNotFound([NotFound]);
 

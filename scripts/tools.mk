@@ -30,10 +30,10 @@ load-Img:
 		echo "One or more tar files are missing. Running pull-Img..."; \
 		$(MAKE) pull-Img; \
 	fi
-	-docker load -i alpine.tar && \
-	-docker load -i node-20-alpine.tar && \
-	-docker load -i traefik-v3.3.3.tar && \
-	-docker load -i nginx-alpine.tar
+	-@docker load -i alpine.tar && \
+	docker load -i node-20-alpine.tar && \
+	docker load -i traefik-v3.3.3.tar && \
+	docker load -i nginx-alpine.tar
 
 
 # Show list of all running Docker containers
@@ -56,7 +56,8 @@ showAll:
 watchC:
 	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
-
+w:
+	watch -n 1 -c 'docker compose logs $$c | ccze -A'
 # Add all changes to git
 gAdd:
 	@echo $(CYAN) && git add .

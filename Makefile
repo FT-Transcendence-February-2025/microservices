@@ -122,7 +122,7 @@ secrets: #check_host
 # Usage: make logs c=<container_name>
 logs:
 	docker compose logs $$c
-	echo $(DEBUG_ON)
+
 # @docker compose config --services | xargs -I {} docker logs {}
 
 # Rebuild and restart everything

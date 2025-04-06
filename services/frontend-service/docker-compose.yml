@@ -1,19 +1,11 @@
 
 volumes:
-  front-end-vol:
+  front-vol:
     driver: local
-    name: front-end-vol
-    # driver_opts:
-    #   type: bind
-    #   o: bind
-    #   device: ./
-
-# networks:
-#   backend:
-#     external: true
+    name: front-vol
 
 services:
-  front-end:
+  front:
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,11 +14,11 @@ services:
         - DNS_SERVER=8.8.8.8
         - VITE_HOST=${DOMAIN}
         - VITE_PORT=3000
-    image: img_front-end:latest
-    container_name: front-end
-    hostname: front-end
+    image: img_front:latest
+    container_name: front
+    hostname: front
     volumes:
-      - front-end-vol:/app
+      - front-vol:/app
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -41,8 +33,6 @@ services:
       - 1.1.1.1
     expose:
       - "3000"
-    # ports:
-    #   - "3030:3000"
     extra_hosts:
       - "${DOMAIN}:127.0.0.1"
       - "${DOMAIN}:${IP}"

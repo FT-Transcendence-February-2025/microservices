@@ -35,7 +35,16 @@ COPY ./nginx/conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./nginx/conf/default.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /usr/share/nginx
-# Expose port 3000
+
+
+CMD ["nginx", "-g", "daemon off;"]
+
+
+FROM alpine:latest as final
+
+COPY --from=runtime / /
+
 EXPOSE 3000
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

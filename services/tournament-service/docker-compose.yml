@@ -1,0 +1,59 @@
+
+volumes:
+  tour-vol:
+    driver: local
+    name: tour-vol
+
+services:
+  tour:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - DEBUG_MODE=${DEBUG_MODE}
+        - DNS_SERVER=8.8.8.8
+    image: img_tour:latest
+    container_name: tour
+    hostname: tour
+    volumes:
+      - tour-vol:/usr/src/app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DOMAIN: ${DOMAIN}
+      IP: ${IP}
+      DOMAIN_TEST: ${DOMAIN_TEST}
+      DEBUG_MODE: ${DEBUG_MODE}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    networks:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      # --- Public Router: Externally facing ---
+      # toures any request coming to the public domain with the /api/tour prefix
+      - "traefik.http.routers.api-tour-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/tour`)"
+      - "traefik.http.routers.api-tour-public.entrypoints=websecure"
+      - "traefik.http.routers.api-tour-public.tls=true"
+      - "traefik.http.routers.api-tour-public.priority=90"
+      # Apply middlewares: one for Host rewriting and one for path rewriting
+      - "traefik.http.routers.api-tour-public.middlewares=change-host-to-tour,rewrite-tour-path"
+
+      # --- Internal Router: Dynamic Wildcard touring for Subdomains ---
+      # toures any request coming from wildcard subdomains with /api/tour prefix
+      # - "traefik.http.routers.api-tour-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/tour`)"
+      # - "traefik.http.routers.api-tour-internal.entrypoints=websecure"
+      # - "traefik.http.routers.api-tour-internal.tls=true"
+      # # Use the same middlewares to rewrite Host and Path
+      # - "traefik.http.routers.api-tour-internal.middlewares=change-host-to-tour,rewrite-tour-path"
+      # # Middleware: Change the Host header to the internal hostname (tour.domain)
+      - "traefik.http.middlewares.change-host-to-tour.headers.customrequestheaders.Host=tour.${DOMAIN}"
+      # Middleware: Rewrite the incoming path. Strips the /api/tour prefix so that:
+      #   /api/tour/task  →  /api/task
+      - "traefik.http.middlewares.rewrite-tour-path.replacePathRegex.regex=^/api/tour(.*)"
+      - "traefik.http.middlewares.rewrite-tour-path.replacePathRegex.replacement=/api$1"
+      # Service Definition: tour microservice backend
+      - "traefik.http.services.tour-service.loadbalancer.server.port=3004"
+
+

@@ -27,8 +27,6 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    expose:
-      - "3003"
     networks:
       - backend
     labels:
@@ -56,6 +54,6 @@ services:
       - "traefik.http.middlewares.rewrite-match-path.replacePathRegex.regex=^/api/match(.*)"
       - "traefik.http.middlewares.rewrite-match-path.replacePathRegex.replacement=/api$1"
       # Service Definition: match microservice backend
-      - "traefik.http.services.match-service.loadbalancer.server.port=3002"
+      - "traefik.http.services.match-service.loadbalancer.server.port=3003"
 
 

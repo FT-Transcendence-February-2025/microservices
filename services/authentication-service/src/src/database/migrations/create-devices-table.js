@@ -12,9 +12,9 @@ const createDevicesTable = async () => {
       table.bigInteger("expires_at").notNullable();
 			table.unique(["user_id", "device_hash"]);
     });
-    console.log("refreshTokens table created");
+    console.log("Devices table created");
   } catch (error) {
-    console.error("Error creating refreshTokens table:", error);
+    console.error("Error creating devices table:", error);
   } finally {
     await database.destroy();
   }

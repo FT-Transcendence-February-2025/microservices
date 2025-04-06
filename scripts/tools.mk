@@ -57,7 +57,7 @@ watchC:
 	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
 w:
-	watch -n 1 -c 'docker compose logs $$c | ccze -A'
+	watch -n 1 -c 'docker compose logs $$c | tail -n 30| ccze -A'
 # Add all changes to git
 gAdd:
 	@echo $(CYAN) && git add .

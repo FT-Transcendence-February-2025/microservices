@@ -9,7 +9,7 @@ const matchAcceptances = {} // object the tracks accepted match invitations
 
 async function startGameForMatch (match) {
   try {
-    const response = await fetch('http://localhost:3002/games', {
+    const response = await fetch('http://user:3002/api/games', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

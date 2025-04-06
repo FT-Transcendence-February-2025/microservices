@@ -60,7 +60,7 @@ fastify.register(newUserRoute, { prefix: "/api" });
 fastify.register(userExistsRoute, { prefix: "/api" });
 fastify.register(avatarRoute, { prefix: "/api" });
 fastify.register(displayNameRoute, { prefix: "/api" });
-fastify.register(matchmakingRoute, { prefix: "/api" });
+// fastify.register(matchmakingRoute, { prefix: "/api" });
 fastify.register(websocketRoute, { prefix: "/api" });
 fastify.register(userLogoutRoute, { prefix: "/api" });
 fastify.register(getFriendsRoute, { prefix: "/api" });

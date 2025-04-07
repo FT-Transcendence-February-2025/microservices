@@ -6,6 +6,15 @@ export const tournamentService = {
   registerPlayer (tournamentId, userId) {
     try {
       // User exists?
+      const playerExists = db.prepare('SELECT player_id FROM players WHERE player_id = ?').get(userId)
+      if (playerExists) {
+        return {
+          success: false,
+          error: 'Can not add player',
+          message: `player ID ${userId} is already registered`
+        }
+      }
+
       const userExists = db.prepare('SELECT user_id FROM users WHERE user_id = ?').get(userId)
       if (!userExists) {
         return {

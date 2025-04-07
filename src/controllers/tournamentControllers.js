@@ -17,7 +17,16 @@ export const tournamentController = {
           message: `Cannot register player ID ${userId}`
         }
       }
-
+      
+      const playerExists = db.prepare('SELECT player_id FROM players WHERE player_id = ?').get(userId)
+      if (playerExists) {
+        return {
+          success: false,
+          error: 'Can not add player',
+          message: `player ID ${userId} is already registered`
+        }
+      }
+      
       const insertTournament = db.prepare(`
         INSERT INTO tournaments
       (name, created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, created_at, started_at, ended_at)
@@ -25,21 +34,30 @@ export const tournamentController = {
       `)
       
       const tournamentId = insertTournament.run(
-      objects.tournaments.name,
-      userId,
-      objects.tournaments.current_round,
-      objects.tournaments.size,
-      objects.tournaments.registration_start_time,
-      objects.tournaments.registration_deadline,
-      objects.tournaments.winner_id,
-      objects.tournaments.schedule,
-      objects.tournaments.created_at,
-      objects.tournaments.started_at,
-      objects.tournaments.ended_at
+        objects.tournaments.name,
+        userId,
+        objects.tournaments.current_round,
+        objects.tournaments.size,
+        objects.tournaments.registration_start_time,
+        objects.tournaments.registration_deadline,
+        objects.tournaments.winner_id,
+        objects.tournaments.schedule,
+        objects.tournaments.created_at,
+        objects.tournaments.started_at,
+        objects.tournaments.ended_at
       ).lastInsertRowid
       
-      console.log(`Added tournament with ID: ${tournamentId}`)
+      console.log(`Created tournament with ID: ${tournamentId}`)
       
+      const registerPlayer = tournamentService.registerPlayer(tournamentId, userId)
+      if (!registerPlayer.success) {
+        return reply.code(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            details: registerPlayer.message
+        })
+      }
+
       return reply.code(201).send({
         success: true,
         message: 'New tournament created successfully',

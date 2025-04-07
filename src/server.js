@@ -12,48 +12,48 @@ import passwordRoute from "./routes/password-route.js";
 import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
-////////////////////////////////////////////////////DOCKER CONTAINER end
-import fs from "fs";
 import verifyEmailRoute from "./routes/verify-email-route.js";
 import dataChangeRequestRoute from "./routes/data-change-request-route.js";
 import confirmationLinkRequestRoute from "./routes/confirmation-link-request-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
+////////////////////////////////////////////////////DOCKER CONTAINER end
+import fs from "fs";
 
-// Load environment variables
-if (fs.existsSync(process.env.ENV_FILE_PATH)) {
-//   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
+// // Load environment variables
+// if (fs.existsSync(process.env.ENV_FILE_PATH)) {
+// //   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
 	dotenv.config();
-} else {
-  console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
-}
+// } else {
+//   console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
+// }
 
-// Validate required environment variables
-const requiredVariables = [
-  "ENV_FILE_PATH",
-  "NODE_ENV",
-  "DOMAIN",
-  "COOKIE_SECRET",
-];
-const missingVariables = requiredVariables.filter((key) => !process.env[key]);
+// // Validate required environment variables
+// const requiredVariables = [
+//   "ENV_FILE_PATH",
+//   "NODE_ENV",
+//   "DOMAIN",
+//   "COOKIE_SECRET",
+// ];
+// const missingVariables = requiredVariables.filter((key) => !process.env[key]);
 
-if (missingVariables.length > 0) {
-  console.error(
-    `Missing required environment variables: ${missingVariables.join(", ")}`
-  );
-  process.exit(1); // Exit the process with an error code
-}
+// if (missingVariables.length > 0) {
+//   console.error(
+//     `Missing required environment variables: ${missingVariables.join(", ")}`
+//   );
+//   process.exit(1); // Exit the process with an error code
+// }
 
 const fastify = Fastify({
-	logger: {
-	  transport: {
-		target: 'pino-pretty', // Use pino-pretty for pretty printing.
-		options: {
-		  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
-		  colorize: true, // Colorize output in development.
-		}
-	  }
-	}
-  });
+	// logger: {
+	//   transport: {
+	// 	target: 'pino-pretty', // Use pino-pretty for pretty printing.
+	// 	options: {
+	// 	  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
+	// 	  colorize: true, // Colorize output in development.
+	// 	}
+	//   }
+	// }
+});
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 

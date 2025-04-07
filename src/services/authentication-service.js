@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import db from "./database-service.js";
 import * as crypto from "crypto";
 
-
 const authenticationService = async (email, password, userAgent) => {
 	const user = await db.getUserByEmail(email);
 	if (!user) {

@@ -27,6 +27,28 @@ const notifyController = {
 		}
 
 		return reply.status(200).send({ success: "Verification code has been sent" });
+	},
+	sendConfirmationLink: async (request, reply) => {
+		const user = await db.getUserById(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const sendResult = await notifyService.sendEmail({
+			settings: {
+				type: "emailConfirm",
+				userId: user.id
+			},
+			receiver: user.email
+		});
+		if (sendResult.error) {
+			return reply.status(sendResult.status).send({ error:sendResult.error });
+		}
+
+		return reply.status(200).send({ success: "Confirmation link sent" });
 	}
 };
 

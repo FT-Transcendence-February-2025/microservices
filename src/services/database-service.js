@@ -141,6 +141,53 @@ const db = {
 			console.error("Error in function db.addEmailCode: ", error);
 			return { error };
 		}
+	},
+	getEmailCode: async (email, code, type) => {
+		try {
+			const emailCodeEntry = await database("email_codes")
+				.where({ email, code, type })
+				.first();
+			if (!emailCodeEntry) {
+				return { error: "Verification code invalid", status: 404 };
+			}
+
+			const currentTime = Math.floor(Date.now() / 1000);
+			if (currentTime > emailCodeEntry.expires_at) {
+				await database("email_codes")
+					.where({ email, code, type })
+					.del();
+	
+				return { error: "Verification code expired", status: 410 };
+			}
+	
+			return emailCodeEntry;
+		} catch (error) {
+			console.error("Error in function db.getEmailCode: ", error);
+			return { error: "Internal Server Error", status: 500 };
+		}
+	},
+	deleteEmailCode: async (id) => {
+		try {
+			await database("email_codes").where({ id }).del();
+			return { success: true };
+		} catch (error) {
+			console.error(error);
+			return { error };
+		}
+	},
+	deleteExpiredEmailCodes: async () => {
+		console.log("Running scheduled expired email codes removal...");
+		try {
+			const currentDate = Math.floor(Date.now() / 1000);
+			const deletedRows = await database("email_codes")
+				.where("expires_at", "<", currentDate)
+				.del();
+
+			console.log(`Deleted ${deletedRows} expired codes.`);
+    } catch (error) {
+			console.error("Error in function db.deleteExpiredTokens: ", error);
+			return { error };
+    }
 	}
 };
 

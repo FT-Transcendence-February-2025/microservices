@@ -70,7 +70,6 @@ const generateConfirmationToken = (userId, action, expirationMinutes) => {
 
 const generateVerificationCode = (email, dataToChange) => {
 	const code = Math.floor(100000 + Math.random() * 900000).toString();
-	console.log("code:", code);
 	const expiresAt = Math.floor(Date.now() / 1000 + 10 * 60);
 	const addResult = db.addEmailCode(email, code, expiresAt, dataToChange);
 	if (addResult.error) {

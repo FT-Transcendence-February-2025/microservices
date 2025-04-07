@@ -284,15 +284,6 @@ const messageHandler = async (message, connection) => {
       const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
       const displayName = currentPlayer ? currentPlayer.displayName : null
       if (data.tournamentId) {
-        // if (!data.round) {
-        //   connection.socket.send(
-        //     JSON.stringify({
-        //       type: 'error',
-        //       message: 'Missing round value for tournament'
-        //     })
-        //   )
-        //   return
-        // }
         const round = data.round
         const tournamentMatch = db.prepare(`
           SELECT *, tournament_id AS tournamentId

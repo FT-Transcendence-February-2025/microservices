@@ -9,8 +9,8 @@ class GameInstanceManager {
 		this.playerConnections = new Map()
 	}
 
-	async createGameInstance(matchId, player1Id, player2Id, isLocal = true) {
-		const response = await fetch (`http://localhost:3003/get-user/${player1Id}`, {
+	async createGameInstance(matchId, player1Id, player2Id, isLocal = true, tournamentId = null) {
+		const response = await fetch (`http://localhost:3002/get-user/${player1Id}`, {
 			method: 'GET',
 			headers: { 'Content-Type': 'application/json' }
 		});
@@ -37,9 +37,13 @@ class GameInstanceManager {
 		gameInstance.gameState = 'pending'
 		gameInstance.isLocal = isLocal
 
+		if (tournamentId) {
+			gameInstance.tournamentId = tournamentId
+		}
+
 		this.gameInstances.set(matchId, gameInstance)
 
-		console.log(`Created new game instances for match ${matchId} between players ${player1Id} and ${player2Id}`)
+		console.log(`Created new game instances for match ${matchId} between players ${player1Id} and ${player2Id}${tournamentId ? ` in tournament ${tournamentId}` : ''}`)
 
 		return { success: true }
 	}
@@ -69,7 +73,7 @@ class GameInstanceManager {
 			setTimeout(() => {
 				this.startGame(matchId)
 			}, 1000)
-		} else if (!gameInstance.islocal && gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'pending') {
+		} else if (!gameInstance.isLocal && gameInstance.connectedPlayers.size === 2 && gameInstance.gameState === 'pending') {
 			this.startGame(matchId)
 		}
 		return { success: true }
@@ -107,19 +111,30 @@ class GameInstanceManager {
 	endGame(matchId) {
 		const gameInstance = this.gameInstances.get(matchId)
 
-		if (!gameInstance) {
-			return
-		}
+		if (!gameInstance) return
 		console.log(`Game ended for match ${matchId}`)
 
-		if (gameInstance.gameState === 'completed' && !gameInstance.isLocal) {
-			this.saveMatchResults(
-				matchId,
-				gameInstance.player1Id,
-				gameInstance.player2Id,
-				gameInstance.paddleLeft.score,
-				gameInstance.paddleRight.score
-			)
+		if (gameInstance.gameState === 'completed') {
+			if (!gameInstance.isLocal) {
+				if (gameInstance.tournamentId) {
+					this.saveTournamentMatchResults(
+						matchId,
+						gameInstance.tournamentId,
+						gameInstance.player1Id,
+						gameInstance.player2Id,
+						gameInstance.paddleLeft.score,
+						gameInstance.paddleRight.score
+					)
+				} else {
+					this.saveMatchResults(
+						matchId,
+						gameInstance.player1Id,
+						gameInstance.player2Id,
+						gameInstance.paddleLeft.score,
+						gameInstance.paddleRight.score
+					)
+				}
+			}
 		}
 
 		for (const playerId of gameInstance.connectedPlayers) {
@@ -130,6 +145,31 @@ class GameInstanceManager {
 		setTimeout(() => {
 			this.gameInstances.delete(matchId)
 		}, 5000)
+	}
+
+	async saveTournamentMatchResults(matchId, tournamentId, player1Id, player2Id, player1Score, player2Score) {
+		try {
+			const winnerId = player1Score > player2Score ? player1Id :
+				(player2Score > player1Score ? player2Id : null);
+			
+			const response = await fetch(`http://localhost:${PORT}/tournament/matches/results`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					matchId,
+					tournamentId,
+					player1Score,
+					player2Score,
+					winnerId
+				})
+			})
+			const result = await response.json();
+			console.log(`Tournament match results saved for match ${matchId}: ${result.success ? 'success' : 'failed'}`);
+		} catch (error) {
+			console.error(`Error saving tournament match results ${error.message}`)
+		}
 	}
 
 	async saveMatchResults(matchId, player1Id, player2Id, player1Score, player2Score) {

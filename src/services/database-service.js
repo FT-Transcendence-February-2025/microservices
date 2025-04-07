@@ -1,3 +1,4 @@
+import frontendController from "../controllers/frontend-controller.js";
 import database from "../database/database.js"
 
 const db = {
@@ -178,13 +179,19 @@ const db = {
 
 			const friends = await database("users").whereIn("id", friendIds);
 
-			const sanitizedFriends = friends.map((friend) => ({
-				id: friend.id,
-				displayName: friend.display_name,
-				avatarPath: friend.avatar_path,
-				wins: friend.wins,
-				loses: friend.loses,
-		}));
+			const sanitizedFriends = friends.map((friend) => {
+				const connection = frontendController.activeConnections.get(friend.id);
+				const online = connection ? true : false;
+		
+				return {
+						id: friend.id,
+						displayName: friend.display_name,
+						avatarPath: friend.avatar_path,
+						wins: friend.wins,
+						loses: friend.loses,
+						online
+				};
+			});
 
 			return sanitizedFriends;
     } catch (error) {

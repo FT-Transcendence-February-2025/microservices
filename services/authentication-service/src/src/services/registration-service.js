@@ -4,6 +4,9 @@ import fastify from "../server.js";
 import notifyService from "./notify-service.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const registrationService = {
 	registerUser: async (email, displayName, password) => {
@@ -36,7 +39,7 @@ const registrationService = {
 		}
 
 		const confirmationToken = generateConfirmationToken(user.id, "email_confirmation", 10);
-		const link = `http://auth:3001/verify-email/${confirmationToken}`;
+		const link = `https://${process.env.DOMAIN}/api/auth/verify-email/${confirmationToken}`;
 		const sendResult = await notifyService.sendEmail({ type: "confirm", receiver: email, link });
 		if (sendResult.error) {
 			await db.deleteUser(user.id);

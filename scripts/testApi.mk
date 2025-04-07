@@ -48,6 +48,7 @@ u-register: # should not #user-exist #user-logout
 	-H "Content-Type: application/json" \
 	-d '{"userId": 8, "displayName": "test"}' | jq
 
+
 fc-login:
 	docker exec -it front-end sh -c 'curl -k -X POST https://$(shell hostname)/api/auth/login \
 	-H "Content-Type: application/json" \
@@ -67,9 +68,9 @@ fc-login2:
 	-d '\''{"email": "user@example.com", "password": "securePassword123"}'\'' | jq'
 
 ac-register:
-	docker exec -it auth sh -c 'curl -k -X POST  https://user:3002/api/user/new-user \
+	docker exec -it auth sh -c 'curl -k -X POST  http://user:3002/api/new-user \
 	-H "Content-Type: application/json" \
-	-d '\''{"userId": 1, "displayName": "John Doe"}'\'' | jq'
+	-d '\''{"userId": 20, "displayName": "John Doe"}'\'' | jq'
 
 ac-register2:
 	docker exec -it auth sh -c 'curl -k -X POST  https://$(shell hostname)/api/user/new-user \

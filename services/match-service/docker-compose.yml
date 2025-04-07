@@ -28,7 +28,8 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.18.0.4
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---

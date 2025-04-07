@@ -67,8 +67,9 @@ services:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock:ro"
       - "traefik-logs:/etc/traefik/"
     networks:
-      - frontend
-      - backend
+      frontend:
+      backend:
+        ipv4_address: 172.18.0.22
       # - game # will handle wss?
     restart: unless-stopped
     labels:

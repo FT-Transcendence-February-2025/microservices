@@ -38,7 +38,8 @@ services:
     expose:
       - "3002"
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.18.0.3
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---
@@ -47,8 +48,14 @@ services:
       - "traefik.http.routers.api-user-public.entrypoints=websecure"
       - "traefik.http.routers.api-user-public.tls=true"
       - "traefik.http.routers.api-user-public.priority=90"
-      # Apply middlewares: one for Host rewriting and one for path rewriting
-      - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path"
+        # Apply middlewares: one for blocking and others for Host and Path rewriting
+      - "traefik.http.routers.api-user-public.middlewares=block-new-user,change-host-to-user,rewrite-user-path"
+
+      # Middleware: Block requests to /api/user/new-user
+      - "traefik.http.middlewares.block-new-user.rule=Path(`/api/user/new-user`)"
+      - "traefik.http.middlewares.block-new-user.errorpage.status=403"
+      - "traefik.http.middlewares.block-new-user.errorpage.service=error-service"
+      - "traefik.http.middlewares.block-new-user.errorpage.query=/error"
 
       # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
       # Matches any request coming from wildcard subdomains with /api/user prefix

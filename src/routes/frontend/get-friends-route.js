@@ -20,7 +20,8 @@ export default async function (fastify, opts) {
 									displayName: { type: "string" },
 									avatarPath: { type: "string" },
 									wins: { type: "number" },
-									loses: { type: "number" }
+									loses: { type: "number" },
+									online: { type: "boolean" }
 								}
 							}
 						},

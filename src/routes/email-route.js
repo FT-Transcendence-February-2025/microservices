@@ -9,6 +9,10 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
+					verificationCode: {
+						type: "string",
+						pattern: "^[0-9]{6}$"
+					},
 					email: { type: "string" }
 				},
 				required: ["email"]
@@ -18,7 +22,29 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						success: { type: "string" }
-					}
+					},
+					required: ["success"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				500: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				}
 			}
 		},

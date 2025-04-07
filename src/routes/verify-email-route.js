@@ -9,7 +9,8 @@ export default async function (fastify, opts) {
 				type: "object",
 				properties: {
 					success: { type: "string" }
-				}
+				},
+				required: ["success"]
 			}
 		},
 		handler: verifyEmailController

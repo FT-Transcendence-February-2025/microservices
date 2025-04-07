@@ -15,6 +15,8 @@ import emailRoute from "./routes/email-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import fs from "fs";
 import verifyEmailRoute from "./routes/verify-email-route.js";
+import dataChangeRequestRoute from "./routes/data-change-request-route.js";
+import confirmationLinkRequestRoute from "./routes/confirmation-link-request-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 
 // Load environment variables
@@ -89,20 +91,24 @@ fastify.register(fastifyMailer, {
   }
 });
 
-fastify.register(registrationRoute, { prefix: "/api" });
-fastify.register(loginRoute, { prefix: "/api" });
-fastify.register(emailRoute, { prefix: "/api" });
-fastify.register(passwordRoute, { prefix: "/api" });
-fastify.register(refreshTokenRoute, { prefix: "/api" });
-fastify.register(logoutRoute, { prefix: "/api" });
-fastify.register(verifyEmailRoute, { prefix: "/api" });
-// fastify.register(registrationRoute);
-// fastify.register(loginRoute);
-// fastify.register(emailRoute);
-// fastify.register(passwordRoute);
-// fastify.register(refreshTokenRoute);
-// fastify.register(logoutRoute);
-// fastify.register(verifyEmailRoute);
+// fastify.register(registrationRoute, { prefix: "/api" });
+// fastify.register(loginRoute, { prefix: "/api" });
+// fastify.register(emailRoute, { prefix: "/api" });
+// fastify.register(passwordRoute, { prefix: "/api" });
+// fastify.register(refreshTokenRoute, { prefix: "/api" });
+// fastify.register(logoutRoute, { prefix: "/api" });
+// fastify.register(verifyEmailRoute, { prefix: "/api" });
+// fastify.register(dataChangeRequestRoute, { prefix: "/api" });
+// fastify.register(confirmationLinkRequestRoute, { prefix: "/api" });
+fastify.register(registrationRoute);
+fastify.register(loginRoute);
+fastify.register(emailRoute);
+fastify.register(passwordRoute);
+fastify.register(refreshTokenRoute);
+fastify.register(logoutRoute);
+fastify.register(verifyEmailRoute);
+fastify.register(dataChangeRequestRoute);
+fastify.register(confirmationLinkRequestRoute);
 
 const tablesToCheck = ["devices", "users"];
 
@@ -114,10 +120,12 @@ const startServer = async () => {
     // Run scheduled refresh token check and delete expired tokens.
     cron.schedule("0 */12 * * *", async () => {
       await db.deleteExpiredTokens();
-    });
+    	await db.deleteExpiredEmailCodes();
+});
 
     // Perform an initial cleanup of expired tokens.
     await db.deleteExpiredTokens();
+		await db.deleteExpiredEmailCodes();
 
     // Start the Fastify server.
     fastify.get("/", (request, reply) => {

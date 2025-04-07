@@ -9,21 +9,47 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
+					verificationCode: {
+						type: "string",
+						pattern: "^[0-9]{6}$"
+					},
 					currentPassword: { type: "string" },
 					newPassword: { type: "string" }
 				},
-				required: ["currentPassword", "newPassword"]
+				required: ["verificationCode", "currentPassword", "newPassword"]
 			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
 						success: { type: "string" }
-					}
+					},
+					required: ["success"]
+				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				410: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				500: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				}
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: passwordController
+		handler: passwordController.changePassword
 	});
 };

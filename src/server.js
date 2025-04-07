@@ -82,13 +82,13 @@ process.on('SIGINT', async () => {
 })
 
 /*TODO:
-
-  -handle tournament time
+  -call get friends from um, check who has created a tournament and if ended_at is not filled yet 
+  -accept player to join the tournament -> for now not, only basic behavior
+  -update scores
+  -handle tournament time -> do with timestamp i get in update tournament request
   -handle deleting info via status
   -join: friends list  and random on main tm frontend
       - accept player that wants to join
-
- -when done with invites and settings on build click, fill tm table
 
  -when tm is done send all important userinfo to um and delete all relatable to current user, when hosted delete instances from all tables, when invited delte only from users and players
   currently it is delteing whole tm table for workflow

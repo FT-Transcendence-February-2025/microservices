@@ -105,11 +105,11 @@ const db = {
     }
 
     return { success: true };
-  } catch (error) {
-		console.error("Error in function db.updateToken: ", error);
-    return { error };
-  }
-},
+		} catch (error) {
+			console.error("Error in function db.updateToken: ", error);
+			return { error };
+		}
+	},
 	deleteDevice: async (userId, deviceHash) => {
 		try {
 			await database("devices").where({ user_id: userId, device_hash: deviceHash }).del();
@@ -132,6 +132,15 @@ const db = {
 			console.error("Error in function db.deleteExpiredTokens: ", error);
 			return { error };
     }
+	},
+	addEmailCode: async (email, code, expiresAt, type) => {
+		try {
+			await database("email_codes").insert({ email, code, expires_at: expiresAt, type });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addEmailCode: ", error);
+			return { error };
+		}
 	}
 };
 

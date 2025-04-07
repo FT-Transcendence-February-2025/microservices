@@ -24,6 +24,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: passwordController
+		handler: passwordController.changePassword
 	});
 };

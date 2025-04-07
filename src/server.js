@@ -12,6 +12,7 @@ import refreshTokenRoute from "./routes/refresh-token-route.js";
 import logoutRoute from "./routes/logout-route.js";
 import emailRoute from "./routes/email-route.js";
 import verifyEmailRoute from "./routes/verify-email-route.js";
+import dataChangeRequest from "./routes/data-change-request.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
@@ -86,6 +87,7 @@ fastify.register(fastifyMailer, {
 // fastify.register(refreshTokenRoute, { prefix: "/api" });
 // fastify.register(logoutRoute, { prefix: "/api" });
 // fastify.register(verifyEmailRoute, { prefix: "/api" });
+// fastify.register(dataChangeRequest, { prefix: "/api" });
 fastify.register(registrationRoute);
 fastify.register(loginRoute);
 fastify.register(emailRoute);
@@ -93,6 +95,7 @@ fastify.register(passwordRoute);
 fastify.register(refreshTokenRoute);
 fastify.register(logoutRoute);
 fastify.register(verifyEmailRoute);
+fastify.register(dataChangeRequest);
 
 cron.schedule("0 */12 * * *", async () => {
 	await db.deleteExpiredTokens();

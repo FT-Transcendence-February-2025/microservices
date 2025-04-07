@@ -33,4 +33,4 @@ const passwordService = {
 	}
 };
 
-export default passwordService;
+export default passwordService.changePassword;

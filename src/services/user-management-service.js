@@ -1,6 +1,6 @@
 const userManagementService = {
 	displayNameExists: async (displayName) => {
-		const response = await fetch("http://localhost:3002/user-exists", {
+		const response = await fetch("http://user:3002/api/user-exists", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ displayName })
@@ -15,8 +15,8 @@ const userManagementService = {
 		const data = await response.json();
 		return { exists: data.exists };
 	},
-	sendId: async (userId, displayName) => {
-    const response = await fetch("http://localhost:3002/new-user", {
+	sendIdToUserManagement: async (userId, displayName) => {
+    const response = await fetch("http://user:3002/api/new-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, displayName })
@@ -24,13 +24,13 @@ const userManagementService = {
 
     if (!response.ok) {
         console.error("Error in function userManagementService.sendId: Error creating user in user management service:", response.error);
-				return { error: "Failed to create user in User Management Service" };
+	return { error: "Failed to create user in User Management Service" };
     }
 
 		return { success: "User created successfully in User Management Service" };
 	},
 	informUserLogout: async (userId) => {
-		const response = await fetch ("htttp://localhost:3002/user-logout", {
+		const response = await fetch ("http://user:3002/api/user-logout", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId })

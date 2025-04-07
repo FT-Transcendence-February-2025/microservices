@@ -7,6 +7,7 @@ import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
+import tournamentResultsRoute from './routes/tournament_results_route.js'
 
 const PORT = 3000
 
@@ -43,6 +44,7 @@ fastify.register(matchmakingDbRoute)
 fastify.register(matchesRoute, { prefix: '/matches' })
 fastify.register(matchmakingRoute)
 fastify.register(tournamentRoute, { prefix: '/tournament' })
+fastify.register(tournamentResultsRoute, { prefix: '/tournament/matches' })
 
 const start = async () => {
   try {

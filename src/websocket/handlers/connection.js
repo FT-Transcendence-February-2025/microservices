@@ -9,13 +9,14 @@ const matchAcceptances = {} // object the tracks accepted match invitations
 
 async function startGameForMatch (match) {
   try {
-    const response = await fetch('http://localhost:3002/games', {
+    const response = await fetch('http://localhost:3003/games', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         matchId: match.id,
+        tournamentId: match.tournamentId,
         player1Id: match.player1_id,
         player2Id: match.player2_id,
         isLocal: false
@@ -87,12 +88,24 @@ const messageHandler = async (message, connection) => {
 
       // tournament joinQueue branch
       if (data.tournamentId) {
+        if (!data.round) {
+          connection.socket.send(
+            JSON.stringify({
+              type: 'error',
+              message: 'Missing round value for tournament'
+            })
+          )
+          return
+        }
+        const round = data.round
+
         if (addPlayerToQueue(data, connection, result.displayName, true)) {
           connection.socket.send(
             JSON.stringify({
               type: 'tournamentQueueJoined',
               message: 'Successfully joined tournament queue',
-              displayName: result.displayName
+              displayName: result.displayName,
+              round
             })
           )
         }
@@ -106,15 +119,42 @@ const messageHandler = async (message, connection) => {
             const stmt = db.prepare(`
               UPDATE tournament_matches
               SET match_status = ?, room_code = ?
-              WHERE tournament_id = ? AND player1_id = ? AND player2_id = ? AND match_status = 'pending'
+              WHERE tournament_id = ? AND round = ? 
+              AND (
+                (player1_id = ? AND player2_id = ?)
+                OR (player1_id = ? AND player2_id = ?)
+              )
+              AND match_status = 'pending'
             `)
-            stmt.run('pending', roomCode, data.tournamentId, player1.id, player2.id);
+            const updateResult = stmt.run('pending', roomCode, data.tournamentId, round,
+              player1.id, player2.id, player2.id, player1.id)
+            if (!updateResult.changes) {
+              matchmakingQueue.unshift(player2)
+              matchmakingQueue.unshift(player1);
+              [player1, player2].forEach(player => {
+                player.socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    message: 'Tournament match not found for these players'
+                  })
+                )
+              })
+              return
+            }
+
+            const tournamentMatch = db.prepare(`
+              SELECT * FROM tournament_matches
+              WHERE tournament_id = ? AND round = ? AND room_code = ?
+              AND match_status = 'pending'
+            `).get(data.tournamentId, round, roomCode);
+
             [player1, player2].forEach((player) => {
-              const opponent = player === player1 ? player2.id : player1.id
+              const opponent = player === player1 ? player2 : player1
               player.socket.send(
                 JSON.stringify({
                   type: 'tournamentMatchCreated',
-                  // round
+                  matchId: tournamentMatch.id,
+                  round,
                   opponentId: opponent.id,
                   opponentDisplayName: opponent.displayName,
                   roomCode
@@ -122,7 +162,7 @@ const messageHandler = async (message, connection) => {
               )
             })
           } catch (error) {
-            console.error('Erro creating tournament match:', error)
+            console.error('Error creating tournament match:', error)
             matchmakingQueue.unshift(player2)
             matchmakingQueue.unshift(player1);
 
@@ -241,12 +281,16 @@ const messageHandler = async (message, connection) => {
   case 'matchAccept':
     try {
       // Tournament Match Acceptance
+      const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+      const displayName = currentPlayer ? currentPlayer.displayName : null
       if (data.tournamentId) {
+        const round = data.round
         const tournamentMatch = db.prepare(`
-          SELECT * FROM tournament_matches
-          WHERE tournament_id = ? AND match_status = ? AND id = ?
+          SELECT *, tournament_id AS tournamentId
+          FROM tournament_matches
+          WHERE tournament_id = ? AND match_status = ?
             AND (player1_id = ? OR player2_id = ?)
-          `).get(data.tournamentId, 'pending', data.matchId, data.userId, data.userId)
+          `).get(data.tournamentId, 'pending', data.userId, data.userId)
 
         if (!tournamentMatch) {
           connection.socket.send(
@@ -258,18 +302,82 @@ const messageHandler = async (message, connection) => {
           return
         }
 
-        db.prepare(`
-          UPDATE tournament_matches
-          SET match_status = 'in_progress', started_at = datetime('now')
-          WHERE id = ?
-          `).run(data.matchId)
+        if (!matchAcceptances[tournamentMatch.id]) {
+          console.log('Creating acceptance traker for tournament match:', tournamentMatch.id)
+          matchAcceptances[tournamentMatch.id] = new Set()
+        }
+        matchAcceptances[tournamentMatch.id].add(data.userId)
+        console.log('Current accepted players for tournament match', tournamentMatch.id, ':',
+          Array.from(matchAcceptances[tournamentMatch.id])
+        )
+
+        const opponentId = tournamentMatch.player1_id === data.userId ? tournamentMatch.player2_id : tournamentMatch.player1_id
+        const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
+        const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
 
         connection.socket.send(
           JSON.stringify({
             type: 'tournamentMatchAccepted',
-            message: 'You have accepted the tournament match'
+            message: 'You have accepted the match',
+            yourDisplayName: displayName,
+            opponentName: opponentDisplayName,
+            round
           })
         )
+
+        if (matchAcceptances[tournamentMatch.id] && matchAcceptances[tournamentMatch.id].size >= 2) {
+          console.log('Starting tournament match...')
+          db.prepare(`
+            UPDATE tournament_matches
+            SET match_status = ?, started_at = datetime('now', 'localtime')
+            WHERE id = ?
+            `).run('in_progress', tournamentMatch.id)
+
+          console.log('Tournament match retrieved:', tournamentMatch)
+          const gameStarted = await startGameForMatch(tournamentMatch)
+
+          if (!gameStarted) {
+            console.error(`Game creation failed for tournament match ${tournamentMatch.id}. Notifying players...`)
+            activeConnections.forEach(conn => {
+              conn.socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  message: `Failed to create game for tournament match ${tournamentMatch.id}`
+                })
+              )
+            })
+            return
+          }
+
+          const gameUrl = `http://localhost:3003/?matchId=${tournamentMatch.id}`
+
+          activeConnections.forEach(conn => {
+            if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
+              const specificOpponentId = conn.userId === tournamentMatch.player1_id ? tournamentMatch.player2_id : tournamentMatch.player1_id
+              const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
+              const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
+              conn.socket.send(
+                JSON.stringify({
+                  type: 'matchStarted',
+                  matchId: tournamentMatch.id,
+                  oppId: specificOpponentId,
+                  oppDisplayName: specificOpponentDisplayName,
+                  gameUrl: `${gameUrl}&playerId=${conn.userId}`
+                })
+              )
+            }
+          })
+          delete matchAcceptances[tournamentMatch.id]
+          console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
+
+          // connection.socket.send(
+          //   JSON.stringify({
+          //     type: 'matchAccept',
+          //     message: 'You have accepted the tournament match',
+          //     round
+          //   })
+          // )
+        }
       } else {
         // Normal Match Acceptance
         const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
@@ -322,7 +430,7 @@ const messageHandler = async (message, connection) => {
           })
         )
 
-        if (matchAcceptances[match.id] && matchAcceptances[match.id].size >= 1) {
+        if (matchAcceptances[match.id] && matchAcceptances[match.id].size >= 2) {
           console.log('Starting match...')
           db.prepare(`
           UPDATE matchmaking 

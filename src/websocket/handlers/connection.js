@@ -16,6 +16,7 @@ async function startGameForMatch (match) {
       },
       body: JSON.stringify({
         matchId: match.id,
+        tournamentId: match.tournamentId,
         player1Id: match.player1_id,
         player2Id: match.player2_id,
         isLocal: false
@@ -294,7 +295,8 @@ const messageHandler = async (message, connection) => {
         // }
         const round = data.round
         const tournamentMatch = db.prepare(`
-          SELECT * FROM tournament_matches
+          SELECT *, tournament_id AS tournamentId
+          FROM tournament_matches
           WHERE tournament_id = ? AND match_status = ?
             AND (player1_id = ? OR player2_id = ?)
           `).get(data.tournamentId, 'pending', data.userId, data.userId)
@@ -340,6 +342,7 @@ const messageHandler = async (message, connection) => {
             WHERE id = ?
             `).run('in_progress', tournamentMatch.id)
 
+          console.log('Tournament match retrieved:', tournamentMatch)
           const gameStarted = await startGameForMatch(tournamentMatch)
 
           if (!gameStarted) {
@@ -374,7 +377,7 @@ const messageHandler = async (message, connection) => {
             }
           })
           delete matchAcceptances[tournamentMatch.id]
-          console.log(`Match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
+          console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
 
           // connection.socket.send(
           //   JSON.stringify({

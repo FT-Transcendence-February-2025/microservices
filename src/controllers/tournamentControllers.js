@@ -69,28 +69,29 @@ export const tournamentController = {
       }
       const response = await fetch(`${UM_SERVICE_URL}/tournament/matches`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ tournamentId, schedule})
-      })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tournamentId,
+          schedule: schedule.schedule // Ensure this is the 2D/3D array
+        })
+      });
+      
       if (!response.ok) {
-          const userdata = await response.json()
-          console.log(userdata)
-          const error = new Error(`Failed to start match`);
-          error.statusCode = response.status;
-          throw error;
+        const userdata = await response.json();
+        const error = new Error(userdata.message || 'Failed to start match');
+        error.statusCode = response.status;
+        throw error;
       }
       reply.code(200).send({ 
         statusCode: 200,
         message: `Tournament ${tournamentId} started`
-    });
+      });
     } catch (error) {
-      return reply.code(500).send({
-        statusCode: 500,
-        error: 'Failed to start tournament',
-        details: error.message
-      })
+      reply.code(error.statusCode || 500).send({
+        statusCode: error.statusCode || 500,
+        error: error.message,
+        details: error.details || error.stack
+      });
     }
   },
 

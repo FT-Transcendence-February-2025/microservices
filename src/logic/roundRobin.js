@@ -24,5 +24,5 @@ export function generateRoundRobin(players) {
       schedule.push(matchesThisRound);
   }
 
-  return schedule;
+  return schedule.filter(round => round.length > 0);
 }

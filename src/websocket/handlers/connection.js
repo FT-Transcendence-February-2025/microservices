@@ -7,6 +7,7 @@ const matchmakingQueue = [] // Stores players who are waiting
 const activeConnections = [] // connected web sockets
 const matchAcceptances = {} // object the tracks accepted match invitations
 const playerTournamentStatus = new Map()
+const playerQueueStatus = new Map()
 
 async function startGameForMatch (match) {
   try {
@@ -45,8 +46,7 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
       JSON.stringify({
         type: 'error',
         message: 'You are already in the queue addPlayerToQueue function'
-      })
-    )
+      }))
     return false
   }
 
@@ -63,8 +63,12 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
   if (tournament) {
     playerEntry.tournamentId = data.tournamentId
     playerEntry.tournament = true
-    playerTournamentStatus.set(data.userId, { tournamentId: data.tournamentId, tournament: true })
+    playerEntry.round = data.round
+    playerTournamentStatus.set(data.userId, { tournamentId: data.tournamentId, tournament: true, round: data.round })
   }
+
+  // Store player in both the global status map and the matchmaking queue
+  playerQueueStatus.set(data.userId, playerEntry)
   matchmakingQueue.push(playerEntry)
   return true
 }
@@ -76,6 +80,58 @@ function getOpponentDetails (match, userId, activeConnections) {
   return {
     opponentId, opponentConnection, opponentDisplayName
   }
+}
+
+function leaveQueue (data, connection) {
+  const player = playerQueueStatus.get(data.userId)
+  if (!player) {
+    connection.socket.send(JSON.stringify({
+      type: 'error',
+      message: 'You are not in the queue'
+    }))
+    return
+  }
+  // Remove the player from the global status
+  playerQueueStatus.delete(data.userId)
+  // Remove their tournament status too
+  playerTournamentStatus.delete(data.userId)
+
+  // Remove the player from the matchmaking queue if present
+  const index = matchmakingQueue.findIndex(p => p.id === data.userId)
+  if (index !== -1) {
+    matchmakingQueue.splice(index, 1)
+  }
+
+  // If the player in pending match, cancel the match accordingly
+  if (player.tournament) {
+    const tournamentMatch = db.prepare(`
+      SELECT * FROM tournament_matches
+      WHERE match_status = ? AND (player1_id = ? OR player2_id = ?)
+    `).get('pending', player.id, player.id)
+    if (tournamentMatch) {
+      db.prepare(`
+        UPDATE tournament_matches
+        SET match_status = ?, ended_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `).run('cancelled', tournamentMatch.id)
+    }
+  } else {
+    const match = db.prepare(`
+      SELECT * FROM matchmaking
+      WHERE match_status = ? AND (player1_id = ? OR player2_id = ?)
+    `).get('pending', player.id, player.id)
+    if (match) {
+      db.prepare(`
+        UPDATE matchmaking
+        SET match_status = ?, ended_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `).run('cancelled', match.id)
+    }
+  }
+  connection.socket.send(JSON.stringify({
+    type: 'queueLeft',
+    message: 'You have successfully left the queue.'
+  }))
 }
 
 // Tournament message handler
@@ -251,6 +307,10 @@ const handleTournamentMessages = async (data, connection) => {
     console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
     break
   }
+  case 'leaveQueue': {
+    leaveQueue(data, connection)
+    break
+  }
   default:
     connection.socket.send(
       JSON.stringify({
@@ -423,6 +483,10 @@ const handleLocalGameMessages = async (data, connection) => {
     }
     break
   }
+  case 'leaveQueue': {
+    leaveQueue(data, connection)
+    break
+  }
   default:
     connection.socket.send(JSON.stringify({
       type: 'error',
@@ -456,10 +520,18 @@ const closeHandler = async (connection) => {
       console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
     }
 
-    let player = matchmakingQueue.find((player) => player.socket === connection.socket)
+    let player = playerQueueStatus.get(connection.userId)
+
     if (!player && connection.userId) {
       const tournamentStatus = playerTournamentStatus.get(connection.userId)
-      player = { id: connection.userId, socket: connection.socket, ...tournamentStatus }
+      if (tournamentStatus) {
+        player = { id: connection.userId, socket: connection.socket, ...tournamentStatus }
+      }
+    }
+
+    if (!player) {
+      console.log(`Player ${connection.userId} not  found in queue; no further cancellation needed.`)
+      return
     }
 
     // Find player in queue
@@ -472,22 +544,22 @@ const closeHandler = async (connection) => {
 
     // Check if player is in active match
     // console.log('Disconnected player details: ', player)
-    if (player) {
-      if (player.tournament) {
-        const tournamentMatch = db.prepare(`
-          SELECT * FROM tournament_matches
-          WHERE match_status = ?
-            AND (player1_id = ? OR player2_id = ?)
-          `).get('pending', player.id, player.id)
+    if (player.tournament) {
+      const tournamentMatch = db.prepare(`
+        SELECT * FROM tournament_matches
+        WHERE match_status = ?
+          AND tournament_id = ?
+          AND round = ?
+          AND (player1_id = ? OR player2_id = ?)
+        `).get('pending', player.tournamentId, player.round, player.id, player.id)
 
-        if (tournamentMatch) {
-          console.log(`Tournament match ${tournamentMatch.id} cancelled because player ${player.id} disconnected`)
-          db.prepare(`
-            UPDATE tournament_matches
-            SET match_status = ?, ended_at = datetime('now', 'localtime')
-            WHERE id = ?
-          `).run('cancelled', tournamentMatch.id)
-        }
+      if (tournamentMatch) {
+        console.log(`Tournament match ${tournamentMatch.id} cancelled because player ${player.id} disconnected`)
+        db.prepare(`
+          UPDATE tournament_matches
+          SET match_status = ?, ended_at = datetime('now', 'localtime')
+          WHERE id = ?
+        `).run('cancelled', tournamentMatch.id)
         const opponentId = tournamentMatch.player1_id === player.id ? tournamentMatch.player2_id : tournamentMatch.player1_id
         const opponent = activeConnections.find(p => p.userId === opponentId)
         if (opponent) {
@@ -496,39 +568,39 @@ const closeHandler = async (connection) => {
             message: 'Your opponent has disconnected. Tournament match cancelled.'
           }))
         }
-      } else {
-        const match = db.prepare(`
-          SELECT * FROM matchmaking 
-          WHERE match_status = ?
-          AND (player1_id = ? OR player2_id = ?)
-        `).get('pending', player.id, player.id)
+      }
+    } else {
+      const match = db.prepare(`
+        SELECT * FROM matchmaking 
+        WHERE match_status = ?
+        AND (player1_id = ? OR player2_id = ?)
+      `).get('pending', player.id, player.id)
 
-        if (match) {
-          console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
-          // Update match status to cancelled
-          db.prepare(`
-            UPDATE matchmaking 
-            SET match_status = ?, ended_at = datetime('now')
-            WHERE id = ?
-          `).run('cancelled', match.id)
+      if (match) {
+        console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
+        // Update match status to cancelled
+        db.prepare(`
+          UPDATE matchmaking 
+          SET match_status = ?, ended_at = datetime('now')
+          WHERE id = ?
+        `).run('cancelled', match.id)
 
-          // Determine opponent ID
-          const opponentId = match.player1_id === player.id
-            ? match.player2_id
-            : match.player1_id
+        // Determine opponent ID
+        const opponentId = match.player1_id === player.id
+          ? match.player2_id
+          : match.player1_id
 
-          const opponent = matchmakingQueue.find((player) => player.id === opponentId)
+        const opponent = matchmakingQueue.find((player) => player.id === opponentId)
 
-          if (opponent) {
-            opponent.socket.send(
-              JSON.stringify({
-                type: 'matchCancelled',
-                message: 'Your opponent has disconnected. Match cancelled. '
-              })
-            )
-          }
-          console.log(`Notified player ${opponentId} about match cancellation.`)
+        if (opponent) {
+          opponent.socket.send(
+            JSON.stringify({
+              type: 'matchCancelled',
+              message: 'Your opponent has disconnected. Match cancelled. '
+            })
+          )
         }
+        console.log(`Notified player ${opponentId} about match cancellation.`)
       }
     }
   } catch (error) {

@@ -75,6 +75,21 @@ const matchmakingController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
+		const isInvitingUserBlocked = await db.isOnBlockList(invitedId, invitingUser.id);
+		if (isInvitingUserBlocked) {
+			if (isInvitingUserBlocked.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "You have been blocked by this user" });
+		}
+		const isInvitedUserBlocked = await db.isOnBlockList(invitingUser.id, invitedId);
+		if (isInvitedUserBlocked) {
+			if (isInvitedUserBlocked.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "This user is on your block list" });
+		}
+
 		const connection = frontendController.activeConnections.get(invitedId);
 		if (!connection) {
 			return reply.status(200).send({ success: "User is offline", invitationSent: false });

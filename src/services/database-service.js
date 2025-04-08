@@ -88,6 +88,19 @@ const db = {
 			return { error };
 		}
 	},
+	getFriendBoundAny: async (id1, id2) => {
+		try {
+			return await database("friend_list")
+				.where((QueryBuilder) => {
+					QueryBuilder.where({ inviting_id: id1, invited_id: id2 })
+						.orWhere({ inviting_id: id2, invited_id: id1 });
+				})
+				.first();
+		} catch (error) {
+			console.error("Error in function db.getFriendBoundAccepted: ", error);
+			return { error };
+		}
+	},
 	getFriendBoundAccepted: async (id1, id2) => {
 		try {
 			return await database("friend_list")
@@ -198,7 +211,40 @@ const db = {
 			console.error("Error in function db.getFriends: ", error);
 			return { error };
     }
-}
+	},
+	// Block list table:
+	isOnBlockList: async (blockingId, blockedId) => {
+  	try {
+			const blockEntry = await database("block_list")
+				.where({ blocking_id: blockingId, blocked_id: blockedId })
+				.first();
+
+			return !!blockEntry;
+    } catch (error) {
+			console.error("Error in function db.isOnBlockList: ", error);
+			return { error };
+    }
+	},
+	addToBlockList: async (blockingId, blockedId) => {
+		try {
+			await database("block_list").insert({ blocking_id: blockingId, blocked_id: blockedId });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addToBlockList: ", error);
+			return { error };
+		}
+	},
+	deleteFromBlockList: async (blockingId, blockedId) => {
+		try {
+			await database("block_list")
+				.where({ blocking_id: blockingId, blocked_id: blockedId })
+				.del();
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deleteFromBlockList: ", error);
+			return { error };
+		}
+	}
 };
 
 export default db;

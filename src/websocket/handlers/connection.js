@@ -6,6 +6,7 @@ import fetch from 'node-fetch'
 const matchmakingQueue = [] // Stores players who are waiting
 const activeConnections = [] // connected web sockets
 const matchAcceptances = {} // object the tracks accepted match invitations
+const playerTournamentStatus = new Map()
 
 async function startGameForMatch (match) {
   try {
@@ -62,9 +63,19 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
   if (tournament) {
     playerEntry.tournamentId = data.tournamentId
     playerEntry.tournament = true
+    playerTournamentStatus.set(data.userId, { tournamentId: data.tournamentId, tournament: true })
   }
   matchmakingQueue.push(playerEntry)
   return true
+}
+
+function getOpponentDetails (match, userId, activeConnections) {
+  const opponentId = match.userId === match.player1_id ? match.player2_id : match.player1_id
+  const opponentConnection = activeConnections.find(c => c.userId === opponentId)
+  const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+  return {
+    opponentId, opponentConnection, opponentDisplayName
+  }
 }
 
 // Tournament message handler
@@ -185,9 +196,8 @@ const handleTournamentMessages = async (data, connection) => {
     console.log('Current accepted players for tournament match', tournamentMatch.id, ':',
       Array.from(matchAcceptances[tournamentMatch.id])
     )
-    const opponentId = tournamentMatch.player1_id === data.userId ? tournamentMatch.player2_id : tournamentMatch.player1_id
-    const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
-    const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+
+    const { opponentDisplayName } = getOpponentDetails(tournamentMatch, data.userId, activeConnections)
 
     connection.socket.send(
       JSON.stringify({
@@ -225,9 +235,7 @@ const handleTournamentMessages = async (data, connection) => {
 
       activeConnections.forEach(conn => {
         if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
-          const specificOpponentId = conn.userId === tournamentMatch.player1_id ? tournamentMatch.player2_id : tournamentMatch.player1_id
-          const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
-          const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
+          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(tournamentMatch, data.userId, activeConnections)
           conn.socket.send(
             JSON.stringify({
               type: 'matchStarted',
@@ -363,9 +371,7 @@ const handleLocalGameMessages = async (data, connection) => {
       Array.from(matchAcceptances[match.id])
     )
 
-    const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
-    const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
-    const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
+    const { opponentDisplayName } = getOpponentDetails(match, data.userId, activeConnections)
 
     connection.socket.send(
       JSON.stringify({
@@ -402,9 +408,7 @@ const handleLocalGameMessages = async (data, connection) => {
       // Notify both players
       activeConnections.forEach(conn => {
         if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-          const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
-          const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
-          const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
+          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(match, data.userId, activeConnections)
           conn.socket.send(JSON.stringify({
             type: 'matchStarted',
             matchId: match.id,
@@ -452,18 +456,14 @@ const closeHandler = async (connection) => {
       console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
     }
 
-    let player = matchmakingQueue.find(
-      (player) => player.socket === connection.socket
-    )
-
+    let player = matchmakingQueue.find((player) => player.socket === connection.socket)
     if (!player && connection.userId) {
-      player = { id: connection.userId, socket: connection.socket }
+      const tournamentStatus = playerTournamentStatus.get(connection.userId)
+      player = { id: connection.userId, socket: connection.socket, ...tournamentStatus }
     }
 
     // Find player in queue
-    const playerIndex = matchmakingQueue.findIndex(
-      (player) => player.socket === connection.socket
-    )
+    const playerIndex = matchmakingQueue.findIndex((player) => player.socket === connection.socket)
     if (playerIndex !== -1) {
       player = matchmakingQueue[playerIndex]
       console.log(`Removing player ${player.id} from queue`)
@@ -471,38 +471,64 @@ const closeHandler = async (connection) => {
     }
 
     // Check if player is in active match
+    // console.log('Disconnected player details: ', player)
     if (player) {
-      const match = db.prepare(`
-        SELECT * FROM matchmaking 
-        WHERE match_status = ?
-        AND (player1_id = ? OR player2_id = ?)
-      `).get('pending', player.id, player.id)
+      if (player.tournament) {
+        const tournamentMatch = db.prepare(`
+          SELECT * FROM tournament_matches
+          WHERE match_status = ?
+            AND (player1_id = ? OR player2_id = ?)
+          `).get('pending', player.id, player.id)
 
-      if (match) {
-        console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
-        // Update match status to cancelled
-        db.prepare(`
-          UPDATE matchmaking 
-          SET match_status = ?, ended_at = datetime('now')
-          WHERE id = ?
-        `).run('cancelled', match.id)
-
-        // Determine opponent ID
-        const opponentId = match.player1_id === player.id
-          ? match.player2_id
-          : match.player1_id
-
-        const opponent = matchmakingQueue.find((player) => player.id === opponentId)
-
-        if (opponent) {
-          opponent.socket.send(
-            JSON.stringify({
-              type: 'matchCancelled',
-              message: 'Your opponent has disconnected. Match cancelled. '
-            })
-          )
+        if (tournamentMatch) {
+          console.log(`Tournament match ${tournamentMatch.id} cancelled because player ${player.id} disconnected`)
+          db.prepare(`
+            UPDATE tournament_matches
+            SET match_status = ?, ended_at = datetime('now', 'localtime')
+            WHERE id = ?
+          `).run('cancelled', tournamentMatch.id)
         }
-        console.log(`Notified player ${opponentId} about match cancellation.`)
+        const opponentId = tournamentMatch.player1_id === player.id ? tournamentMatch.player2_id : tournamentMatch.player1_id
+        const opponent = activeConnections.find(p => p.userId === opponentId)
+        if (opponent) {
+          opponent.socket.send(JSON.stringify({
+            type: 'tournamentMatchCancelled',
+            message: 'Your opponent has disconnected. Tournament match cancelled.'
+          }))
+        }
+      } else {
+        const match = db.prepare(`
+          SELECT * FROM matchmaking 
+          WHERE match_status = ?
+          AND (player1_id = ? OR player2_id = ?)
+        `).get('pending', player.id, player.id)
+
+        if (match) {
+          console.log(`Match ${match.id} cancelled because player ${player.id} disconnected.`)
+          // Update match status to cancelled
+          db.prepare(`
+            UPDATE matchmaking 
+            SET match_status = ?, ended_at = datetime('now')
+            WHERE id = ?
+          `).run('cancelled', match.id)
+
+          // Determine opponent ID
+          const opponentId = match.player1_id === player.id
+            ? match.player2_id
+            : match.player1_id
+
+          const opponent = matchmakingQueue.find((player) => player.id === opponentId)
+
+          if (opponent) {
+            opponent.socket.send(
+              JSON.stringify({
+                type: 'matchCancelled',
+                message: 'Your opponent has disconnected. Match cancelled. '
+              })
+            )
+          }
+          console.log(`Notified player ${opponentId} about match cancellation.`)
+        }
       }
     }
   } catch (error) {

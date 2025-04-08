@@ -1,3 +1,4 @@
+import authenticationService from "../services/authentication-service.js";
 import avatarService from "../services/avatar-service.js";
 import db from "../services/database-service.js";
 import displayNameService from "../services/display-name-service.js";
@@ -8,6 +9,16 @@ const frontendController = {
 		try {
 			frontendController.activeConnections.set(request.user.id, connection);
 			console.log(`User ${request.user.id} connected`);
+
+			if (!await authenticationService.getUserEmailVerified(request.user.id)) {
+				try {
+					connection.send(JSON.stringify({ type: "notification_verify_email" }));
+				} catch (error) {
+					console.error(`Error in function frontendController in function connection.send: `, error, `. Skipping this 
+						notification...`);
+				}
+			}
+
 
 			// Fetch and send pending friend requests
 			const pendingFriendRequests = await db.getPendingInvitations(request.user.id);

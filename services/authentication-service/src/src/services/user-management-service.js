@@ -15,7 +15,7 @@ const userManagementService = {
 		const data = await response.json();
 		return { exists: data.exists };
 	},
-	sendIdToUserManagement: async (userId, displayName) => {
+	sendId: async (userId, displayName) => {
     const response = await fetch("http://user:3002/api/new-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,3 +1,4 @@
+import db from "../services/database-service.js";
 import registrationService from "../services/registration-service.js";
 import userManagementService from "../services/user-management-service.js";
 
@@ -12,6 +13,7 @@ const registrationController = async (request, reply) => {
 
 	const sendResult = await userManagementService.sendId(registrationResult.userId, registrationResult.displayName);
 	if (sendResult.error) {
+		await db.deleteUser(registrationResult.userId);
 		return reply.status(500).send({ error: "Internal Server Error" });
 	}
 

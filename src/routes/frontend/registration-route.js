@@ -1,4 +1,4 @@
-import registrationController from "../controllers/registration-controller.js";
+import registrationController from "../../controllers/registration-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

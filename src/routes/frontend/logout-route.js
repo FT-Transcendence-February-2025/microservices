@@ -1,5 +1,5 @@
 import jwtTr from "jwt-validator-tr";
-import logoutController from "../controllers/logout-controller.js";
+import logoutController from "../../controllers/logout-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

@@ -1,4 +1,4 @@
-import verifyEmailController from "../controllers/verify-email-controller.js";
+import verifyEmailController from "../../controllers/verify-email-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

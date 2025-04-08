@@ -1,4 +1,4 @@
-import refreshTokenController from "../controllers/refresh-token-controller.js";
+import refreshTokenController from "../../controllers/refresh-token-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

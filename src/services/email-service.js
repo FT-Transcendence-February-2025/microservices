@@ -12,7 +12,7 @@ const emailService = {
 			return { status: emailValidationResult.status, error: emailValidationResult.error };
     }
 
-		const updateResult = await db.updateEmail(userId, newEmail);
+		const updateResult = await db.updateEmail(user.id, newEmail);
 		if (updateResult.error) {
 			return { status: 500, error: "Internal Server Error" };
 		}

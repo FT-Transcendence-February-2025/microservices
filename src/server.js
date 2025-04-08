@@ -95,6 +95,7 @@ process.on('SIGINT', async () => {
 
 
 
+
 after push from 42 computer, in order to run on laptop:
 
  # Download and install nvm:

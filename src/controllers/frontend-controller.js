@@ -134,7 +134,22 @@ const frontendController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const existingBound = await db.getFriendBoundInvSpecific(invitingUser.id, invitedId);
+		const isInvitingUserBlocked = await db.isOnBlockList(invitedUser.id, invitingUser.id);
+		if (isInvitingUserBlocked) {
+			if (isInvitingUserBlocked.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "You have been blocked by this user" });
+		}
+		const isInvitedUserBlocked = await db.isOnBlockList(invitingUser.id, invitedUser.id);
+		if (isInvitedUserBlocked) {
+			if (isInvitedUserBlocked.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "This user is on your block list" });
+		}
+
+		const existingBound = await db.getFriendBoundInvSpecific(invitingUser.id, invitedUser.id);
 		if (existingBound) {
 			if (existingBound.error) {
 				return reply.status(500).send({ error: "Internal Server Error" });
@@ -142,12 +157,12 @@ const frontendController = {
 			return reply.status(409).send({ error: "Friend request already sent" });
 		}
 
-		const result = await db.addFriendBound(invitingUser.id, invitedId, "pending");
+		const result = await db.addFriendBound(invitingUser.id, invitedUser.id, "pending");
 		if (result.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const connection = frontendController.activeConnections.get(invitedId);	
+		const connection = frontendController.activeConnections.get(invitedUser.id);	
 		if (connection) {
 			try {
 				connection.send(JSON.stringify({ 
@@ -211,6 +226,50 @@ const frontendController = {
 		}
 
 		return reply.status(200).send({ success: "Returning users found (can be empty)", friends });
+	},
+	blockUser: async (request, reply) => {
+		const { idToBlock } = request.body;
+
+		const isBlocked = await db.isOnBlockList(request.user.id, idToBlock);
+		if (isBlocked) {
+			if (isBlocked.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			return reply.status(400).send({ error: "User is already on the block list" });
+		}
+
+		const friendsOrInvited = await db.getFriendBoundAny(request.user.id, idToBlock);
+		if (friendsOrInvited) {
+			if (friendsOrInvited.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			await db.deleteFriendBound(request.user.id, idToBlock);
+		}
+
+		const blockResult = await db.addToBlockList(request.user.id, idToBlock);
+		if (blockResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "User has been blocked" });
+	},
+	unblockUser: async (request, reply) => {
+		const { idToUnblock } = request.body;
+
+		const isBlocked = await db.isOnBlockList(request.user.id, idToUnblock);
+		if (!isBlocked) {
+			return reply.status(400).send({ error: "User is not on the block list" });
+		}
+		if (isBlocked.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const unblockResult = await db.deleteFromBlockList(request.user.id, idToUnblock);
+		if (unblockResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "User has been unblocked" });
 	}
 };
 

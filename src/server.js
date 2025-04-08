@@ -18,6 +18,8 @@ import inviteGameRoute from "./routes/matchmaking/invite-game-route.js";
 import profileRoute from "./routes/frontend/profile-route.js";
 import inviteTournamentRoute from "./routes/tournament/invite-tournament-route.js";
 import removeFriendRoute from "./routes/frontend/remove-friend.js";
+import blockUserRoute from "./routes/frontend/block-user-route.js";
+import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -71,6 +73,8 @@ fastify.register(fastifyWebsocket);
 // fastify.register(profileRoute, { prefix: "/api" });
 // fastify.register(inviteTournamentRoute, { prefix: "/api" });
 // fastify.register(removeFriendRoute, { prefix: "/api" });
+// fastify.register(blockUserRoute, { prefix: "/api" });
+// fastify.register(unblockUserRoute, { prefix: "/api" });
 // Register routes:
 fastify.register(newUserRoute);
 fastify.register(userExistsRoute);
@@ -87,8 +91,10 @@ fastify.register(inviteGameRoute);
 fastify.register(profileRoute);
 fastify.register(inviteTournamentRoute);
 fastify.register(removeFriendRoute);
+fastify.register(blockUserRoute);
+fastify.register(unblockUserRoute);
 
-const tablesToCheck = ["friend_list", "match_history", "users"];
+const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 
 const startServer = async () => {
   try {

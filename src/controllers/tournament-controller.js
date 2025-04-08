@@ -2,8 +2,23 @@ import frontendController from "./frontend-controller.js";
 
 const tournamentController = {
 	sendTournamentInvitations: async (request, reply) => {
-		const { tournamentId, tournamentName, ids } = request.body;
+		const { tournamentId, tournamentName, invitingUserId, ids } = request.body;
 		for (let i = 0; i < ids.length; i++) {
+			const isInvitingUserBlocked = await db.isOnBlockList(ids[i], invitingUserId);
+			if (isInvitingUserBlocked) {
+				if (isInvitingUserBlocked.error) {
+					return reply.status(500).send({ error: "Internal Server Error" });
+				}
+				continue;
+			}
+			const isInvitedUserBlocked = await db.isOnBlockList(invitingUserId, ids[i]);
+			if (isInvitedUserBlocked) {
+				if (isInvitedUserBlocked.error) {
+					return reply.status(500).send({ error: "Internal Server Error" });
+				}
+				continue;
+			}
+			
 			const connection = frontendController.activeConnections.get(ids[i]);
 			if (connection) {
 				try {

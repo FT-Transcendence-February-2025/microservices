@@ -13,6 +13,10 @@ export default async function (fastify, opts) {
 						multipleOf: 1
 					},
 					tournamentName: { type: "string" },
+					invitingUserId: {
+						type: "number",
+						multipleOf: 1
+					},
 					ids: {
 						type: "array",
 						items: { 
@@ -21,7 +25,7 @@ export default async function (fastify, opts) {
 						}
 					}
 				},
-				required: ["tournamentId", "tournamentName", "ids"]
+				required: ["tournamentId", "tournamentName", "invitingUserId", "ids"]
 			},
 			response: {
 				200: {
@@ -31,6 +35,13 @@ export default async function (fastify, opts) {
 					},
 					required: ["success"]
 				},
+				500: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				}
 			}
 		},
 		handler: tournamentController.sendTournamentInvitations

@@ -20,7 +20,8 @@ const checkAndCreateTables = async (tables) => {
     console.log("Missing tables:", missingTables);
 
     for (const table of missingTables) {
-      const scriptName = `create-${table}-table.js`;
+      const modifiedTableName = table.replace(/_/g, "-");
+      const scriptName = `create-${modifiedTableName}-table.js`;
       console.log(`Running script: ${scriptName}`);
       await new Promise((resolve, reject) => {
         exec(`node ${scriptName}`, { cwd: "./src/database/migrations" }, (error, stdout, stderr) => {

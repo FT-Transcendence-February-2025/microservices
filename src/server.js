@@ -113,7 +113,7 @@ fastify.register(dataChangeRequestRoute);
 fastify.register(confirmationLinkRequestRoute);
 fastify.register(getUserEmailVerifiedRoute);
 
-const tablesToCheck = ["devices", "users"];
+const tablesToCheck = ["devices", "email_codes", "users"];
 
 const startServer = async () => {
   try {
@@ -124,7 +124,7 @@ const startServer = async () => {
     cron.schedule("0 */12 * * *", async () => {
       await db.deleteExpiredTokens();
     	await db.deleteExpiredEmailCodes();
-});
+		});
 
     // Perform an initial cleanup of expired tokens.
     await db.deleteExpiredTokens();

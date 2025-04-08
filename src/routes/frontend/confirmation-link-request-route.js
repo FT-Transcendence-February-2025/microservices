@@ -1,22 +1,11 @@
 import jwtTr from "jwt-validator-tr";
-import notifyController from "../controllers/notify-controller.js";
+import notifyController from "../../controllers/notify-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/data-change-request",
+		url: "/confirmation-link-request",
 		schema: {
-			body: {
-				type: "object",
-				properties: {
-					email: { type: "string" },
-					dataToChange: {
-						type: "string",
-						enum: ["email", "password"]
-					}
-				},
-				required: ["email", "dataToChange"]
-			},
 			response: {
 				200: {
 					type: "object",
@@ -49,6 +38,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCode
+		handler: notifyController.sendConfirmationLink
 	});
 };

@@ -3,7 +3,7 @@ import passwordService from "../services/password-service.js";
 
 const passwordController = {
 	changePassword: async (request, reply) => {
-		const { verificationCode, currentPassword, newPassword } = request.body;
+		const { verificationCode, newPassword } = request.body;
 
 		const user = await db.getUserById(request.user.id);
 		if (!user) {
@@ -18,7 +18,7 @@ const passwordController = {
 			return reply.status(emailCode.status).send({ error: emailCode.error });
 		}
 
-		const passwordChangeResult = await passwordService.changePassword(user, currentPassword, newPassword);
+		const passwordChangeResult = await passwordService.changePassword(user, newPassword);
 		if (passwordChangeResult.error) {
 			return reply.status(passwordChangeResult.status).send({ error: passwordChangeResult.error });
 		}

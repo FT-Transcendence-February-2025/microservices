@@ -1,10 +1,10 @@
-import passwordController from "../controllers/password-controller.js";
+import emailController from "../../controllers/email-controller.js";
 import jwtTr from "jwt-validator-tr";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/password",
+		url: "/email",
 		schema: {
 			body: {
 				type: "object",
@@ -13,10 +13,9 @@ export default async function (fastify, opts) {
 						type: "string",
 						pattern: "^[0-9]{6}$"
 					},
-					currentPassword: { type: "string" },
-					newPassword: { type: "string" }
+					email: { type: "string" }
 				},
-				required: ["verificationCode", "currentPassword", "newPassword"]
+				required: ["email"]
 			},
 			response: {
 				200: {
@@ -26,14 +25,14 @@ export default async function (fastify, opts) {
 					},
 					required: ["success"]
 				},
-				404: {
+				400: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				410: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -50,6 +49,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: passwordController.changePassword
+		handler: emailController
 	});
 };

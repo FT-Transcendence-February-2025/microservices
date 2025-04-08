@@ -6,15 +6,16 @@ import fastifyCookie from "@fastify/cookie";
 import checkAndCreateTables from "./database/migrations/create-tables.js";
 import cron from "node-cron";
 import db from "./services/database-service.js";
-import registrationRoute from "./routes/registration-route.js";
-import loginRoute from "./routes/authentication-route.js";
-import passwordRoute from "./routes/password-route.js";
-import refreshTokenRoute from "./routes/refresh-token-route.js";
-import logoutRoute from "./routes/logout-route.js";
-import emailRoute from "./routes/email-route.js";
-import verifyEmailRoute from "./routes/verify-email-route.js";
-import dataChangeRequestRoute from "./routes/data-change-request-route.js";
-import confirmationLinkRequestRoute from "./routes/confirmation-link-request-route.js";
+import registrationRoute from "./routes/frontend/registration-route.js";
+import loginRoute from "./routes/frontend/authentication-route.js";
+import passwordRoute from "./routes/frontend/password-route.js";
+import refreshTokenRoute from "./routes/frontend/refresh-token-route.js";
+import logoutRoute from "./routes/frontend/logout-route.js";
+import emailRoute from "./routes/frontend/email-route.js";
+import verifyEmailRoute from "./routes/frontend/verify-email-route.js";
+import dataChangeRequestRoute from "./routes/frontend/data-change-request-route.js";
+import confirmationLinkRequestRoute from "./routes/frontend/confirmation-link-request-route.js";
+import getUserEmailVerifiedRoute from "./routes/user-management/get-user-email-verified.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import fs from "fs";
@@ -100,6 +101,7 @@ fastify.register(fastifyMailer, {
 // fastify.register(verifyEmailRoute, { prefix: "/api" });
 // fastify.register(dataChangeRequestRoute, { prefix: "/api" });
 // fastify.register(confirmationLinkRequestRoute, { prefix: "/api" });
+// fastify.register(getUserEmailVerifiedRoute, { prefix: "/api" });
 fastify.register(registrationRoute);
 fastify.register(loginRoute);
 fastify.register(emailRoute);
@@ -109,6 +111,7 @@ fastify.register(logoutRoute);
 fastify.register(verifyEmailRoute);
 fastify.register(dataChangeRequestRoute);
 fastify.register(confirmationLinkRequestRoute);
+fastify.register(getUserEmailVerifiedRoute);
 
 const tablesToCheck = ["devices", "users"];
 

@@ -1,25 +1,27 @@
-import jwtTr from "jwt-validator-tr";
-import notifyController from "../controllers/notify-controller.js";
+import userManagementController from "../../controllers/user-management-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/confirmation-link-request",
+		url: "/get-user-email-verified",
 		schema: {
+			body: {
+				type: "object",
+				properties: {
+					userId: {
+						type: "number",
+						multipleOf: 1
+					}
+				},
+				required: ["userId"]
+			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						verified: { type: "boolean" }
 					},
-					required: ["success"]
-				},
-				400: {
-					type: "object",
-					properties: {
-						error: { type: "string" }
-					},
-					required: ["error"]
+					required: ["verified"]
 				},
 				404: {
 					type: "object",
@@ -37,7 +39,6 @@ export default async function (fastify, opts) {
 				}
 			}
 		},
-		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendConfirmationLink
+		handler: userManagementController.getUserEmailVerified
 	});
 };

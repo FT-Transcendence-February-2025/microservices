@@ -1,4 +1,4 @@
-import authenticationController from "../controllers/authentication-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({

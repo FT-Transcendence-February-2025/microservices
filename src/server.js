@@ -91,9 +91,10 @@ process.on('SIGINT', async () => {
 
  -when tm is done send all important userinfo to um and delete all relatable to current user, when hosted delete instances from all tables, when invited delte only from users and players
   currently it is delteing whole tm table for workflow
-*/
 
-/*
+
+
+
 after push from 42 computer, in order to run on laptop:
 
  # Download and install nvm:

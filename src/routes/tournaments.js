@@ -75,7 +75,6 @@ export default async function (fastify) {
         properties: {
           name: { type: 'string', minLength: 1 },
           current_round: { type: 'integer', minimum: 0 },
-          size: { type: 'integer', minimum: 1 },
           registration_start_time: { type: 'string', format: 'date-time' },
           registration_deadline: { type: 'string', format: 'date-time' },
           winner_id: { type: 'string' },
@@ -87,6 +86,31 @@ export default async function (fastify) {
     }, handler:updateController.updateTournament
   })
   
+  fastify.post('/:tournamentId/updateScores', {    
+    schema: {
+      params: {
+        type: 'object',
+        required: ['tournamentId'],
+        properties: {
+            tournamentId: { type: 'string', minLength: 1 }
+          }
+      },
+      body: {
+        type: 'object',
+        required: ['round_number'],
+        additionalProperties: false,
+        properties: {
+          round_number: { type: 'integer', minimum: 1 },
+          match_index: { type: 'integer', minimum: 0 },
+          winner_id: { type: 'string' },
+          score: { type: 'string' },
+          started_at: { type: 'string', format: 'date-time' },
+          ended_at: { type: 'string', format: 'date-time' }
+        }
+      }
+    }, handler:updateController.updateScores
+  })
+
   // Get all players in tournament
   fastify.get('/:tournamentId/players', {
     schema: {

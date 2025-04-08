@@ -84,7 +84,6 @@ process.on('SIGINT', async () => {
 /*TODO:
   -call get friends from um, check who has created a tournament and if ended_at is not filled yet 
   -accept player to join the tournament -> for now not, only basic behavior
-  -update scores
   -handle tournament time -> do with timestamp i get in update tournament request
   -handle deleting info via status
   -join: friends list  and random on main tm frontend

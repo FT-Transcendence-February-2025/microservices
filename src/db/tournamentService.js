@@ -24,7 +24,6 @@ export const tournamentService = {
         }
       }
 
-      // TODO: check if tournament exists
       const tournamentExists = db.prepare('SELECT id FROM tournaments WHERE id = ?').get(tournamentId)
       if (!tournamentExists) {
         return {
@@ -33,7 +32,7 @@ export const tournamentService = {
           message: `Cannot register for tournament ID ${tournamentId}: tournament does not exists`
         }
       }
-      // Insert player into tournament
+
       try {
         const insertPlayer = db.prepare(`
           INSERT INTO players
@@ -154,6 +153,7 @@ export const tournamentService = {
       }
     }
   },
+
   recordMatchResult (tournamentId, matchId, winnerId, score) {
     try {
       const tournament = db.prepare(
@@ -364,5 +364,4 @@ export const tournamentService = {
       }
     }
   }
-
 }

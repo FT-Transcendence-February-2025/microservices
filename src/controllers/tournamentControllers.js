@@ -1,5 +1,5 @@
 import { tournamentService } from '../db/tournamentService.js'
-import objects from '../db/objects.js'
+import { databaseService } from '../db/databaseService.js'
 import db from '../db/database.js'
 const UM_SERVICE_URL = 'http://localhost:3000';
 
@@ -34,20 +34,31 @@ export const tournamentController = {
       `)
       
       const tournamentId = insertTournament.run(
-        objects.tournaments.name,
+        "default",
         userId,
-        objects.tournaments.current_round,
-        objects.tournaments.size,
-        objects.tournaments.registration_start_time,
-        objects.tournaments.registration_deadline,
-        objects.tournaments.winner_id,
-        objects.tournaments.schedule,
-        objects.tournaments.created_at,
-        objects.tournaments.started_at,
-        objects.tournaments.ended_at
+        0,
+        0,
+        null,
+        null,
+        null,
+        null,
+        Date.now(),
+        null,
+        null
       ).lastInsertRowid
       
       console.log(`Created tournament with ID: ${tournamentId}`)
+
+      const { success, scoreId, error, details } = await databaseService.newScores(tournamentId, 0);
+      if (success) {
+          console.log(`New score entry created with ID: ${scoreId}`);
+      } else {
+          // Handle logical errors (e.g., foreign key violations)
+          console.error('Failed to create score entry:', error);
+          console.error('Details:', details);
+      }
+      
+      console.log(`Score table added at position: ${scoreId}`)
       
       const registerPlayer = tournamentService.registerPlayer(tournamentId, userId)
       if (!registerPlayer.success) {

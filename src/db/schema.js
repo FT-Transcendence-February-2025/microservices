@@ -44,11 +44,12 @@ export function initDatabase () {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS scores (
       tournament_id INTEGER NOT NULL,
-      round_number INTEGER NOT NULL,
-      match_index INTEGER NOT NULL,
-      winner_id INTEGER NOT NULL,
-      score TEXT NOT NULL,
-      completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      round_number INTEGER,
+      match_index INTEGER,
+      winner_id TEXT,
+      score TEXT,
+      started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ended_at TIMESTAMP,
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
       UNIQUE(tournament_id, round_number, match_index)
     )
@@ -56,22 +57,22 @@ export function initDatabase () {
 }
 
 // Converts from JS objects/arrays to JSON strings
-export function serializeTournament (tournament) {
-  return {
-    ...tournament,
-    player_ids: JSON.stringify(tournament.player_ids || []),
-    schedule: JSON.stringify(tournament.schedule || [])
-  }
-}
+// export function serializeTournament (tournament) {
+//   return {
+//     ...tournament,
+//     player_ids: JSON.stringify(tournament.player_ids || []),
+//     schedule: JSON.stringify(tournament.schedule || [])
+//   }
+// }
 
-// Converts from JSON string to JS objects/arrays
-export function deserializeTournament (dbTournament) {
-  return {
-    ...dbTournament,
-    player_ids: JSON.parse(dbTournament.player_ids || []),
-    schedule: JSON.parse(dbTournament.schedule || [])
-  }
-}
+// // Converts from JSON string to JS objects/arrays
+// export function deserializeTournament (dbTournament) {
+//   return {
+//     ...dbTournament,
+//     player_ids: JSON.parse(dbTournament.player_ids || []),
+//     schedule: JSON.parse(dbTournament.schedule || [])
+//   }
+// }
 
 // export function migrateScoresToNewTable () {
 //   const tournaments = db.prepare('SELECT id, scores FROM tournaments WHERE scores IS NOT NULL').all()

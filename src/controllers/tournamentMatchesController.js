@@ -15,6 +15,28 @@ async function updateUserStats (stats) {
   }
 }
 
+async function updateTournamentMatchScores (scores, tournamentId) {
+  const endpoint = `http://localhost:3004/tournaments/${String(tournamentId)}/updateScores`
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scores)
+    })
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Tournament service error response:', errorData)
+      return { error: 'Tournament match scores update failed', details: errorData }
+    }
+    const tournamentData = await response.json()
+    console.log('Tournament service update response:', tournamentData)
+    return tournamentData
+  } catch (error) {
+    console.error('Error updating tournament match scores:', error)
+    return { error: 'Tournament match scores update failed' }
+  }
+}
+
 export const tournamentMatchesController = {
   async postTournamentMatch (request, reply) {
     const { tournamentId, schedule } = request.body
@@ -79,7 +101,7 @@ export const tournamentMatchesController = {
       stmt.run(player1Score, player2Score, winnerId, matchId)
 
       const tournamentMatch = db.prepare(`
-        SELECT player1_id, player2_id, created_at, started_at, ended_at
+        SELECT id, round, player1_id, player2_id, created_at, started_at, ended_at
         FROM tournament_matches
         WHERE id = ?
       `).get(matchId)
@@ -113,11 +135,25 @@ export const tournamentMatchesController = {
       const winUpdate = await updateUserStats(winnerStats)
       const lossUpdate = await updateUserStats(loserStats)
 
+      // Preparing payload for tournament service endpoint
+      const tournamentServiceUpdateScores = {
+        round_number: tournamentMatch.round,
+        match_index: tournamentMatch.id,
+        winner_id: String(winnerId),
+        score: `${winnerScore} : ${loserScore}`,
+        started_at: new Date(tournamentMatch.started_at).toISOString(),
+        ended_at: new Date(tournamentMatch.ended_at).toISOString()
+      }
+      console.log('Tournament payload:', tournamentServiceUpdateScores)
+
+      const tournamentMatchScores = await updateTournamentMatchScores(tournamentServiceUpdateScores, tournamentId)
+
       return reply.code(200).send({
         success: true,
         message: 'Tournament match results and user statistics updated successfully',
         winUpdate,
-        lossUpdate
+        lossUpdate,
+        tournamentMatchScores
       })
     } catch (error) {
       console.error('Error saving tournament match results:', error)

@@ -74,7 +74,15 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
 }
 
 function getOpponentDetails (match, userId, activeConnections) {
-  const opponentId = match.userId === match.player1_id ? match.player2_id : match.player1_id
+  let opponentId
+  if (userId === match.player1_id) {
+    opponentId = match.player2_id
+  } else if (userId === match.player2_id) {
+    opponentId = match.player1_id
+  } else {
+    opponentId = null
+  }
+  // const opponentId = match.userId === match.player1_id ? match.player2_id : match.player1_id
   const opponentConnection = activeConnections.find(c => c.userId === opponentId)
   const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
   return { opponentId, opponentConnection, opponentDisplayName }
@@ -298,14 +306,14 @@ const handleTournamentMessages = async (data, connection) => {
         round
       })
     )
-    if (matchAcceptances[tournamentMatch.id] && matchAcceptances[tournamentMatch.id].size >= 2) {
+    if (matchAcceptances[tournamentMatch.id].size >= 1) {
       console.log('Starting tournament match...')
       db.prepare(`
         UPDATE tournament_matches
         SET match_status = ?, started_at = datetime('now', 'localtime')
         WHERE id = ?
         `).run('in_progress', tournamentMatch.id)
-      console.log('Tournament match retrieved:', tournamentMatch)
+      // console.log('Tournament match retrieved:', tournamentMatch)
       const gameStarted = await startGameForMatch(tournamentMatch)
 
       if (!gameStarted) {
@@ -325,7 +333,7 @@ const handleTournamentMessages = async (data, connection) => {
 
       activeConnections.forEach(conn => {
         if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
-          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(tournamentMatch, data.userId, activeConnections)
+          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(tournamentMatch, conn.userId, activeConnections)
           conn.socket.send(
             JSON.stringify({
               type: 'matchStarted',
@@ -483,7 +491,7 @@ const handleLocalGameMessages = async (data, connection) => {
         opponentName: opponentDisplayName
       })
     )
-    if (matchAcceptances[match.id] && matchAcceptances[match.id].size >= 2) {
+    if (matchAcceptances[match.id].size >= 1) {
       console.log('Starting match...')
       db.prepare(`
         UPDATE matchmaking 

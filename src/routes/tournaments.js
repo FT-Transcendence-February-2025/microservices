@@ -300,4 +300,17 @@ export default async function (fastify) {
       }
     }, handler:deletionController.deleteUser
   })
+
+  fastify.delete('/:tournamentId/deleteTournament',  {
+    schema: {
+      params: {
+        type: 'object',
+        required: ['tournamentId'],
+        properties: {
+            tournamentId: { type: 'string', minLength: 1 }
+          }
+      }
+    },
+    handler: deletionController.deleteTournament
+  })
 }

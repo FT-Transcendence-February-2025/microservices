@@ -1,7 +1,7 @@
 import db from './database.js'
 
 export const databaseService = {
-    async newScores(tournamentId, round_number){
+  async newScores(tournamentId, round_number, match_index){
     try{
       const insertScore = db.prepare(`
           INSERT INTO scores
@@ -12,7 +12,7 @@ export const databaseService = {
       const result = insertScore.run(
         tournamentId,
         round_number,
-        0,
+        match_index,
         null,
         null,
         Date.now(),

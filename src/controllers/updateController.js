@@ -116,23 +116,28 @@ export const updateController = {
     const fieldsToUpdate = [];
     const values = [];
     
-    const current_round = db.prepare(`SELECT round_number AS current_round FROM scores WHERE tournament_id = ?`).get(tournamentId).current_round
-    console.log(`Current round:${current_round}`);
-    if(round_number != current_round)
-    {
-        console.log(`Switch to new round:${round_number}`);
-        try {
-            const { success, scoreId, error, details } = await databaseService.newScores(tournamentId, round_number);
-            
-            if (success) {
-                console.log(`Score table added at position: ${scoreId}`);
-            } else {
-                console.error('Failed to create score entry:', error);
-                console.error('Details:', details);
-            }
-        } catch (error) {
-            console.error('Unexpected error:', error);
-        }
+    const existingScore = db.prepare(`
+        SELECT * FROM scores 
+        WHERE tournament_id = ? 
+          AND round_number = ? 
+          AND match_index = ?
+      `).get(tournamentId, round_number, match_index);
+  
+    if (!existingScore) {
+      console.log(`Creating new score entry for round ${round_number}, match ${match_index}`);
+      
+      const { success, scoreId, error, details } = await databaseService.newScores(
+        tournamentId, 
+        round_number, 
+        match_index
+      );
+
+      if (success) {
+          console.log(`Score table added at position: ${scoreId}`);
+      } else {
+          console.error('Failed to create score entry:', error);
+          console.error('Details:', details);
+      }
     }
     
     if (round_number !== undefined) {
@@ -170,14 +175,15 @@ export const updateController = {
     const query = `
         UPDATE scores 
         SET ${fieldsToUpdate.join(', ')}
-        WHERE tournament_id = ? AND round_number = ?
+        WHERE tournament_id = ? AND round_number = ? AND match_index = ?
     `;
-    values.push(tournamentId, round_number);
+    values.push(tournamentId, round_number, match_index);
 
     try {
         const results = db.prepare(query).run(...values);
 
         if (results.changes > 0) {
+            console.log('Scores updated successfully')
             reply.code(200).send({
                 message: 'Scores updated successfully',
             });

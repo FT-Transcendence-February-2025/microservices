@@ -49,7 +49,7 @@ export const tournamentController = {
       
       console.log(`Created tournament with ID: ${tournamentId}`)
 
-      const { success, scoreId, error, details } = await databaseService.newScores(tournamentId, 0);
+      const { success, scoreId, error, details } = await databaseService.newScores(tournamentId, 0, 0);
       if (success) {
           console.log(`New score entry created with ID: ${scoreId}`);
       } else {

@@ -50,8 +50,8 @@ export function initDatabase () {
       score TEXT,
       started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       ended_at TIMESTAMP,
-      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-      UNIQUE(tournament_id, round_number, match_index)
+      UNIQUE(tournament_id, round_number, match_index),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
     )
     `).run()
 }

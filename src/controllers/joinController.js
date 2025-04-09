@@ -9,7 +9,6 @@ export const joinController = {
         console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `${userId} entered tournament-service`);
 
         const addUser = await userService.addUser(userId)
-        const registerPlayer = tournamentService.registerPlayer(tournamentId, userId)
         if (!addUser.success) {
             return reply.code(400).send({
                 statusCode: addUser.statusCode,
@@ -17,6 +16,7 @@ export const joinController = {
                 details: addUser.message
             })
         }
+        const registerPlayer = tournamentService.registerPlayer(tournamentId, userId)
         if (!registerPlayer.success) {
             return reply.code(400).send({
                 statusCode: 400,

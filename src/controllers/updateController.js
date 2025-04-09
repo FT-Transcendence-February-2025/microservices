@@ -25,12 +25,12 @@ export const updateController = {
     
     const fieldsToUpdate = [];
     const values = [];
-
+    
     const size = db.prepare(`
         SELECT COUNT(*) AS count
         FROM players
         WHERE tournament_id = ?
-    `).get(tournamentId).count;
+        `).get(tournamentId).count;
 
     if (name !== undefined) {
         fieldsToUpdate.push('name = ?');
@@ -113,16 +113,13 @@ export const updateController = {
       })
     }
 
-    const fieldsToUpdate = [];
-    const values = [];
-    
     const existingScore = db.prepare(`
         SELECT * FROM scores 
         WHERE tournament_id = ? 
-          AND round_number = ? 
-          AND match_index = ?
-      `).get(tournamentId, round_number, match_index);
-  
+        AND round_number = ? 
+        AND match_index = ?
+        `).get(tournamentId, round_number, match_index);
+        
     if (!existingScore) {
       console.log(`Creating new score entry for round ${round_number}, match ${match_index}`);
       
@@ -131,14 +128,17 @@ export const updateController = {
         round_number, 
         match_index
       );
-
+      
       if (success) {
           console.log(`Score table added at position: ${scoreId}`);
-      } else {
-          console.error('Failed to create score entry:', error);
-          console.error('Details:', details);
-      }
+        } else {
+            console.error('Failed to create score entry:', error);
+            console.error('Details:', details);
+        }
     }
+    
+    const fieldsToUpdate = [];
+    const values = [];
     
     if (round_number !== undefined) {
         fieldsToUpdate.push('round_number = ?');

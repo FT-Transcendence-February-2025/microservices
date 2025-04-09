@@ -77,9 +77,7 @@ function getOpponentDetails (match, userId, activeConnections) {
   const opponentId = match.userId === match.player1_id ? match.player2_id : match.player1_id
   const opponentConnection = activeConnections.find(c => c.userId === opponentId)
   const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
-  return {
-    opponentId, opponentConnection, opponentDisplayName
-  }
+  return { opponentId, opponentConnection, opponentDisplayName }
 }
 
 function leaveQueue (data, connection) {
@@ -161,6 +159,34 @@ const handleTournamentMessages = async (data, connection) => {
       const player1 = matchmakingQueue.shift()
       const player2 = matchmakingQueue.shift()
 
+      console.log('Player1 details:', player1)
+      console.log('Player2 details:', player2)
+
+      const tournamentMatchRecord = db.prepare(`
+        SELECT * FROM tournament_matches
+        WHERE tournament_id = ? AND round = ?
+          AND (
+            (player1_id = ? AND player2_id = ?)
+            OR (player1_id = ? AND player2_id = ?)
+          )
+          AND match_status = 'pending'
+        `).get(data.tournamentId, data.round, player1.id, player2.id, player2.id, player1.id)
+
+      if (!tournamentMatchRecord) {
+        playerQueueStatus.delete(player1.id)
+        playerQueueStatus.delete(player2.id)
+        playerTournamentStatus.delete(player1.id)
+        playerTournamentStatus.delete(player2.id);
+
+        [player1, player2].forEach(player => {
+          player.socket.send(JSON.stringify({
+            type: 'error',
+            message: 'Tournament registration mismatch occurred. Please rejoin the queue.'
+          }))
+        })
+        return
+      }
+
       try {
         const roomCode = `MATCH_${Date.now()}`
         const stmt = db.prepare(`
@@ -225,6 +251,14 @@ const handleTournamentMessages = async (data, connection) => {
     break
   }
   case 'matchAccept': {
+    if (!playerTournamentStatus.has(data.userId)) {
+      connection.socket.send(JSON.stringify({
+        type: 'error',
+        message: 'You are not registered in the tournament queue'
+      }))
+      return
+    }
+
     const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
     const displayName = currentPlayer ? currentPlayer.displayName : null
     const round = data.round
@@ -396,6 +430,14 @@ const handleLocalGameMessages = async (data, connection) => {
     break
   }
   case 'matchAccept': {
+    if (!playerQueueStatus.has(data.userId)) {
+      connection.socket.send(JSON.stringify({
+        type: 'error',
+        message: 'You are not registered in the match queue'
+      }))
+      return
+    }
+
     const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
     const displayName = currentPlayer ? currentPlayer.displayName : null
 

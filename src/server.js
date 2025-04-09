@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
 import fastifyWebsocket from '@fastify/websocket'
-import { matchmakingDbRoute } from './routes/database_route.js'
+// import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
@@ -12,7 +12,15 @@ import tournamentResultsRoute from './routes/tournament_results_route.js'
 const PORT = 3000
 
 const fastify = Fastify({
-  logger: true
+  logger: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'SYS:standard',
+        colorize: true
+      }
+    }
+  }
 })
 
 // Initialize database
@@ -40,7 +48,7 @@ fastify.get('/', (request, reply) => {
 })
 
 fastify.register(websocketHandler)
-fastify.register(matchmakingDbRoute)
+// fastify.register(matchmakingDbRoute)
 fastify.register(matchesRoute, { prefix: '/matches' })
 fastify.register(matchmakingRoute)
 fastify.register(tournamentRoute, { prefix: '/tournament' })

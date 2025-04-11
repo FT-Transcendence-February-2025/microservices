@@ -29,5 +29,6 @@ export const joinController = {
             usersPos: addUser.usersPos,
             message: registerPlayer.message
         });
-    }
+    },
+    
 }

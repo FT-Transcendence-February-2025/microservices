@@ -177,6 +177,27 @@ export const tournamentController = {
         details: error.message
       })
     }
+  },
+
+  async getAllTournaments(request, reply){
+    try {
+      const result = tournamentService.getAllTournaments()
+
+      if (!result.success) {
+        return reply.code(400).send({
+          statusCode: 400,
+          error: result.error,
+          details: result.message
+        })
+      }
+
+      return result.tournaments
+    } catch (error) {
+      return reply.code(500).send({
+        statusCode: 500,
+        error: 'Failed to fetch tournaments',
+        details: error.message
+      })
+    }
   }
-  // TODO: get tournament statistics '/:tournamentId/statistics'
 }

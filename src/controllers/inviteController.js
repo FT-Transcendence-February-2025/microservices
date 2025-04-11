@@ -5,6 +5,7 @@ export const inviteController = {
 
     async sendInvite (request, reply) {
         const { tournamentId } = request.params
+        const { userId } = request.body
         const { userIds } = request.body
         console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `Sending invite for tournament: ${tournamentId}`);
 
@@ -28,7 +29,7 @@ export const inviteController = {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ tournamentId, tournamentName, ids })
+            body: JSON.stringify({ tournamentId, tournamentName, ids, userId })
             })
             if (!response.ok) {
                 const userdata = await response.json()

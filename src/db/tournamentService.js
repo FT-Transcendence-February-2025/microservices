@@ -363,5 +363,26 @@ export const tournamentService = {
         message: error.message
       }
     }
+  },
+
+  getAllTournaments () {
+    try {
+      const tournaments = db.prepare(`
+        SELECT t.id, t.name, u.user_id, u.display_name
+        FROM tournaments t
+        JOIN users u ON t.created_by = u.user_id
+        `).all()
+
+      return {
+        success: true,
+        tournaments
+      }
+    } catch (error) {
+      console.log(`${error}`);
+      return {
+        success: false,
+        error: error
+      }
+    }
   }
 }

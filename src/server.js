@@ -1,7 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import dotenv from 'dotenv'
-import tournamentRoutes from './routes/tournaments.js'
+import tournamentRoutes from './routes/tournament-routes.js'
 import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
@@ -82,7 +82,8 @@ process.on('SIGINT', async () => {
 })
 
 /*TODO:
-  -call get friends from um, check who has created a tournament and if ended_at is not filled yet 
+  -call get friends from um(need jwt to get friends, how to do that?), check who has created a tournament and if ended_at is not filled yet 
+  -if not deleting tms we need indacator to know which one is active 
   -accept player to join the tournament -> for now not, only basic behavior
   -handle tournament time -> do with timestamp i get in update tournament request
   -handle deleting info via status

@@ -78,8 +78,6 @@ export default async function (fastify) {
           registration_start_time: { type: 'string', format: 'date-time' },
           registration_deadline: { type: 'string', format: 'date-time' },
           winner_id: { type: 'string' },
-          schedule: { type: 'string' },
-          started_at: { type: 'string', format: 'date-time' },
           ended_at: { type: 'string', format: 'date-time' }
         }
       }
@@ -201,6 +199,9 @@ export default async function (fastify) {
     }, handler: tournamentController.postMatchResults
   })
   
+  // Get all tournaments
+  fastify.get('/activeTournaments', tournamentController.getAllTournaments)
+
   // Join to tournament
   fastify.post('/:tournamentId/join', {
     schema: {

@@ -20,5 +20,21 @@ export const usersController = {
         });
         
     },
-    
+    async checkFriendsList(request, reply) {
+        const { userId } = request.body
+        console.log(`Checking Friendslist for active Tournament`);
+        // const response = await fetch(`${UM_SERVICE_URL}/get-friends `, {
+        //     method: 'GET'
+        // })
+        // if (!response.ok) {
+        //     const userdata = await response.json()
+        //     console.log(userdata)
+        //     const error = new Error(`User not found`);
+        //     error.statusCode = response.status;
+        //     throw error;
+        // }
+        /*
+        go through friends - compare to createt_by in tm table - if found display tm and join request gets send to created_by
+        */
+    }
 }

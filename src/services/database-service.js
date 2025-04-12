@@ -188,6 +188,47 @@ const db = {
 			console.error("Error in function db.deleteExpiredTokens: ", error);
 			return { error };
     }
+	},
+	addPhoneNumber: async (phoneNumber, initializationVector, authTag) => {
+		try {
+			await database("two_factor_auth").insert({
+				phone_number: phoneNumber,
+				initialization_vector: initializationVector,
+				authTag
+			});
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addPhoneNumber: ", error);
+			return { error };
+		}
+	},
+	updateMode: async (userId, newMode) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({ mode: newMode });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateMode:", error);
+			return { error };
+		}
+	},
+	getTwoFactorInfo: async (userId) => {
+		try {
+			return await database("two_factor_auth").where({ user_id: userId }).first();
+		} catch (error) {
+			console.error("Error in function db.get2faInfo:", error);
+			return { error };
+		}
+	},
+	addAuthCode: async (userId, code, expiresAt, type) => {
+		try {
+			await database("auth_codes").insert({ user_id: userId, code, expires_at: expiresAt, type });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addAuthCode:", error);
+			return { error };
+		}
 	}
 };
 

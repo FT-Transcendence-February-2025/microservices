@@ -2,6 +2,7 @@ import fastify from "../server.js";
 import db from "./database-service.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
+import twilio from "twilio";
 
 const notifyService = {
   sendEmail: async ({ settings , receiver }) => {
@@ -15,11 +16,11 @@ const notifyService = {
 				options = generateEmailConfirmationOptions(receiver, accessGate);
 				break;
 			case "code":
-				accessGate = generateVerificationCode(receiver, settings.dataToChange);
+				accessGate = generateEmailCode(receiver, settings.dataToChange);
 				if (accessGate.error) {
 					return { status: accessGate.status, error: accessGate.error };
 				}
-				options = generateVerificationCodeOptions(receiver, accessGate.code);
+				options = generateEmailCodeOptions(receiver, accessGate.code);
 				break;
 			default:
         fastify.log.error(`Unknown email type: ${settings.type}`);
@@ -53,6 +54,24 @@ const notifyService = {
 			console.error(error);
 			return { error };
 		}
+	},
+	sendSms: async (userId, phoneNumber) => {
+		const { code, error, status } = generateAuthCode(userId, "sms");
+    if (error) {
+      return { status, error };
+    }
+		try {
+			const message = await client.messages.create({
+				body: `${code} here is your verification code from Pong Game`,
+				from: process.env.TWILIO_PHONE_NUMBER,
+				to: phoneNumber
+			});
+
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function notifyService.sendSms:", error);
+			return { error };
+		}
 	}
 };
 
@@ -68,10 +87,21 @@ const generateConfirmationToken = (userId, action, expirationMinutes) => {
 	return `${identifier}-${userId}-${signature}-${timestamp}-${expirationMinutes}`;
 };
 
-const generateVerificationCode = (email, dataToChange) => {
+const generateEmailCode = (email, dataToChange) => {
 	const code = Math.floor(100000 + Math.random() * 900000).toString();
 	const expiresAt = Math.floor(Date.now() / 1000 + 10 * 60);
 	const addResult = db.addEmailCode(email, code, expiresAt, dataToChange);
+	if (addResult.error) {
+		return { error: "Internal Server Error", status: 500 };
+	}
+
+	return { code };
+};
+
+const generateAuthCode = (userId, type) => {
+	const code = Math.floor(100000 + Math.random() * 900000).toString();
+	const expiresAt = Math.floor(Date.now() / 1000 + 5 * 60);
+	const addResult = db.addAuthCode(userId, code, expiresAt, type);
 	if (addResult.error) {
 		return { error: "Internal Server Error", status: 500 };
 	}
@@ -106,7 +136,7 @@ const generateEmailConfirmationOptions = (receiver, confirmationLink) => ({
   `
 });
 
-const generateVerificationCodeOptions = (receiver, code) => ({
+const generateEmailCodeOptions = (receiver, code) => ({
   to: receiver,
   subject: "Confirmation code",
   html: `
@@ -148,7 +178,7 @@ export default notifyService;
 // 				options = generateEmailConfirmationOptions(receiver, accessGate);
 // 				break;
 // 			case "code":
-// 				options = generateVerificationCodeOptions(receiver, accessGate);
+// 				options = generateEmailCodeOptions(receiver, accessGate);
 // 				break;
 // 			default:
 //         fastify.log.error(`Unknown email type: ${type}`);
@@ -223,7 +253,7 @@ export default notifyService;
 //   `
 // });
 
-// const generateVerificationCodeOptions = (receiver, code) => ({
+// const generateEmailCodeOptions = (receiver, code) => ({
 //   to: receiver,
 //   subject: "Confirmation code",
 //   html: `

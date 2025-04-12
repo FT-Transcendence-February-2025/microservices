@@ -4,7 +4,7 @@ const createTwoFactorAuthTable = async () => {
   try {
     await database.schema.createTable("two_factor_auth", (table) => {
       table.increments("id").primary();
-      table.string("userId").notNullable().references("id").inTable("users").onDelete("CASCADE").unique();
+      table.string("user_id").notNullable().references("id").inTable("users").onDelete("CASCADE").unique();
 			table.enu("mode", ["off", "email", "phone", "app"]).notNullable();
 			table.string("phone_number").unique().nullable();
 			table.string("initialization_vector").nullable();

@@ -56,7 +56,7 @@ const authenticationService = async (email, password, userAgent) => {
       { expiresIn: "10h" }
     );
 
-    return { refreshToken, accessToken, cookieOptions };
+    return { userId: user.id, refreshToken, accessToken, cookieOptions };
   } catch (error) {
 		console.error("Error in token creation, in function authenticationService: ", error);
     return { status: 500, error: "Internal Server Error" };

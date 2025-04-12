@@ -58,16 +58,16 @@ export default class Account extends HTMLElement {
     connectedCallback() {
         this._displayNameInput.value = User.displayName;
         this._emailInput.value = User.email;
-        this._displayNameEditButton.addEventListener('click', this.handleDisplayNameEditButton.bind(this));
-        this._emailEditButton.addEventListener('click', this.handleEmailEditButton.bind(this));
-        this._displayNameSaveButton.addEventListener('click', this.handleDisplayNameSaveButton.bind(this));
-        this._emailSaveButton.addEventListener('click', this.handleEmailSaveButton.bind(this));
-        this._avatarUpload.addEventListener('change', this.handleAvatarUpload.bind(this));
-        this._passwordChangeButton.addEventListener('click', this.handleChangePasswordButton.bind(this));
-        this._passwordSaveButton.addEventListener('click', this.handlePasswordSaveButton.bind(this));
+        this._displayNameEditButton.addEventListener('click', this._handleDisplayNameEditButton.bind(this));
+        this._emailEditButton.addEventListener('click', this._handleEmailEditButton.bind(this));
+        this._displayNameSaveButton.addEventListener('click', this._handleDisplayNameSaveButton.bind(this));
+        this._emailSaveButton.addEventListener('click', this._handleEmailSaveButton.bind(this));
+        this._avatarUpload.addEventListener('change', this._handleAvatarUpload.bind(this));
+        this._passwordChangeButton.addEventListener('click', this._handleChangePasswordButton.bind(this));
+        this._passwordSaveButton.addEventListener('click', this._handlePasswordSaveButton.bind(this));
     }
 
-    handleAvatarUpload(event: Event) {
+    private _handleAvatarUpload(event: Event) {
         const target = event.target as HTMLInputElement;
         if (target.files && target.files[0]) {
             const file = target.files[0];
@@ -83,7 +83,7 @@ export default class Account extends HTMLElement {
         }
     }
 
-    handleChangePasswordButton() {
+    private _handleChangePasswordButton() {
         const passwordContainer = this.querySelector('#passwordInputs');
         if (passwordContainer)
             passwordContainer.classList.remove('hidden');
@@ -92,7 +92,7 @@ export default class Account extends HTMLElement {
     }
 
 
-    handlePasswordSaveButton() {
+    private _handlePasswordSaveButton() {
         let oldPassword = this._oldPasswordInput.value;
         let newPassword = this._newPasswordInput.value;
         if (oldPassword && newPassword) {
@@ -113,13 +113,13 @@ export default class Account extends HTMLElement {
         this._passwordChangeButton.classList.remove('hidden');
     }
 
-    handleDisplayNameEditButton() {
+    private _handleDisplayNameEditButton() {
         this._displayNameInput.readOnly = false;
         this._displayNameEditButton.classList.add('hidden');
         this._displayNameSaveButton.classList.remove('hidden');
     }
 
-    handleDisplayNameSaveButton() {
+    private _handleDisplayNameSaveButton() {
         const newDisplayName = this._displayNameInput.value;
         if (newDisplayName !== User.displayName) {
             User.changeDisplayName(newDisplayName)
@@ -136,7 +136,7 @@ export default class Account extends HTMLElement {
         this._displayNameSaveButton.classList.add('hidden');
     }
 
-    handleEmailSaveButton() {
+    private _handleEmailSaveButton() {
         const newEmail = this._emailInput.value;
         if (newEmail !== User.email) {
             User.changeDisplayName(newEmail)
@@ -153,7 +153,7 @@ export default class Account extends HTMLElement {
         this._emailSaveButton.classList.add('hidden');
     }
 
-    handleEmailEditButton() {
+    private _handleEmailEditButton() {
         this._emailInput.readOnly = false;
         this._emailEditButton.classList.add('hidden');
         this._emailSaveButton.classList.remove('hidden');

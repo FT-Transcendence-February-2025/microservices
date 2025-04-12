@@ -8,12 +8,12 @@ export default class Avatar extends HTMLElement {
     constructor() {
         super();
         this.appendChild(template.content.cloneNode(true));
-    }
-
-    connectedCallback() {
+    
         const avatarButton = this.querySelector('#avatarButton');
         const userDropdown = this.querySelector('#userDropdown');
         const displayName = this.querySelector('#displayName');
+        const logoutLink = this.querySelector('#logoutLink');
+        const profileLink = this.querySelector('#profileLink') as HTMLAnchorElement | null;
 
         if (displayName)
             displayName.textContent = User.displayName;
@@ -22,12 +22,14 @@ export default class Avatar extends HTMLElement {
         avatarButton.addEventListener('click', () => {
             userDropdown.classList.toggle('hidden');
         });
-        const logoutLink = this.querySelector('#logoutLink');
         if (logoutLink)
-            logoutLink.addEventListener('click', this.handleLogout.bind(this)); 
+            logoutLink.addEventListener('click', this._handleLogout.bind(this));
+
+        if (profileLink)
+            profileLink.href = `/profle#${User.displayName}`;
     }
 
-    handleLogout() {
+    private _handleLogout() {
         User.logout()
         .then(success => {
             if (success)

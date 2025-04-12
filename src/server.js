@@ -20,6 +20,7 @@ import inviteTournamentRoute from "./routes/tournament/invite-tournament-route.j
 import removeFriendRoute from "./routes/frontend/remove-friend.js";
 import blockUserRoute from "./routes/frontend/block-user-route.js";
 import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
+import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 // import fs from "fs";
 
@@ -75,6 +76,7 @@ fastify.register(fastifyWebsocket);
 // fastify.register(removeFriendRoute, { prefix: "/api" });
 // fastify.register(blockUserRoute, { prefix: "/api" });
 // fastify.register(unblockUserRoute, { prefix: "/api" });
+// fastify.register(getBlockListRoute, { prefix: "/api" });
 // Register routes:
 fastify.register(newUserRoute);
 fastify.register(userExistsRoute);
@@ -93,6 +95,7 @@ fastify.register(inviteTournamentRoute);
 fastify.register(removeFriendRoute);
 fastify.register(blockUserRoute);
 fastify.register(unblockUserRoute);
+fastify.register(getBlockListRoute);
 
 const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 

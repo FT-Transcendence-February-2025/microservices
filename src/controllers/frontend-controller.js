@@ -221,11 +221,19 @@ const frontendController = {
 	},
 	getFriends: async (request, reply) => {
 		const friends = await db.getFriends(request.user.id);
-		if (friends.error) {
+		if (friends && friends.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
 		return reply.status(200).send({ success: "Returning users found (can be empty)", friends });
+	},
+	getBlockList: async (request, reply) => {
+		const blockedList = await db.getBlockedUsers(request.user.id);
+		if (blockedList && blockedList.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Returning list of blocked users (can be empty)", blockedList });
 	},
 	blockUser: async (request, reply) => {
 		const { idToBlock } = request.body;

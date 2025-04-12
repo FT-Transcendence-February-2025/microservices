@@ -68,5 +68,7 @@ export default class Router {
             this._route();
         });
         this._route();
+        // @ts-ignore
+        window.navigateTo = this.navigateTo.bind(this);
     }
 }

@@ -2,12 +2,9 @@
 
 <======== TO DO ========>
 
-APIManager:         // redirect to /login and delete tokens !!! same in logout
-User:               // remove refresh token cookie !!!
-
 ----- components -----:
 
-- root component  // checks if user is logged in and redirects to either login or home (fetches the user data)
+- finish root component
 - prehandler for router to check if an route should be accessable (is logged in)
 
 - invite notification

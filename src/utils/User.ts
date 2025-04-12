@@ -60,7 +60,6 @@ export default class User {
             const response = await postApiData('/api/auth/logout', {});
 
             if (response.ok) {
-                // remove refresh token cookie !!!!!
                 localStorage.removeItem('accessToken');
                 return true;
             }

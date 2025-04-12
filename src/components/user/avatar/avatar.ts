@@ -32,11 +32,15 @@ export default class Avatar extends HTMLElement {
     private _handleLogout() {
         User.logout()
         .then(success => {
-            if (success)
+            if (success) {
+                // @ts-ignore
+                window.navigateTo('/login')
                 alert('Logout successful');
+            }
             else
                 alert(`Logout failed!`);
         });
+
     }
 }
 

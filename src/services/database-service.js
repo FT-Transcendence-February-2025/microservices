@@ -177,7 +177,7 @@ const db = {
 			console.error("Error in function db.areFriends: ", error);
 			return { error };
     }
-},
+	},
 	getFriends: async (userId) => {
     try {
 			const friendList = await database("friend_list")
@@ -213,6 +213,31 @@ const db = {
     }
 	},
 	// Block list table:
+	getBlockedUsers: async (blockingId) => {
+    try {
+			const blockList = await database("block_list")
+				.where({ blocking_id: blockingId })
+				.select("blocked_id");
+
+			const blockedIds = blockList.map((entry) => entry.blocked_id);
+			if (blockedIds.length === 0) {
+				return [];
+			}
+
+			const users = await database("users").whereIn("id", blockedIds);
+
+			const blockedUsers = users.map((user) => ({
+				id: user.id,
+				displayName: user.display_name,
+				avatarPath: user.avatar_path,
+			}));
+
+			return blockedUsers;
+    } catch (error) {
+			console.error("Error in function db.getBlockedUsers: ", error);
+			return { error };
+    }
+	},
 	isOnBlockList: async (blockingId, blockedId) => {
   	try {
 			const blockEntry = await database("block_list")

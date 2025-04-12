@@ -9,12 +9,9 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
-					idToBlock: {
-						type: "number",
-						multipleOf: 1
-					}
+					displayNameToBlock: { type: "string" }
 				},
-				required: ["idToBlock"]
+				required: ["displayNameToBlock"]
 			},
 			response: {
 				200: {

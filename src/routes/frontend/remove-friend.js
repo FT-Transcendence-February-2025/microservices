@@ -9,15 +9,33 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
-					idToRemove: {
-						type: "number",
-						multipleOf: 1
-					}
+					displayNameToRemove: { type: "string" }
 				},
-				required: ["idToRemove"]
+				required: ["displayNameToRemove"]
 			},
 			response: {
 				200: {
+					type: "object",
+					properties: {
+						success: { type: "string" }
+					},
+					required: ["success"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						success: { type: "string" }
+					},
+					required: ["success"]
+				},
+				404: {
+					type: "object",
+					properties: {
+						success: { type: "string" }
+					},
+					required: ["success"]
+				},
+				500: {
 					type: "object",
 					properties: {
 						success: { type: "string" }

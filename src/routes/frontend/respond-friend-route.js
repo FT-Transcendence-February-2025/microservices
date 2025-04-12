@@ -9,13 +9,10 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
-					invitingId: {
-						type: "number",
-						multipleOf: 1
-					},
+					invitingDisplayName: { type: "string" },
 					accepted: { type: "boolean" }
 				},
-				required: ["invitingId", "accepted"]
+				required: ["invitingDisplayName", "accepted"]
 			},
 			response: {
 				200: {

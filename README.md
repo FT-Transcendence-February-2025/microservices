@@ -4,9 +4,6 @@
 
 ----- components -----:
 
-- fetch own profile on login
-- finish root component
-
 - invite notification
 - friendRequest pop up
 - email verification pop up
@@ -15,12 +12,9 @@
 
 - block user and block list
 - 2fa setup view
-- own change password view (delete button and add link in account)
-- load User avatar into avatar component
-- login/register ... fail -> render in the html
+
+- login/register: fail -> render in the html
 - register show if password does not fit the security aspects
-- register: confirm password
-- login redirect after register
 
 - tournament create view
 - torunament join view
@@ -35,8 +29,8 @@
 ----- other -----:
 
 - !!! responsiveness !!!
-- background video
 - use wss for websockets
+- background video
 - favicon
 - use absolute paths for module imports
 - add local font files

@@ -22,12 +22,13 @@ if (!rootElement)
 
 const router = new Router(rootElement);
 
-// const isLoggedIn = User.isLoggedIn;
-const isLoggedIn = () => { return true };
+const isLoggedIn = () => { return User.isloggedIn };
 
 router.addRoute({
     path: '/',
-    view: []
+    view: [],
+    preHandler: () => { return false },
+    redirectOnFail: '/home'
 });
 router.addRoute({
     path: '/login',
@@ -95,3 +96,5 @@ router.addRoute({
 router.setNotFound([NotFound]);
 
 router.init();
+
+User.checkAndRestoreSession();

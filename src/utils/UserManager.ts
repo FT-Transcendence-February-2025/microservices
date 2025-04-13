@@ -4,23 +4,30 @@ export default class UserManager {
     static displayName: string = '';
     static email: string = '';
     static avatarPath: string = '';
-    static loggedIn: boolean = false;
-
-    static isLoggedIn(): boolean {
-        return this.loggedIn;
-    }
+    static isloggedIn: boolean = false;
 
     static async checkAndRestoreSession(): Promise<void>{
-        // if (hasCookie())
-        //     loadProfile();
-        // else
-        //      redirect to login
-        
+        const accessToken = localStorage.getItem('accessToken');
+    
+        const hasCookie = (name: string): boolean  => {
+            const cookieName = `${name}=`;
+            return document.cookie.includes(cookieName);
+        }
 
-        //  function hasCookie(name: string): boolean {
-        //     const cookieName = `${name}=`;
-        //     return document.cookie.includes(cookieName);
-        //   }
+        if (hasCookie('refreshToken') || accessToken) {
+            this.getProfile()
+            .then(profile => {
+                if (profile) {
+                    this.displayName = profile.displayName;
+                    this.email = profile.email;
+                    this.avatarPath = profile.avatarPath;
+                    this.isloggedIn = true;
+                    return;
+                }
+            });
+        }
+        // @ts-ignore
+        window.navigateTo('/login');
     }
 
     static async login(email: string, password: string): Promise<boolean> {
@@ -36,6 +43,7 @@ export default class UserManager {
 
             if (response.ok) {
                 localStorage.setItem('accessToken', data.token);
+                this.isloggedIn = true;
                 return true;
             }
             else {
@@ -79,6 +87,7 @@ export default class UserManager {
 
             if (response.ok) {
                 localStorage.removeItem('accessToken');
+                this.isloggedIn = false;
                 return true;
             }
             else {
@@ -206,11 +215,27 @@ export default class UserManager {
 
     // }
 
-    // static async getProfile() {
+    static async getProfile(): Promise<any> {
+        try {
+            const response = await getApiData(`/api/user/profile`);
+            const data = await response.json();
 
-    // }
+            if (response.ok) {
+                return data;
+            }
+            else {
+                const error = data?.error || response.statusText || "Server returned an error.";
+                console.error(`Getting own profile: ${error}`);
+                return null;
+            }
 
-    static async getFriendProfile(displayName: string) {
+        } catch (error: any) {
+            console.error(`Getting own profile: ${error.message}`);
+            return null;
+        }
+    }
+
+    static async getFriendProfile(displayName: string): Promise<any> {
         try {
             const response = await getApiData(`/api/user/profile/${displayName}`);
             const data = await response.json();
@@ -220,12 +245,12 @@ export default class UserManager {
             }
             else {
                 const error = data?.error || response.statusText || "Server returned an error.";
-                console.error(`Getting friend list failed: ${error}`);
+                console.error(`Getting friend profile failed: ${error}`);
                 return null;
             }
             
         } catch (error: any) {
-            console.error(`Getting friend list failed: ${error.message}`);
+            console.error(`Getting friend profile failed: ${error.message}`);
             return null;
         }
     }

@@ -8,8 +8,11 @@ import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
+import dotenv from 'dotenv'
 
-const PORT = 3000
+const PORT = 3006
+
+dotenv.config()
 
 const fastify = Fastify({
   logger: {
@@ -33,7 +36,7 @@ try {
 }
 
 await fastify.register(fastifyCors, {
-  origin: ['http://user-management:3000', 'http://localhost:3000'],
+  origin: ['http://user-management:3000', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
   methods: ['GET', 'POST', 'PUT'],
   credentials: true
 })

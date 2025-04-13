@@ -1,10 +1,10 @@
-import { verifyUser } from '../../controllers/matchmakingControllers.js'
+// import { verifyUser } from '../../controllers/matchmakingControllers.js'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
 
 // Queue to store waiting players
 const matchmakingQueue = [] // Stores players who are waiting
-const activeConnections = [] // connected web sockets
+const activeConnections = new Map() // connected web sockets
 const matchAcceptances = {} // object the tracks accepted match invitations
 const playerTournamentStatus = new Map()
 const playerQueueStatus = new Map()
@@ -41,7 +41,7 @@ async function startGameForMatch (match) {
 }
 
 function addPlayerToQueue (data, connection, displayName, tournament = false) {
-  if (matchmakingQueue.find((player) => player.id === data.userId)) {
+  if (matchmakingQueue.find((player) => player.id === connection.userId)) {
     connection.socket.send(
       JSON.stringify({
         type: 'error',
@@ -50,11 +50,12 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
     return false
   }
 
-  connection.userId = data.userId
-  connection.displayName = displayName
+  // This can open you up to spoofing
+  // connection.userId = data.userId
+  // connection.displayName = displayName
 
   const playerEntry = {
-    id: data.userId,
+    id: connection.userId,
     socket: connection.socket,
     displayName,
     joinedAt: new Date()
@@ -64,11 +65,11 @@ function addPlayerToQueue (data, connection, displayName, tournament = false) {
     playerEntry.tournamentId = data.tournamentId
     playerEntry.tournament = true
     playerEntry.round = data.round
-    playerTournamentStatus.set(data.userId, { tournamentId: data.tournamentId, tournament: true, round: data.round })
+    playerTournamentStatus.set(connection.userId, { tournamentId: data.tournamentId, tournament: true, round: data.round })
   }
 
   // Store player in both the global status map and the matchmaking queue
-  playerQueueStatus.set(data.userId, playerEntry)
+  playerQueueStatus.set(connection.userId, playerEntry)
   matchmakingQueue.push(playerEntry)
   return true
 }
@@ -83,13 +84,13 @@ function getOpponentDetails (match, userId, activeConnections) {
     opponentId = null
   }
   // const opponentId = match.userId === match.player1_id ? match.player2_id : match.player1_id
-  const opponentConnection = activeConnections.find(c => c.userId === opponentId)
+  const opponentConnection = activeConnections.get(userId)
   const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
   return { opponentId, opponentConnection, opponentDisplayName }
 }
 
 function leaveQueue (data, connection) {
-  const player = playerQueueStatus.get(data.userId)
+  const player = playerQueueStatus.get(connection.userId)
   if (!player) {
     connection.socket.send(JSON.stringify({
       type: 'error',
@@ -98,12 +99,12 @@ function leaveQueue (data, connection) {
     return
   }
   // Remove the player from the global status
-  playerQueueStatus.delete(data.userId)
+  playerQueueStatus.delete(connection.userId)
   // Remove their tournament status too
-  playerTournamentStatus.delete(data.userId)
+  playerTournamentStatus.delete(connection.userId)
 
   // Remove the player from the matchmaking queue if present
-  const index = matchmakingQueue.findIndex(p => p.id === data.userId)
+  const index = matchmakingQueue.findIndex(p => p.id === connection.userId)
   if (index !== -1) {
     matchmakingQueue.splice(index, 1)
   }
@@ -135,7 +136,7 @@ function leaveQueue (data, connection) {
     }
   }
   connection.socket.send(JSON.stringify({
-    type: 'queueLeft',
+    type: 'leaveQueue',
     message: 'You have successfully left the queue.'
   }))
 }
@@ -153,12 +154,17 @@ const handleTournamentMessages = async (data, connection) => {
       return
     }
 
-    if (addPlayerToQueue(data, connection, connection.displayName, true)) {
+    const userId = connection.userId
+    const displayName = connection.displayName
+
+    const requestData = { ...data, userId }
+
+    if (addPlayerToQueue(requestData, connection, displayName, true)) {
       connection.socket.send(
         JSON.stringify({
           type: 'tournamentQueueJoined',
           message: 'Successfully joined match tournament queue',
-          displayName: connection.displayName,
+          displayName,
           round: data.round
         }))
     }
@@ -167,8 +173,8 @@ const handleTournamentMessages = async (data, connection) => {
       const player1 = matchmakingQueue.shift()
       const player2 = matchmakingQueue.shift()
 
-      console.log('Player1 details:', player1)
-      console.log('Player2 details:', player2)
+      // console.log('Player1 details:', player1)
+      // console.log('Player2 details:', player2)
 
       const tournamentMatchRecord = db.prepare(`
         SELECT * FROM tournament_matches
@@ -259,7 +265,7 @@ const handleTournamentMessages = async (data, connection) => {
     break
   }
   case 'matchAccept': {
-    if (!playerTournamentStatus.has(data.userId)) {
+    if (!playerTournamentStatus.has(connection.userId)) {
       connection.socket.send(JSON.stringify({
         type: 'error',
         message: 'You are not registered in the tournament queue'
@@ -267,7 +273,7 @@ const handleTournamentMessages = async (data, connection) => {
       return
     }
 
-    const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+    const currentPlayer = activeConnections.get(connection.userId)
     const displayName = currentPlayer ? currentPlayer.displayName : null
     const round = data.round
     const tournamentMatch = db.prepare(`
@@ -275,7 +281,7 @@ const handleTournamentMessages = async (data, connection) => {
       FROM tournament_matches
       WHERE tournament_id = ? AND match_status = ?
         AND (player1_id = ? OR player2_id = ?)
-      `).get(data.tournamentId, 'pending', data.userId, data.userId)
+      `).get(data.tournamentId, 'pending', connection.userId, connection.userId)
 
     if (!tournamentMatch) {
       connection.socket.send(
@@ -290,12 +296,12 @@ const handleTournamentMessages = async (data, connection) => {
       console.log('Creating acceptance tracker for tournament match:', tournamentMatch.id)
       matchAcceptances[tournamentMatch.id] = new Set()
     }
-    matchAcceptances[tournamentMatch.id].add(data.userId)
+    matchAcceptances[tournamentMatch.id].add(connection.userId)
     console.log('Current accepted players for tournament match', tournamentMatch.id, ':',
       Array.from(matchAcceptances[tournamentMatch.id])
     )
 
-    const { opponentDisplayName } = getOpponentDetails(tournamentMatch, data.userId, activeConnections)
+    const { opponentDisplayName } = getOpponentDetails(tournamentMatch, connection.userId, activeConnections)
 
     connection.socket.send(
       JSON.stringify({
@@ -318,7 +324,7 @@ const handleTournamentMessages = async (data, connection) => {
 
       if (!gameStarted) {
         console.error(`Game creation failed for tournament match ${tournamentMatch.id}. Notifying players...`)
-        activeConnections.forEach(conn => {
+        activeConnections.forEach((conn, _userId) => {
           conn.socket.send(
             JSON.stringify({
               type: 'error',
@@ -331,7 +337,7 @@ const handleTournamentMessages = async (data, connection) => {
 
       const gameUrl = `http://localhost:3003/?matchId=${tournamentMatch.id}`
 
-      activeConnections.forEach(conn => {
+      activeConnections.forEach((conn, _userId) => {
         if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
           const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(tournamentMatch, conn.userId, activeConnections)
           conn.socket.send(
@@ -346,7 +352,7 @@ const handleTournamentMessages = async (data, connection) => {
       })
       delete matchAcceptances[tournamentMatch.id]
     }
-    console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
+    console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id} and ${tournamentMatch.player1_id}`)
     break
   }
   case 'leaveQueue': {
@@ -371,21 +377,16 @@ const handleLocalGameMessages = async (data, connection) => {
   switch (data.type) {
   case 'joinQueue': {
     try {
-      const result = await verifyUser(data.userId)
-      if (result.error || !result.success) {
-        connection.socket.send(
-          JSON.stringify({
-            type: 'error',
-            message: result.error || 'User not found'
-          })
-        )
-        return
-      }
-      if (addPlayerToQueue(data, connection, result.displayName)) {
+      // const result = await verifyUser(data.userId)
+      const userId = connection.userId
+      const displayName = connection.displayName
+
+      const requestData = { ...data, userId }
+      if (addPlayerToQueue(requestData, connection, displayName)) {
         connection.socket.send(JSON.stringify({
-          type: 'queueJoined',
+          type: 'joinQueue',
           message: 'Successfully joined matchmaking queue',
-          displayName: result.displayName
+          displayName
         }))
       }
       // Insert match creation logic for local match
@@ -438,7 +439,7 @@ const handleLocalGameMessages = async (data, connection) => {
     break
   }
   case 'matchAccept': {
-    if (!playerQueueStatus.has(data.userId)) {
+    if (!playerQueueStatus.has(connection.userId)) {
       connection.socket.send(JSON.stringify({
         type: 'error',
         message: 'You are not registered in the match queue'
@@ -446,11 +447,11 @@ const handleLocalGameMessages = async (data, connection) => {
       return
     }
 
-    const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
+    const currentPlayer = activeConnections.get(connection.userId)
     const displayName = currentPlayer ? currentPlayer.displayName : null
 
     console.log('Received matchAccept:', {
-      userId: data.userId,
+      userId: connection.userId,
       displayName,
       matchId: data.matchId
     })
@@ -458,7 +459,7 @@ const handleLocalGameMessages = async (data, connection) => {
         SELECT * FROM matchmaking 
         WHERE match_status = ? AND id = ? 
         AND (player1_id = ? OR player2_id = ?)
-      `).get('pending', data.matchId, data.userId, data.userId)
+      `).get('pending', data.matchId, connection.userId, connection.userId)
 
     console.log('Found match:', match)
 
@@ -475,13 +476,13 @@ const handleLocalGameMessages = async (data, connection) => {
       console.log('Creating acceptance tracker for match', match.id)
       matchAcceptances[match.id] = new Set()
     }
-    matchAcceptances[match.id].add(data.userId)
+    matchAcceptances[match.id].add(connection.userId)
     console.log(
       'Current accepted Players for match', match.id, ':',
       Array.from(matchAcceptances[match.id])
     )
 
-    const { opponentDisplayName } = getOpponentDetails(match, data.userId, activeConnections)
+    const { opponentDisplayName } = getOpponentDetails(match, connection.userId, activeConnections)
 
     connection.socket.send(
       JSON.stringify({
@@ -502,7 +503,7 @@ const handleLocalGameMessages = async (data, connection) => {
       const gameStarted = await startGameForMatch(match)
       if (!gameStarted) {
         console.error(`Game creation failed for match ${match.id}. Notifying players...`)
-        activeConnections.forEach(conn => {
+        activeConnections.forEach((conn, _userId) => {
           conn.socket.send(
             JSON.stringify({
               type: 'error',
@@ -516,9 +517,9 @@ const handleLocalGameMessages = async (data, connection) => {
       const gameUrl = `http://localhost:3003/?matchId=${match.id}`
 
       // Notify both players
-      activeConnections.forEach(conn => {
+      activeConnections.forEach((conn, _userId) => {
         if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(match, data.userId, activeConnections)
+          const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(match, connection.userId, activeConnections)
           conn.socket.send(JSON.stringify({
             type: 'matchStarted',
             matchId: match.id,
@@ -529,7 +530,7 @@ const handleLocalGameMessages = async (data, connection) => {
         }
       })
       delete matchAcceptances[match.id]
-      console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
+      console.log(`Match ${match.id} started between ${match.player1_id} and ${match.player2_id}`)
     }
     break
   }
@@ -564,11 +565,18 @@ const closeHandler = async (connection) => {
     console.log('Client disconnect')
 
     // Remove connection from activeConnections
-    const connectionIndex = activeConnections.findIndex(conn => conn === connection)
-    if (connectionIndex !== -1) {
-      activeConnections.splice(connectionIndex, 1)
-      console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.length}`)
+    if (activeConnections.delete(connection.userId)) {
+      console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.size}`)
     }
+
+    // playerQueueStatus.delete(connection.userId)
+    // playerTournamentStatus.delete(connection.userId)
+
+    // const queueIndex = matchmakingQueue.findIndex(p => p.id === connection.userId);
+    // if (queueIndex !== -1) {
+    //   matchmakingQueue.splice(queueIndex, 1);
+    //   console.log(`Player ${connection.userId} removed from matchmaking queue`);
+    // }
 
     let player = playerQueueStatus.get(connection.userId)
 
@@ -611,7 +619,7 @@ const closeHandler = async (connection) => {
           WHERE id = ?
         `).run('cancelled', tournamentMatch.id)
         const opponentId = tournamentMatch.player1_id === player.id ? tournamentMatch.player2_id : tournamentMatch.player1_id
-        const opponent = activeConnections.find(p => p.userId === opponentId)
+        const opponent = activeConnections.get(opponentId)
         if (opponent) {
           opponent.socket.send(JSON.stringify({
             type: 'tournamentMatchCancelled',
@@ -662,497 +670,25 @@ const errorHandler = async (error) => {
   console.error('WebSocket error:', error)
 }
 
-const connectionHandler = (connection, _req) => {
+const connectionHandler = (connection, request) => {
   connection.socket = connection
-  activeConnections.push(connection)
+
+  if (request.user.id) {
+    console.log('User attached to request')
+    connection.userId = request.user.id
+    connection.displayName = request.user.displayName || request.user.display_name
+  } else {
+    console.error('User not attached to request. Closing connection')
+    connection.socket.close(1008, 'User not authenticated')
+    return
+  }
+
+  activeConnections.set(connection.userId, connection)
 
   // Websocket event listeners
-  connection.socket.on('message', (message) =>
-    messageHandler(message, connection)
-  )
+  connection.socket.on('message', (message) => messageHandler(message, connection))
   connection.socket.on('error', errorHandler)
   connection.socket.on('close', () => closeHandler(connection))
 }
 
 export { connectionHandler }
-
-// const messageHandler = async (message, connection) => {
-//   // Converts the message from a string to a JavaScript object.
-//   const data = JSON.parse(message.toString())
-
-//   switch (data.type) {
-//   case 'joinQueue':
-//     try {
-//       // Verify user exists
-//       const result = await verifyUser(data.userId)
-//       if (result.error || !result.success) {
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'error',
-//             message: result.error || 'User not found'
-//           })
-//         )
-//         return
-//       }
-
-//       // tournament joinQueue branch
-//       if (data.tournamentId) {
-//         if (!data.round) {
-//           connection.socket.send(
-//             JSON.stringify({
-//               type: 'error',
-//               message: 'Missing round value for tournament'
-//             })
-//           )
-//           return
-//         }
-//         const round = data.round
-
-//         if (addPlayerToQueue(data, connection, result.displayName, true)) {
-//           connection.socket.send(
-//             JSON.stringify({
-//               type: 'tournamentQueueJoined',
-//               message: 'Successfully joined tournament queue',
-//               displayName: result.displayName,
-//               round
-//             })
-//           )
-//         }
-
-//         if (matchmakingQueue.length >= 2) {
-//           const player1 = matchmakingQueue.shift()
-//           const player2 = matchmakingQueue.shift()
-
-//           try {
-//             const roomCode = `MATCH_${Date.now()}`
-//             const stmt = db.prepare(`
-//               UPDATE tournament_matches
-//               SET match_status = ?, room_code = ?
-//               WHERE tournament_id = ? AND round = ?
-//               AND (
-//                 (player1_id = ? AND player2_id = ?)
-//                 OR (player1_id = ? AND player2_id = ?)
-//               )
-//               AND match_status = 'pending'
-//             `)
-//             const updateResult = stmt.run('pending', roomCode, data.tournamentId, round,
-//               player1.id, player2.id, player2.id, player1.id)
-//             if (!updateResult.changes) {
-//               matchmakingQueue.unshift(player2)
-//               matchmakingQueue.unshift(player1);
-//               [player1, player2].forEach(player => {
-//                 player.socket.send(
-//                   JSON.stringify({
-//                     type: 'error',
-//                     message: 'Tournament match not found for these players'
-//                   })
-//                 )
-//               })
-//               return
-//             }
-
-//             const tournamentMatch = db.prepare(`
-//               SELECT * FROM tournament_matches
-//               WHERE tournament_id = ? AND round = ? AND room_code = ?
-//               AND match_status = 'pending'
-//             `).get(data.tournamentId, round, roomCode);
-
-//             [player1, player2].forEach((player) => {
-//               const opponent = player === player1 ? player2 : player1
-//               player.socket.send(
-//                 JSON.stringify({
-//                   type: 'tournamentMatchCreated',
-//                   matchId: tournamentMatch.id,
-//                   round,
-//                   opponentId: opponent.id,
-//                   opponentDisplayName: opponent.displayName,
-//                   roomCode
-//                 })
-//               )
-//             })
-//           } catch (error) {
-//             console.error('Error creating tournament match:', error)
-//             matchmakingQueue.unshift(player2)
-//             matchmakingQueue.unshift(player1);
-
-//             [player1, player2].forEach((player) => {
-//               player.socket.send(
-//                 JSON.stringify({
-//                   type: 'error',
-//                   message: 'Failed to create tournament match'
-//                 })
-//               )
-//             })
-//           }
-//         }
-
-//         return
-//       }
-
-//       // Normal joinQueue branch
-//       if (addPlayerToQueue(data, connection, result.displayName)) {
-//         // Send queueJoined message
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'queueJoined',
-//             message: 'Successfully joined matchmaking queue',
-//             displayName: result.displayName
-//           })
-//         )
-//       }
-
-//       // Check if we can make a match
-//       if (matchmakingQueue.length >= 2) {
-//         // Match first 2 players in queue
-//         const player1 = matchmakingQueue.shift() // shift() removes and returns the first two players from the queue
-//         const player2 = matchmakingQueue.shift()
-
-//         try {
-//           const roomCode = `MATCH_${Date.now()}`
-//           // Create match record
-//           const stmt = db.prepare(`
-//             INSERT INTO matchmaking (player1_id, player2_id, match_status, room_code, created_at)
-//             VALUES (?, ?, ?, ?, datetime('now'))
-//           `)
-//           const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
-//           const matchId = result.lastInsertRowid;
-//           [player1, player2].forEach((player) => {
-//             const opponent = player === player1 ? player2.id : player1.id
-//             player.socket.send(
-//               JSON.stringify({
-//                 type: 'matchCreated',
-//                 matchId,
-//                 opponentId: opponent.id,
-//                 opponentDisplayName: opponent.displayName,
-//                 roomCode
-//               })
-//             )
-//           })
-//         } catch (error) {
-//           console.error('Error creating match:', error)
-//           matchmakingQueue.unshift(player2)
-//           matchmakingQueue.unshift(player1);
-
-//           [player1, player2].forEach((player) => {
-//             player.socket.send(
-//               JSON.stringify({
-//                 type: 'error',
-//                 message: 'Failed to create match'
-//               })
-//             )
-//           })
-//         }
-//       }
-//     } catch (error) {
-//       connection.socket.send(
-//         JSON.stringify({
-//           type: 'error',
-//           message: 'Failed to join queue'
-//         })
-//       )
-//     }
-//     break
-
-//   case 'leaveQueue':
-//     try {
-//       // Find player's ID
-//       const playerIndex = matchmakingQueue.findIndex(
-//         (player) => player.id === data.userId
-//       )
-//       if (playerIndex !== -1) {
-//         // Remove player from Queue
-//         matchmakingQueue.splice(playerIndex, 1)
-
-//         // Send notification to player
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'queueUpdate',
-//             message: 'You have left the queue.'
-//           })
-//         )
-//       } else {
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'error',
-//             message: 'You are not in the queue'
-//           })
-//         )
-//       }
-//     } catch (error) {
-//       connection.socket.send(
-//         JSON.stringify({
-//           type: 'error',
-//           message: 'Failed to leave the queue'
-//         })
-//       )
-//     }
-//     break
-//   case 'matchAccept':
-//     try {
-//       // Tournament Match Acceptance
-//       const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
-//       const displayName = currentPlayer ? currentPlayer.displayName : null
-//       if (data.tournamentId) {
-//         const round = data.round
-//         const tournamentMatch = db.prepare(`
-//           SELECT *, tournament_id AS tournamentId
-//           FROM tournament_matches
-//           WHERE tournament_id = ? AND match_status = ?
-//             AND (player1_id = ? OR player2_id = ?)
-//           `).get(data.tournamentId, 'pending', data.userId, data.userId)
-
-//         if (!tournamentMatch) {
-//           connection.socket.send(
-//             JSON.stringify({
-//               type: 'error',
-//               message: 'Tournament match not found or no longer available'
-//             })
-//           )
-//           return
-//         }
-
-//         if (!matchAcceptances[tournamentMatch.id]) {
-//           console.log('Creating acceptance traker for tournament match:', tournamentMatch.id)
-//           matchAcceptances[tournamentMatch.id] = new Set()
-//         }
-//         matchAcceptances[tournamentMatch.id].add(data.userId)
-//         console.log('Current accepted players for tournament match', tournamentMatch.id, ':',
-//           Array.from(matchAcceptances[tournamentMatch.id])
-//         )
-
-//         const opponentId = tournamentMatch.player1_id === data.userId ? tournamentMatch.player2_id : tournamentMatch.player1_id
-//         const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
-//         const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
-
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'tournamentMatchAccepted',
-//             message: 'You have accepted the match',
-//             yourDisplayName: displayName,
-//             opponentName: opponentDisplayName,
-//             round
-//           })
-//         )
-
-//         if (matchAcceptances[tournamentMatch.id] && matchAcceptances[tournamentMatch.id].size >= 2) {
-//           console.log('Starting tournament match...')
-//           db.prepare(`
-//             UPDATE tournament_matches
-//             SET match_status = ?, started_at = datetime('now', 'localtime')
-//             WHERE id = ?
-//             `).run('in_progress', tournamentMatch.id)
-
-//           console.log('Tournament match retrieved:', tournamentMatch)
-//           const gameStarted = await startGameForMatch(tournamentMatch)
-
-//           if (!gameStarted) {
-//             console.error(`Game creation failed for tournament match ${tournamentMatch.id}. Notifying players...`)
-//             activeConnections.forEach(conn => {
-//               conn.socket.send(
-//                 JSON.stringify({
-//                   type: 'error',
-//                   message: `Failed to create game for tournament match ${tournamentMatch.id}`
-//                 })
-//               )
-//             })
-//             return
-//           }
-
-//           const gameUrl = `http://localhost:3003/?matchId=${tournamentMatch.id}`
-
-//           activeConnections.forEach(conn => {
-//             if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
-//               const specificOpponentId = conn.userId === tournamentMatch.player1_id ? tournamentMatch.player2_id : tournamentMatch.player1_id
-//               const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
-//               const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
-//               conn.socket.send(
-//                 JSON.stringify({
-//                   type: 'matchStarted',
-//                   matchId: tournamentMatch.id,
-//                   oppId: specificOpponentId,
-//                   oppDisplayName: specificOpponentDisplayName,
-//                   gameUrl: `${gameUrl}&playerId=${conn.userId}`
-//                 })
-//               )
-//             }
-//           })
-//           delete matchAcceptances[tournamentMatch.id]
-//           console.log(`Tournament match ${tournamentMatch.id} started between ${tournamentMatch.player2_id}:${displayName} and ${tournamentMatch.player1_id}:${opponentDisplayName}`)
-//         }
-//       } else {
-//         // Normal Match Acceptance
-//         const currentPlayer = activeConnections.find(conn => conn.userId === data.userId)
-//         const displayName = currentPlayer ? currentPlayer.displayName : null
-
-//         console.log('Received matchAccept:', {
-//           userId: data.userId,
-//           displayName,
-//           matchId: data.matchId
-//         })
-
-//         const match = db.prepare(`
-//           SELECT * FROM matchmaking
-//           WHERE match_status = ? AND id = ?
-//           AND (player1_id = ? OR player2_id = ?)
-//         `).get('pending', data.matchId, data.userId, data.userId)
-
-//         console.log('Found match:', match)
-
-//         if (!match) {
-//           connection.socket.send(
-//             JSON.stringify({
-//               type: 'error',
-//               message: 'Match not found or no longer available'
-//             })
-//           )
-//           return
-//         }
-
-//         if (!matchAcceptances[match.id]) {
-//           console.log('Creating acceptance tracker for match', match.id)
-//           matchAcceptances[match.id] = new Set()
-//         }
-//         matchAcceptances[match.id].add(data.userId)
-//         console.log(
-//           'Current accepted Players for match', match.id, ':',
-//           Array.from(matchAcceptances[match.id])
-//         )
-
-//         const opponentId = match.player1_id === data.userId ? match.player2_id : match.player1_id
-//         const opponentConnection = activeConnections.find(conn => conn.userId === opponentId)
-//         const opponentDisplayName = opponentConnection ? opponentConnection.displayName : null
-
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'matchAccepted',
-//             message: 'You have accepted the match',
-//             yourName: displayName,
-//             opponentName: opponentDisplayName
-//           })
-//         )
-
-//         if (matchAcceptances[match.id] && matchAcceptances[match.id].size >= 2) {
-//           console.log('Starting match...')
-//           db.prepare(`
-//           UPDATE matchmaking
-//           SET match_status = ?, started_at = datetime('now')
-//           WHERE id = ?
-//         `).run('in_progress', match.id)
-
-//           const gameStarted = await startGameForMatch(match)
-
-//           if (!gameStarted) {
-//             console.error(`Game creation failed for match ${match.id}. Notifying players...`)
-//             activeConnections.forEach(conn => {
-//               conn.socket.send(
-//                 JSON.stringify({
-//                   type: 'error',
-//                   message: `Failed to create game for match ${match.id}`
-//                 })
-//               )
-//             })
-//             return
-//           }
-
-//           const gameUrl = `http://localhost:3003/?matchId=${match.id}`
-
-//           // Notify both players
-//           activeConnections.forEach(conn => {
-//             if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
-//               const specificOpponentId = conn.userId === match.player1_id ? match.player2_id : match.player1_id
-//               const specificOpponentConnection = activeConnections.find(c => c.userId === specificOpponentId)
-//               const specificOpponentDisplayName = specificOpponentConnection ? specificOpponentConnection.displayName : null
-//               conn.socket.send(
-//                 JSON.stringify({
-//                   type: 'matchStarted',
-//                   matchId: match.id,
-//                   oppId: specificOpponentId,
-//                   oppDisplayName: specificOpponentDisplayName,
-//                   gameUrl: `${gameUrl}&playerId=${conn.userId}`
-//                 })
-//               )
-//             }
-//           })
-//           delete matchAcceptances[match.id]
-//           console.log(`Match ${match.id} started between ${match.player1_id}:${displayName} and ${match.player2_id}:${opponentDisplayName}`)
-//         }
-//       }
-//     } catch (error) {
-//       connection.socket.send(
-//         JSON.stringify({
-//           type: 'error',
-//           message: 'Failed to accept match'
-//         })
-//       )
-//       console.error('Error handling matchAccept:', error)
-//     }
-//     break
-
-//   case 'matchDecline':
-//     try {
-//       const match = db.prepare(`
-//         SELECT * FROM matchmaking
-//         WHERE match_status = ?
-//         AND id = ?
-//         AND (player1_id = ? OR player2_id = ?)
-//       `).get('pending', data.matchId, data.userId, data.userId)
-
-//       if (!match) {
-//         connection.socket.send(
-//           JSON.stringify({
-//             type: 'error',
-//             message: 'Match not found or no longer available'
-//           })
-//         )
-//         return
-//       }
-
-//       db.prepare(`
-//         UPDATE matchmaking
-//         SET match_status = ?, ended_at = datetime('now')
-//         WHERE id = ?
-//       `).run('cancelled', match.id)
-
-//       const opponentId = match.player1_id === data.userId
-//         ? match.player2_id
-//         : match.player1_id
-
-//       const opponent = matchmakingQueue.find(p => p.id === opponentId)
-
-//       if (opponent) {
-//         opponent.socket.send(
-//           JSON.stringify({
-//             type: 'matchCancelled',
-//             message: 'Your opponent declined the match'
-//           })
-//         )
-//       }
-
-//       // Notify the declining player
-//       connection.socket.send(
-//         JSON.stringify({
-//           type: 'matchCancelled',
-//           message: 'You declined the match'
-//         })
-//       )
-//     } catch (error) {
-//       connection.socket.send(
-//         JSON.stringify({
-//           type: 'error',
-//           message: 'Failed to decline match'
-//         })
-//       )
-//       console.error('Error handling matchDecline: ', error)
-//     }
-//     break
-//   default:
-//     connection.socket.send(
-//       JSON.stringify({
-//         type: 'error',
-//         message: 'Unknown message type received'
-//       })
-//     )
-//     console.error(`Received unknown message type: ${data.type}`)
-//     break
-//   }
-// }

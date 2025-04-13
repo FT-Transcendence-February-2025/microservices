@@ -18,7 +18,7 @@ const rootElement = document.getElementById('root');
 if (!rootElement)
     throw new Error(`Root element not found!`);
 
-const router = new Router(rootElement);
+export const router = new Router(rootElement);
 
 // router.addRoute({ path: '/', view: [Root] }): // checks if user is logged in and redirects to either login or home
 router.addRoute({ path: '/', view: [Login] });

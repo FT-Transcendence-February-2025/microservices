@@ -7,14 +7,16 @@ export default class User {
 
     static async login(email: string, password: string): Promise<boolean> {
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch('http://localhost:3001/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password })
             });
-            const data = response.bodyUsed ? await response.json() : null;
+
+            // const data = response.bodyUsed ? await response.json() : null;
+            const data = await response.json();
 
             if (response.ok) {
                 localStorage.setItem('accessToken', data.token);
@@ -33,7 +35,7 @@ export default class User {
 
     static async register(displayName: string, email: string, password: string): Promise<boolean> {
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch('http://localhost:3001/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -57,7 +59,7 @@ export default class User {
 
     static async logout(): Promise<boolean> {
         try {
-            const response = await postApiData('/api/user/display-name', {});
+            const response = await postApiData('http://localhost:3001/logout', {});
 
             if (response.ok) {
                 // remove refresh token cookie !!!!!

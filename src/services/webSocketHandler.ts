@@ -6,8 +6,7 @@ export function webSocketConnection(callbacks?: {
 	WebSocket {
 	console.log("Initializing WebSocket connection to matchmaking service");
 
-	const token = localStorage.getItem('accessToken');
-	const wsUrl = `ws://localhost:3006/ws?token=${encodeURIComponent(token)}`;
+	const wsUrl = `ws://localhost:3006/ws`;
 	const ws = new WebSocket(wsUrl);
 
 	// Backend uses the preHandler(and attaches the trusted userId) so your joinQueue action doesn’t need to supply the userId explicitly.

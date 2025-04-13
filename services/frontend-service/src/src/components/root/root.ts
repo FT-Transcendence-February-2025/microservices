@@ -13,9 +13,9 @@ export default class RootContainer extends HTMLElement {
     //     return document.cookie.includes(cookieName);
     //   }
 
-    private _loadProfile() {
+    // private _loadProfile() {
 
-    }
+    // }
 }
 
 customElements.define("root-container", RootContainer);

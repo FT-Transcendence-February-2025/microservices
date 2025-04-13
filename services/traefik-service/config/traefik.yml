@@ -10,6 +10,10 @@ entryPoints:
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
+  dashboard:
+    address: ":8080"
+    http:
+      tls: {}
   websecure:
     address: ":443"
     # allowACMEByPass: true
@@ -89,4 +93,4 @@ global:
   sendAnonymousUsage: false
 api:
   dashboard: true
-  insecure: true
+  insecure: false

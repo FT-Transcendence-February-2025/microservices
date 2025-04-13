@@ -53,9 +53,9 @@ services:
 
       # Middleware: Block requests to /api/user/new-user
       - "traefik.http.middlewares.block-new-user.rule=Path(`/api/user/new-user`)"
-      - "traefik.http.middlewares.block-new-user.errorpage.status=403"
-      - "traefik.http.middlewares.block-new-user.errorpage.service=error-service"
-      - "traefik.http.middlewares.block-new-user.errorpage.query=/error"
+      - "traefik.http.middlewares.block-new-user.customResponse.statusCode=403"
+      - "traefik.http.middlewares.block-new-user.customResponse.contentType=text/plain"
+      - "traefik.http.middlewares.block-new-user.customResponse.body=Access Denied"
 
       # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
       # Matches any request coming from wildcard subdomains with /api/user prefix
@@ -73,5 +73,3 @@ services:
 
       # Service Definition: user microservice backend
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"
-
-

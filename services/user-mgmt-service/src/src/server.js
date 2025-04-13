@@ -49,7 +49,7 @@ import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
 // }
 
 const fastify = Fastify({
-	// logger: true
+	logger: true
 });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
@@ -59,43 +59,43 @@ fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
 
 // // Register routes:
-// fastify.register(newUserRoute, { prefix: "/api" });
-// fastify.register(userExistsRoute, { prefix: "/api" });
-// fastify.register(avatarRoute, { prefix: "/api" });
-// fastify.register(displayNameRoute, { prefix: "/api" });
+fastify.register(newUserRoute, { prefix: "/api" });
+fastify.register(userExistsRoute, { prefix: "/api" });
+fastify.register(avatarRoute, { prefix: "/api" });
+fastify.register(displayNameRoute, { prefix: "/api" });
 // fastify.register(matchmakingRoute, { prefix: "/api" });
-// fastify.register(websocketRoute, { prefix: "/api" });
-// fastify.register(userLogoutRoute, { prefix: "/api" });
-// fastify.register(getFriendsRoute, { prefix: "/api" });
-// fastify.register(getMatchHistoryRoute, { prefix: "/api" });
-// fastify.register(inviteFriendRoute, { prefix: "/api" });
-// fastify.register(respondFriendRoute, { prefix: "/api" });
-// fastify.register(inviteGameRoute, { prefix: "/api" });
-// fastify.register(profileRoute, { prefix: "/api" });
-// fastify.register(inviteTournamentRoute, { prefix: "/api" });
-// fastify.register(removeFriendRoute, { prefix: "/api" });
-// fastify.register(blockUserRoute, { prefix: "/api" });
-// fastify.register(unblockUserRoute, { prefix: "/api" });
-// fastify.register(getBlockListRoute, { prefix: "/api" });
+fastify.register(websocketRoute, { prefix: "/api" });
+fastify.register(userLogoutRoute, { prefix: "/api" });
+fastify.register(getFriendsRoute, { prefix: "/api" });
+fastify.register(getMatchHistoryRoute, { prefix: "/api" });
+fastify.register(inviteFriendRoute, { prefix: "/api" });
+fastify.register(respondFriendRoute, { prefix: "/api" });
+fastify.register(inviteGameRoute, { prefix: "/api" });
+fastify.register(profileRoute, { prefix: "/api" });
+fastify.register(inviteTournamentRoute, { prefix: "/api" });
+fastify.register(removeFriendRoute, { prefix: "/api" });
+fastify.register(blockUserRoute, { prefix: "/api" });
+fastify.register(unblockUserRoute, { prefix: "/api" });
+fastify.register(getBlockListRoute, { prefix: "/api" });
 // Register routes:
-fastify.register(newUserRoute);
-fastify.register(userExistsRoute);
-fastify.register(avatarRoute);
-fastify.register(displayNameRoute);
-fastify.register(getUserRoute);
-fastify.register(websocketRoute);
-fastify.register(userLogoutRoute);
-fastify.register(getFriendsRoute);
-fastify.register(getMatchHistoryRoute);
-fastify.register(inviteFriendRoute);
-fastify.register(respondFriendRoute);
-fastify.register(inviteGameRoute);
-fastify.register(profileRoute);
-fastify.register(inviteTournamentRoute);
-fastify.register(removeFriendRoute);
-fastify.register(blockUserRoute);
-fastify.register(unblockUserRoute);
-fastify.register(getBlockListRoute);
+// fastify.register(newUserRoute);
+// fastify.register(userExistsRoute);
+// fastify.register(avatarRoute);
+// fastify.register(displayNameRoute);
+// fastify.register(getUserRoute);
+// fastify.register(websocketRoute);
+// fastify.register(userLogoutRoute);
+// fastify.register(getFriendsRoute);
+// fastify.register(getMatchHistoryRoute);
+// fastify.register(inviteFriendRoute);
+// fastify.register(respondFriendRoute);
+// fastify.register(inviteGameRoute);
+// fastify.register(profileRoute);
+// fastify.register(inviteTournamentRoute);
+// fastify.register(removeFriendRoute);
+// fastify.register(blockUserRoute);
+// fastify.register(unblockUserRoute);
+// fastify.register(getBlockListRoute);
 
 const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 

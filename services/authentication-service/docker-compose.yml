@@ -15,7 +15,7 @@ services:
       args:
         - DEBUG_MODE=${DEBUG_MODE}
         - DNS_SERVER=8.8.8.8
-    image: img_authentication:latest
+    image: img_auth:latest
     container_name: auth
     hostname: auth
     volumes:

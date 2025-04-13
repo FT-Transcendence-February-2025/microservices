@@ -33,7 +33,7 @@ try {
 }
 
 await fastify.register(fastifyCors, {
-  origin: ['http://user-management:3000', 'http://localhost:3000'],
+  origin: ['http://match:3003', 'http://localhost:3003'],
   methods: ['GET', 'POST', 'PUT'],
   credentials: true
 })
@@ -43,7 +43,7 @@ await fastify.register(fastifyWebsocket)
 
 fastify.get('/', (request, reply) => {
   reply.send({
-    message: 'Hello Fastify. Server is running!'
+    message: 'Hello Fastify. Match Server is running!'
   })
 })
 

@@ -1,6 +1,7 @@
+import config from '../config/config.js';
 export async function verifyUser (userId) {
   try {
-    const response = await fetch(`http://user:3002/get-user/${userId}`, {
+    const response = await fetch(`${config.endpoints.user}/get-user/${userId}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })

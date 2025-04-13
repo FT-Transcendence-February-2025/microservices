@@ -9,19 +9,14 @@ import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
 
-const PORT = 3000
+// Importing configurations
+import config from './config/config.js';
+
+const PORT = 3003
 
 const fastify = Fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'SYS:standard',
-        colorize: true
-      }
-    }
-  }
-})
+	logger: config.logger,
+});
 
 // Initialize database
 try {

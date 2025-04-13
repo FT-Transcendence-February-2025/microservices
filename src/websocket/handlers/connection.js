@@ -1,7 +1,10 @@
-// import { verifyUser } from '../../controllers/matchmakingControllers.js'
+import jwt from 'jsonwebtoken'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
+import dotenv from 'dotenv'
 
+dotenv.config()
+const secretKey = process.env.SECRET_KEY
 // Queue to store waiting players
 const matchmakingQueue = [] // Stores players who are waiting
 const activeConnections = new Map() // connected web sockets
@@ -139,6 +142,67 @@ function leaveQueue (data, connection) {
     type: 'leaveQueue',
     message: 'You have successfully left the queue.'
   }))
+}
+
+async function handleMatchCancelled (data, _connection) {
+  if (data.tournamentId) {
+    const tournamentMatch = db.prepare(`
+      SELECT * FROM tournament_matches
+      WHERE id = ? AND match_status = 'pending'
+    `).get(data.matchId)
+    if (tournamentMatch) {
+      db.prepare(`
+        UPDATE tournament_matches
+        SET match_status = 'cancelled', ended_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `).run(data.matchId);
+      [tournamentMatch.player1_id, tournamentMatch.player2_id].forEach((playerId) => {
+        const conn = activeConnections.get(playerId)
+        if (conn && conn.socket.readyState === 1) {
+          conn.socket.send(JSON.stringify({
+            type: 'matchCancelled',
+            message: 'Your tournament match has been cancelled.'
+          }))
+        }
+      })
+      if (matchAcceptances[tournamentMatch.id]) {
+        delete matchAcceptances[tournamentMatch.id]
+      }
+
+      playerQueueStatus.delete(tournamentMatch.player1_id)
+      playerQueueStatus.delete(tournamentMatch.player2_id)
+
+      playerTournamentStatus.delete(tournamentMatch.player1_id)
+      playerTournamentStatus.delete(tournamentMatch.player2_id)
+    }
+  } else {
+    const match = db.prepare(`
+      SELECT * FROM matchmaking
+      WHERE id = ? AND match_status = 'pending'
+    `).get(data.matchId)
+    if (match) {
+      db.prepare(`
+        UPDATE matchmaking
+        SET match_status = 'cancelled', ended_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `).run(data.matchId);
+      [match.player1_id, match.player2_id].forEach((playerId) => {
+        const conn = activeConnections.get(playerId)
+        if (conn && conn.socket.readyState === 1) {
+          conn.socket.send(JSON.stringify({
+            type: 'matchCancelled',
+            message: 'Your match has been cancelled.'
+          }))
+        }
+      })
+      if (matchAcceptances[match.id]) {
+        delete matchAcceptances[match.id]
+      }
+
+      playerQueueStatus.delete(match.player1_id)
+      playerQueueStatus.delete(match.player2_id)
+    }
+  }
 }
 
 // Tournament message handler
@@ -359,6 +423,10 @@ const handleTournamentMessages = async (data, connection) => {
     leaveQueue(data, connection)
     break
   }
+  case 'matchCancelled': {
+    await handleMatchCancelled(data, connection)
+    break
+  }
   default:
     connection.socket.send(
       JSON.stringify({
@@ -538,6 +606,10 @@ const handleLocalGameMessages = async (data, connection) => {
     leaveQueue(data, connection)
     break
   }
+  case 'matchCancelled': {
+    await handleMatchCancelled(data, connection)
+    break
+  }
   default:
     connection.socket.send(JSON.stringify({
       type: 'error',
@@ -557,6 +629,23 @@ const dispatchMessage = async (data, connection) => {
 
 const messageHandler = async (message, connection) => {
   const data = JSON.parse(message.toString())
+
+  if (data.type === 'joinQueue') {
+    if (!connection.userId) {
+      try {
+        const verifiedUser = jwt.verify(data.token, secretKey)
+        // console.log('Decoded token:', verifiedUser)
+        connection.userId = verifiedUser.userId
+        connection.displayName = verifiedUser.displayName || verifiedUser.display_name
+        activeConnections.set(connection.userId, connection)
+        console.log('Token verified. User attached: ', connection.userId)
+      } catch (error) {
+        console.error('Token verification failed:', error)
+        connection.socket.close(1008, 'Invalid token')
+        return
+      }
+    }
+  }
   await dispatchMessage(data, connection)
 }
 
@@ -568,15 +657,6 @@ const closeHandler = async (connection) => {
     if (activeConnections.delete(connection.userId)) {
       console.log(`Removed connection from activeConnections. Active connections: ${activeConnections.size}`)
     }
-
-    // playerQueueStatus.delete(connection.userId)
-    // playerTournamentStatus.delete(connection.userId)
-
-    // const queueIndex = matchmakingQueue.findIndex(p => p.id === connection.userId);
-    // if (queueIndex !== -1) {
-    //   matchmakingQueue.splice(queueIndex, 1);
-    //   console.log(`Player ${connection.userId} removed from matchmaking queue`);
-    // }
 
     let player = playerQueueStatus.get(connection.userId)
 
@@ -670,20 +750,8 @@ const errorHandler = async (error) => {
   console.error('WebSocket error:', error)
 }
 
-const connectionHandler = (connection, request) => {
+const connectionHandler = (connection, _request) => {
   connection.socket = connection
-
-  if (request.user.id) {
-    console.log('User attached to request')
-    connection.userId = request.user.id
-    connection.displayName = request.user.displayName || request.user.display_name
-  } else {
-    console.error('User not attached to request. Closing connection')
-    connection.socket.close(1008, 'User not authenticated')
-    return
-  }
-
-  activeConnections.set(connection.userId, connection)
 
   // Websocket event listeners
   connection.socket.on('message', (message) => messageHandler(message, connection))

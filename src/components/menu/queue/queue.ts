@@ -7,7 +7,6 @@ template.innerHTML = queueTemplate;
 
 export default class Queue extends HTMLElement {
     private _card: HTMLElement;
-    private _joinBtn!: HTMLElement;
     private _ws: WebSocket | null = null;
 
     constructor() {
@@ -20,29 +19,11 @@ export default class Queue extends HTMLElement {
     }
 
     connectedCallback(): void {
-        this._card.innerHTML = `
-            <div class="text-lg font-bold mb-6">Online Game:</div>
-            <button id="joinBtn" class="btn-primary w-full mb-4">Join Queue</button>
-            <a href="/play" class="btn-primary w-full">Back</a>
-        `;
-        this._joinBtn = this._card.querySelector('#joinBtn') as HTMLButtonElement;
-        if (!this._joinBtn) throw new Error("Count not find joinBtn element")
-        
-        this._joinBtn.addEventListener('click', this.handleJoinBtnClick.bind(this));
-    }
-
-    private handleJoinBtnClick(): void {
-       this._card.innerHTML = `
-            <div class="text-lg font-bold mb-6">You are in the queue!</div>
-            <div class="text-sm animate-pulse mb-12">Waiting for an opponent...</div>
-            <a href="/play" class="btn-primary w-full" id="leaveLink">Leave Queue</a>
-        `;
         this._ws = webSocketConnection({
             onOpen: (event) => {
                 console.log("WebSocket onOpen callback fired:", event);
-                this._ws?.send(JSON.stringify({
-                    type: 'joinQueue'
-                }));
+                const token = localStorage.getItem('accessToken');
+                this._ws?.send(JSON.stringify({ type: 'joinQueue', token }));
             },
             onMessage: (event) => {
                 const data = JSON.parse(event.data);
@@ -64,13 +45,17 @@ export default class Queue extends HTMLElement {
                     case 'leaveQueue':
                         console.log("Left the queue");
                         break;
+                    case 'matchCancelled':
+                        console.log("Match Cancelled")
+                        this.displayNotification('Your match has been cancelled. Please try again later.');
+                        setTimeout(() => { router.navigateTo('/play')}, 2000);
+                        break;
                     default:
                         console.warn("Received unknown message type:", data.type);
                         break;
                 }
             }
         });
-
         // Attach a listener to the leave link to send the WS message
         const leaveLink = this._card.querySelector('#leaveLink') as HTMLAnchorElement;
         leaveLink.addEventListener('click', (event: Event) => {
@@ -81,7 +66,7 @@ export default class Queue extends HTMLElement {
                 console.error("WebSocket connection is not available");
             }
             router.navigateTo('/play');
-        })
+        });
     }
 
     private updateUIForMatchCreated(data: { matchId: string, gameUrl?: string }): void {
@@ -97,11 +82,13 @@ export default class Queue extends HTMLElement {
         cancelMatchLink.addEventListener('click', (event: Event) => {
             event.preventDefault();
             if (this._ws && this._ws.readyState === WebSocket.OPEN) {
-                this._ws.send(JSON.stringify({ type: 'leaveQueue' }));
+                this._ws.send(JSON.stringify({
+                    type: 'matchCancelled',
+                    matchId: data.matchId
+                }));
             } else {
                 console.error("WebSocket connection is not available");
             }
-            // Let router navigate back
             // router.navigateTo('/play');
         });
 
@@ -120,6 +107,18 @@ export default class Queue extends HTMLElement {
                 console.error("WebSocket connection is not available");
             }
         });
+    }
+    private displayNotification(message: string): void {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        const container = document.querySelector('#notificationContainer');
+        if (container) {
+            container.appendChild(notification);
+        } else {
+            document.body.appendChild(notification);
+        }
+        setTimeout(() =>  notification.remove(), 2000);
     }
 }
 

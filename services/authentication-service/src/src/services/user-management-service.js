@@ -1,6 +1,8 @@
+import config from '../config/config.js';
+
 const userManagementService = {
 	displayNameExists: async (displayName) => {
-		const response = await fetch("http://user:3002/user-exists", {
+		const response = await fetch(`${config.endpoints.user}/user-exists`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ displayName })
@@ -16,7 +18,7 @@ const userManagementService = {
 		return { exists: data.exists };
 	},
 	sendId: async (userId, displayName) => {
-    const response = await fetch("http://user:3002/new-user", {
+    const response = await fetch(`${config.endpoints.user}/new-user`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId, displayName })
@@ -30,7 +32,7 @@ const userManagementService = {
 		return { success: "User created successfully in User Management Service" };
 	},
 	informUserLogout: async (userId) => {
-		const response = await fetch ("http://user:3002/user-logout", {
+		const response = await fetch (`${config.endpoints.user}/user-logout`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId })

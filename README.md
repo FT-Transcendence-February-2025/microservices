@@ -96,3 +96,16 @@ ft_transcendence
 - @MemoCSales
 - @mottjes
 - @VictoriaLizCor
+
+
+<!-- things to DO
+ [] health monitoring
+ [] PROMETEUS / TRAEFIK METRIC
+ [] 
+ [] 
+ []
+ []
+ [] 
+
+
+-- >

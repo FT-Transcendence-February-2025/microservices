@@ -1,6 +1,7 @@
 import { verifyUser } from '../../controllers/matchmakingControllers.js'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
+import config from '../config/config.js';
 
 // Queue to store waiting players
 const matchmakingQueue = [] // Stores players who are waiting
@@ -11,7 +12,7 @@ const playerQueueStatus = new Map()
 
 async function startGameForMatch (match) {
   try {
-    const response = await fetch('http://localhost:3003/games', {
+    const response = await fetch(`${config.endpoints.game}/games`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

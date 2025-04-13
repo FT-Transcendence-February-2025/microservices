@@ -20,8 +20,9 @@ import checkAndCreateTables from './database/migrations/create-tables.js';
 import cron from 'node-cron';
 import db from './services/database-service.js';
 // Importing configurations
-import config from './config.js';
+import config from './config/config.js';
 
+const PORT = 3001
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
   logger: config.logger,
@@ -30,7 +31,16 @@ const fastify = Fastify({
 // Register plugins
 fastify.register(fastifyBcrypt, { saltWorkFactor: 12 });
 
-fastify.register(fastifyCors, config.cors);
+fastify.register(fastifyCors, {
+    origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://auth.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.auth
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+});	
 
 fastify.register(fastifyCookie, {
   secret: process.env.COOKIE_SECRET,
@@ -84,7 +94,7 @@ const startServer = async () => {
     });
 
     // Start the server.
-    fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
+    fastify.listen({ port: PORT, host: '0.0.0.0' }, (error, address) => {
       if (error) {
         console.error(error);
         process.exit(1);

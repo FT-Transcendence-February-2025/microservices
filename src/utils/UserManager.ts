@@ -1,9 +1,27 @@
-import { postApiData, postApiFormData, getApiData } from './APIManager.js'
+import { postApiData, postApiFormData, getApiData } from './ApiManager.js'
 
-export default class User {
+export default class UserManager {
     static displayName: string = '';
     static email: string = '';
-    static avatar: HTMLImageElement = new Image();
+    static avatarPath: string = '';
+    static loggedIn: boolean = false;
+
+    static isLoggedIn(): boolean {
+        return this.loggedIn;
+    }
+
+    static async checkAndRestoreSession(): Promise<void>{
+        // if (hasCookie())
+        //     loadProfile();
+        // else
+        //      redirect to login
+        
+
+        //  function hasCookie(name: string): boolean {
+        //     const cookieName = `${name}=`;
+        //     return document.cookie.includes(cookieName);
+        //   }
+    }
 
     static async login(email: string, password: string): Promise<boolean> {
         try {
@@ -81,7 +99,7 @@ export default class User {
             const response = await postApiData('/api/user/display-name', body);
 
             if (response.ok) {
-                User.displayName = displayName;
+                UserManager.displayName = displayName;
                 return true;
             }
             else {
@@ -102,7 +120,7 @@ export default class User {
             const response = await postApiData('/api/auth/email', body);
            
             if (response.ok) {
-                User.email = email;
+                UserManager.email = email;
                 return true;
             }
             else {
@@ -145,8 +163,7 @@ export default class User {
             const data = await response.json();
 
             if (response.ok) {
-                const avatarUrl = data.filePath;
-                User.avatar.src = avatarUrl;
+                UserManager.avatarPath = data.avatarPath;
                 return true;
             }
             else {
@@ -189,7 +206,11 @@ export default class User {
 
     // }
 
-    static async getProfile(displayName: string) {
+    // static async getProfile() {
+
+    // }
+
+    static async getFriendProfile(displayName: string) {
         try {
             const response = await getApiData(`/api/user/profile/${displayName}`);
             const data = await response.json();

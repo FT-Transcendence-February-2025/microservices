@@ -1,5 +1,5 @@
 import RegisterTemplate from './register.html?raw';
-import User from '../../../utils/User';
+import User from '../../../utils/UserManager';
 
 const template = document.createElement('template');
 template.innerHTML = RegisterTemplate;

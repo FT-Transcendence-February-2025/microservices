@@ -12,7 +12,8 @@ import Profile from './components/user/profile/profile.js';
 import Game from "./components/game/game.js"
 import Queue from "./components/menu/queue/queue.js"
 import Friends from "./components/user/friends/friends.js"
-
+import ChangePassword from "./components/user/account/changePassword/changePassword.js"
+import User from "./utils/UserManager.js"
 import Router from "./router.js"
 
 const rootElement = document.getElementById('root');
@@ -21,17 +22,75 @@ if (!rootElement)
 
 const router = new Router(rootElement);
 
-router.addRoute({ path: '/', view: [Login] });
-router.addRoute({ path: '/login', view: [Login] });
-router.addRoute({ path: '/register', view: [Register] });
-router.addRoute({ path: '/home', view: [MainMenu, Avatar] });
-router.addRoute({ path: '/play', view: [PlayMenu, Avatar] });
-router.addRoute({ path: '/tournament', view: [TournamentMenu, Avatar] });
-router.addRoute({ path: '/game', view: [Game] });
-router.addRoute({ path: '/queue', view: [Queue] });
-router.addRoute({ path: '/profile', view: [Profile, Avatar] });
-router.addRoute({ path: '/account', view: [Account, Avatar] });
-router.addRoute({ path: '/friends', view: [Friends, Avatar]});
+// const isLoggedIn = User.isLoggedIn;
+const isLoggedIn = () => { return true };
+
+router.addRoute({
+    path: '/',
+    view: []
+});
+router.addRoute({
+    path: '/login',
+    view: [Login]
+});
+router.addRoute({
+    path: '/register',
+    view: [Register]
+});
+router.addRoute({
+    path: '/home',
+    view: [MainMenu, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/play',
+    view: [PlayMenu, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/tournament',
+    view: [TournamentMenu, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/game',
+    view: [Game],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/queue',
+    view: [Queue],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/profile',
+    view: [Profile, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/account',
+    view: [Account, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/change-password',
+    view: [ChangePassword, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/friends',
+    view: [Friends, Avatar],
+    preHandler: isLoggedIn, 
+    redirectOnFail: '/login'
+});
 
 router.setNotFound([NotFound]);
 

@@ -4,8 +4,8 @@
 
 ----- components -----:
 
+- fetch own profile on login
 - finish root component
-- prehandler for router to check if an route should be accessable (is logged in)
 
 - invite notification
 - friendRequest pop up
@@ -15,12 +15,11 @@
 
 - block user and block list
 - 2fa setup view
-- logout logic
+- own change password view (delete button and add link in account)
 - load User avatar into avatar component
 - login/register ... fail -> render in the html
 - register show if password does not fit the security aspects
 - register: confirm password
-- register: Allready have account: login link
 - login redirect after register
 
 - tournament create view

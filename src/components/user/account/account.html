@@ -1,9 +1,9 @@
 <div class="bg-base flex-center">
     <div class="card text-center w-120">
-        <h1>- User Settings -</h1>
+        <h1>- Account Settings -</h1>
         <div class="flex-center mt-8 mb-8">
             <label for="avatarUpload">
-                <img id="avatar" class="w-24 h-24 rounded-full ring-2 ring-pink-600 cursor-pointer" alt="Avatar">
+                <img id="avatar" class="w-24 h-24 rounded-full border-2 border-pink-600 cursor-pointer">
             </label>
             <input type="file" id="avatarUpload" class="hidden" accept="image/*">
         </div>
@@ -21,13 +21,6 @@
                 <button id="emailSaveButton" class="btn-primary ml-2 hidden">Save</button>
             </div>
         </div>
-        <div id="passwordInputs" class="text-start mb-4 hidden">
-            <label for="oldPasswordInput">Old Password:</label>
-            <input id="oldPasswordInput" type="password" class="input-field bg-gray-600 w-full">
-            <label for="newPaswordInput">New Password:</label>
-            <input id="newPasswordInput" type="password" class="input-field bg-gray-600 w-full">
-        </div>
-        <button id="passwordChangeButton" class="btn-primary w-full">Change Password</button>
-        <button id="passwordSaveButton" class="btn-primary w-full hidden">Save Password</button>
+        <a href="/change-password" class="text-left text-pink-600 hover:underline">Change Password</a>
     </div>
 </div>

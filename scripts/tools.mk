@@ -13,7 +13,8 @@ define createDir
 		printf "$(LF)  🟢  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! \n"; \
 	fi
 endef
-
+hash-pass:
+	htpasswd -nb pongAdmin yourpassword
 restartDocker:
 	@echo "Stopping rootless Docker..."
 	-pkill -f dockerd-rootless.sh || echo "Docker is not running."

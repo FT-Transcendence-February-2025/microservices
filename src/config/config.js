@@ -18,7 +18,7 @@ const config = {
         transport: {
           target: 'pino-pretty',
           options: {
-            translateTime: 'SYS:standard',
+            translateTime: 'HH:MM',
             colorize: true,
           },
         },
@@ -26,5 +26,4 @@ const config = {
     : true,
   isDocker,
 };
-
 export default config;

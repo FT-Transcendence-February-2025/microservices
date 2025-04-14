@@ -189,16 +189,18 @@ const db = {
 			return { error };
     }
 	},
-	addPhoneNumber: async (phoneNumber, initializationVector, authTag) => {
+	updatePhoneNumber: async (userId, phoneNumber, initializationVector, authTag) => {
 		try {
-			await database("two_factor_auth").insert({
-				phone_number: phoneNumber,
-				initialization_vector: initializationVector,
-				authTag
-			});
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					phone_number: phoneNumber,
+					initialization_vector: initializationVector,
+					auth_tag: authTag
+				});
 			return { success: true };
 		} catch (error) {
-			console.error("Error in function db.addPhoneNumber: ", error);
+			console.error("Error in function db.updatePhoneNumber: ", error);
 			return { error };
 		}
 	},
@@ -218,6 +220,15 @@ const db = {
 			return await database("two_factor_auth").where({ user_id: userId }).first();
 		} catch (error) {
 			console.error("Error in function db.get2faInfo:", error);
+			return { error };
+		}
+	},
+	addUserTwoFactor: async (userId) => {
+		try {
+			await database("two_factor_auth").insert({ user_id: userId, mode: "off" });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addEmailCode: ", error);
 			return { error };
 		}
 	},

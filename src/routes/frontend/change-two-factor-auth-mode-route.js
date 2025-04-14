@@ -1,5 +1,5 @@
 import jwtTr from "jwt-validator-tr";
-import authenticationController from "../../controllers/authentication-controller";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
@@ -9,8 +9,10 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
-					mode: { type: "string" },
-					enum: ["off", "phone", "email", "app"]
+					mode: {
+						type: "string",
+						enum: ["off", "phone", "email", "app"]
+					}
 				},
 				required: ["mode"]
 			},

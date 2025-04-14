@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
+import dotenv from "dotenv";
 
+dotenv.config();
 const key = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
 
 const cryptoService = {
@@ -26,7 +28,7 @@ const cryptoService = {
 	decrypt: (encrypted, initializationVector, authTag) => {
 		try {
 			const algorithm = "aes-256-gcm";
-			const decipher = crypto.createDecipheriv(algorithm, key, initializationVector);
+			const decipher = crypto.createDecipheriv(algorithm, key, Buffer.from(initializationVector, "hex"));
 			decipher.setAuthTag(Buffer.from(authTag, "hex"));
 			let decrypted = decipher.update(encrypted, "hex", "utf8");
 			decrypted += decipher.final("utf8");

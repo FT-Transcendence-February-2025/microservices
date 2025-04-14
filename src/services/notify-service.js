@@ -2,7 +2,6 @@ import fastify from "../server.js";
 import db from "./database-service.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
-import twilio from "twilio";
 
 const notifyService = {
   sendEmail: async ({ settings , receiver }) => {
@@ -36,16 +35,16 @@ const notifyService = {
   },
 	verifyConfirmationToken: (token, action) => {
 		try {
-			const [identifier, userId, receivedSignature, timestamp, expirationMinutes] = token.split('-');
+			const [identifier, userId, receivedSignature, timestamp, expirationMinutes] = token.split("-");
 	
 			const currentTime = Math.floor(Date.now() / 1000);
 			if (currentTime > parseInt(timestamp) + parseInt(expirationMinutes) * 60) {
 				return { error: "Confirmation link expired" };
 			}
 	
-			const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
+			const hmac = crypto.createHmac("sha256", process.env.SECRET_KEY);
 			hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
-			const expectedSignature = hmac.digest('hex').substr(0, 8);
+			const expectedSignature = hmac.digest("hex").substr(0, 8);
 	
 			if (receivedSignature === expectedSignature) {
 				return { userId };
@@ -60,29 +59,40 @@ const notifyService = {
     if (error) {
       return { status, error };
     }
-		try {
-			const message = await client.messages.create({
-				body: `${code} here is your verification code from Pong Game`,
-				from: process.env.TWILIO_PHONE_NUMBER,
-				to: phoneNumber
-			});
-
-			return { success: true };
-		} catch (error) {
-			console.error("Error in function notifyService.sendSms:", error);
-			return { error };
+		const response = await fetch(`${process.env.INFOBIP_BASE_URL}/sms/2/text/advanced`, {
+			method: "POST",
+			headers: {
+				"Authorization": `App ${process.env.INFOBIP_API_KEY}`,
+				"Content-Type": "application/json",
+				"Accept": "application/json"
+			},
+			body: JSON.stringify({
+				messages: [
+					{
+						destinations: [{ to: phoneNumber }],
+						from: process.env.INFOBIP_SENDER_ID,
+						text: `${code} is your Pong verification code.`
+					}
+				]
+			})
+		});
+		if (!response.ok) {
+			console.error(`Error in function notifyService.sendSms: ${response.status} ${response.statusText}`);
+			return { status: response.status, error: "Failed to send SMS" };
 		}
+		
+		return { success: true };
 	}
 };
 
 const generateConfirmationToken = (userId, action, expirationMinutes) => {
-	const identifier = uuidv4().split('-')[0];
+	const identifier = uuidv4().split("-")[0];
 	const timestamp = Math.floor(Date.now() / 1000);
 
-	const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
+	const hmac = crypto.createHmac("sha256", process.env.SECRET_KEY);
 
 	hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
-	const signature = hmac.digest('hex').substr(0, 8);
+	const signature = hmac.digest("hex").substr(0, 8);
 
 	return `${identifier}-${userId}-${signature}-${timestamp}-${expirationMinutes}`;
 };
@@ -118,7 +128,7 @@ const generateEmailConfirmationOptions = (receiver, confirmationLink) => ({
         <a href="${confirmationLink}" style="
             display: inline-block;
             cursor: pointer;
-            font-family: 'Press Start 2P', monospace;
+            font-family: "Press Start 2P", monospace;
             font-size: 14px;
             text-transform: uppercase;
             border-radius: 12px;
@@ -144,7 +154,7 @@ const generateEmailCodeOptions = (receiver, code) => ({
     <p style="
         display: inline-block;
         cursor: default;
-        font-family: 'Press Start 2P', monospace;
+        font-family: "Press Start 2P", monospace;
         font-size: 14px;
         text-transform: uppercase;
         border-radius: 12px;
@@ -164,120 +174,3 @@ const generateEmailCodeOptions = (receiver, code) => ({
 });
 
 export default notifyService;
-
-// import fastify from "../server.js";
-// import crypto from "crypto";
-// import { v4 as uuidv4 } from "uuid";
-
-// const notifyService = {
-//   sendEmail: async ({ type, receiver, accessGate }) => {
-//     const { mailer } = fastify;
-// 		let options;
-// 		switch (type) {
-// 			case "emailConfirm":
-// 				options = generateEmailConfirmationOptions(receiver, accessGate);
-// 				break;
-// 			case "code":
-// 				options = generateEmailCodeOptions(receiver, accessGate);
-// 				break;
-// 			default:
-//         fastify.log.error(`Unknown email type: ${type}`);
-//         return { status: 400, error: "Invalid email type" };
-// 		}
-//     try {
-//       await mailer.sendMail(options);
-//       return { success: "Email sent" };
-//     } catch (error) {
-// 			console.error("Error in function sendEmail: ", error);
-//       return { status: 500, error: "Something went wrong" };
-//     }
-//   },
-// 	generateConfirmationToken: (userId, action, expirationMinutes) => {
-// 		const identifier = uuidv4().split('-')[0];
-// 		const timestamp = Math.floor(Date.now() / 1000);
-	
-// 		const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
-	
-// 		hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
-// 		const signature = hmac.digest('hex').substr(0, 8);
-	
-// 		return `${identifier}-${userId}-${signature}-${timestamp}-${expirationMinutes}`;
-// 	},
-// 	verifyConfirmationToken: (token, action) => {
-// 		try {
-// 			const [identifier, userId, receivedSignature, timestamp, expirationMinutes] = token.split('-');
-	
-// 			const currentTime = Math.floor(Date.now() / 1000);
-// 			if (currentTime > parseInt(timestamp) + parseInt(expirationMinutes) * 60) {
-// 				return { error: "Confirmation link expired" };
-// 			}
-	
-// 			const hmac = crypto.createHmac('sha256', process.env.SECRET_KEY);
-// 			hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
-// 			const expectedSignature = hmac.digest('hex').substr(0, 8);
-	
-// 			if (receivedSignature === expectedSignature) {
-// 				return { userId };
-// 			}
-// 		} catch (error) {
-// 			console.error(error);
-// 			return { error };
-// 		}
-// 	}
-// };
-
-// const generateEmailConfirmationOptions = (receiver, confirmationLink) => ({
-//   to: receiver,
-//   subject: "Confirm your email address",
-//   html: `
-//     <p>Please confirm your email address by clicking on the link below.</p>
-//     <p>
-//         <a href="${confirmationLink}" style="
-//             display: inline-block;
-//             cursor: pointer;
-//             font-family: 'Press Start 2P', monospace;
-//             font-size: 14px;
-//             text-transform: uppercase;
-//             border-radius: 12px;
-//             border-bottom: 6px solid #db2777; /* --color-pink-800 */
-//             border-top: 4px solid #ec4899;
-//             background-color: #ec4899; /* --color-pink-600 */
-//             padding: 12px 24px; /* Bigger button */
-//             color: black;
-//             text-decoration: none;
-//             box-shadow: 4px 4px 0px black;
-//             transition: all 150ms ease-in-out;
-//         ">Confirm Email</a>
-//     </p>
-//     <p>If you cannot remember submitting your email address on our website or in our app, simply ignore this email.</p>
-//   `
-// });
-
-// const generateEmailCodeOptions = (receiver, code) => ({
-//   to: receiver,
-//   subject: "Confirmation code",
-//   html: `
-//     <p>Here is the code you need to use to change your login data:</p>
-//     <p style="
-//         display: inline-block;
-//         cursor: default;
-//         font-family: 'Press Start 2P', monospace;
-//         font-size: 14px;
-//         text-transform: uppercase;
-//         border-radius: 12px;
-//         border-bottom: 6px solid #db2777; /* --color-pink-800 */
-//         border-top: 4px solid #ec4899;
-//         background-color: #ec4899; /* --color-pink-600 */
-//         padding: 12px 24px; /* Bigger button */
-//         color: black;
-//         text-decoration: none;
-//         box-shadow: 4px 4px 0px black;
-//         transition: all 150ms ease-in-out;
-//     ">
-//         ${code}
-//     </p>
-//     <p>If you cannot remember submitting your email address on our website or in our app, simply ignore this email.</p>
-//   `
-// });
-
-// export default notifyService;

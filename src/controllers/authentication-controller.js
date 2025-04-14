@@ -1,6 +1,10 @@
 import authenticationService from "../services/authentication-service.js";
 import cryptoService from "../services/crypto-service.js";
 import notifyService from "../services/notify-service.js";
+import db from "../services/database-service.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const authenticationController = {
 	login: async (request, reply) => {
@@ -25,13 +29,16 @@ const authenticationController = {
 
 		let response;
 		switch (twoFactorInfo.mode) {
-			case "sms":
+			case "phone":
 				const phoneNumber = cryptoService.decrypt(twoFactorInfo.phone_number, twoFactorInfo.initialization_vector, 
 					twoFactorInfo.auth_tag);
 				if (phoneNumber.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
-				notifyService.sendSms(result.userId, twoFactorInfo)
+				const sendResult = await notifyService.sendSms(result.userId, phoneNumber.decrypted);
+				if (sendResult.error) {
+					return reply.status(500).send({ error: "Internal Server Error" });
+				}
 				response = {
 					success: "Additional authentication required",
 					route: "/login/two-factor-auth/sms",
@@ -64,16 +71,28 @@ const authenticationController = {
 
 		reply.status(200).send(response);
 	},
-	addPhoneNumber: async (request, reply) => {
+	updatePhoneNumber: async (request, reply) => {
 		const { phoneNumber } = request.body;
 		
+		const user = await db.getUserById(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (!user.email_verified) {
+			return reply.status(400).send({ error: "Email needs to be verified first" });
+		}
+
 		const encrypted = cryptoService.encrypt(phoneNumber);
 		if (encrypted.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const addResult = await db.addPhoneNumber(encrypted.encrypted, encrypted.initializationVector, encrypted.authTag);
-		if (addResult.error) {
+		const updateResult = await db.updatePhoneNumber(request.user.id, encrypted.encrypted, encrypted.initializationVector, 
+			encrypted.authTag);
+		if (updateResult.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
@@ -82,7 +101,18 @@ const authenticationController = {
 	changeTwoFactorAuthMode: async (request, reply) => {
 		const { mode } = request.body;
 
-		const twoFactorInfo = await db.getTwoFactor(request.user.id);
+		const user = await db.getUserById(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (!user.email_verified) {
+			return reply.status(400).send({ error: "Email needs to be verified first" });
+		}
+
+		const twoFactorInfo = await db.getTwoFactorInfo(user.id);
 		if (!twoFactorInfo) {
 			return reply.status(404).send({ error: "User not found" });
 		}
@@ -95,7 +125,7 @@ const authenticationController = {
 		}
 
 		if (mode === "phone" 
-			&& (!twoFactorInfo.phone_number || !twoFactorInfo.initialization_vector || !twoFactorInfo.authTag)) {
+			&& (!twoFactorInfo.phone_number || !twoFactorInfo.initialization_vector || !twoFactorInfo.auth_tag)) {
 			return reply.status(400).send({ error: "User has to add phone number first" });
 		}
 

@@ -4,7 +4,7 @@ import authenticationController from "../../controllers/authentication-controlle
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/add-phone-number",
+		url: "/update-phone-number",
 		schema: {
 			body : {
 				type: "object",
@@ -24,6 +24,20 @@ export default async function (fastify, opts) {
 					},
 					required: ["success"]
 				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
 				500: {
 					type: "object",
 					properties: {
@@ -34,6 +48,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: authenticationController.addPhoneNumber
+		handler: authenticationController.updatePhoneNumber
 	});
 };

@@ -9,7 +9,6 @@ export default async function (fastify, opts) {
 				type: "object",
 				properties: {
 					email: { type: "string" },
-					route: { type: "string" },
 					password: { type: "string" }
 				},
 				required: ["email", "password"]
@@ -19,8 +18,10 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						success: { type: "string" },
+						route: { type: "string" },
 						token: { type: "string" }
-					}
+					},
+					required: ["success", "token"]
 				}
 			}
 		},

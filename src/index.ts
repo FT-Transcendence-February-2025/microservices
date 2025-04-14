@@ -13,7 +13,7 @@ import Game from "./components/game/game.js"
 import Queue from "./components/menu/queue/queue.js"
 import Friends from "./components/user/friends/friends.js"
 import ChangePassword from "./components/user/account/changePassword/changePassword.js"
-import User from "./utils/UserManager.js"
+// import User from "./utils/UserManager.js"
 import Router from "./router.js"
 
 const rootElement = document.getElementById('root');
@@ -22,7 +22,8 @@ if (!rootElement)
 
 const router = new Router(rootElement);
 
-const isLoggedIn = () => { return User.isloggedIn };
+// const isLoggedIn = () => { return User.isloggedIn };
+const isLoggedIn = () => { return true };
 
 router.addRoute({
     path: '/',
@@ -97,4 +98,4 @@ router.setNotFound([NotFound]);
 
 router.init();
 
-User.checkAndRestoreSession();
+// User.checkAndRestoreSession();

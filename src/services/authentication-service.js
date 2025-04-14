@@ -2,6 +2,7 @@ import fastify from "../server.js";
 import jwt from "jsonwebtoken";
 import db from "./database-service.js";
 import * as crypto from "crypto";
+import userManagementService from "./user-management-service.js";
 
 const authenticationService = async (email, password, userAgent) => {
 	const user = await db.getUserByEmail(email);
@@ -50,10 +51,14 @@ const authenticationService = async (email, password, userAgent) => {
 				return { status: 500, error: "Internal Server Error"};
 			}
 		}
+		const userProfile = await userManagementService.getUser(user.id);
+		if (userProfile.error) {
+			return { status: 500, error: "Internal Server Error" };
+		}
     const accessToken = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, displayName: userProfile.displayName },
       process.env.SECRET_KEY,
-      { expiresIn: "10h" }
+      { expiresIn: "15m" }
     );
 
     return { refreshToken, accessToken, cookieOptions };

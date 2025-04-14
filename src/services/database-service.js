@@ -171,7 +171,7 @@ const db = {
 			await database("email_codes").where({ id }).del();
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.deleteEmailCode:", error);
 			return { error };
 		}
 	},
@@ -238,6 +238,39 @@ const db = {
 			return { success: true };
 		} catch (error) {
 			console.error("Error in function db.addAuthCode:", error);
+			return { error };
+		}
+	},
+	getAuthCode: async (userId, code, type) => {
+		try {
+			const authCodeEntry = await database("auth_codes")
+				.where({ user_id: userId, code, type })
+				.first();
+			if (!authCodeEntry) {
+				return { error: "Verification code invalid", status: 404 };
+			}
+
+			const currentTime = Math.floor(Date.now() / 1000);
+			if (currentTime > authCodeEntry.expires_at) {
+				await database("auth_codes")
+					.where({ user_id: userId, code, type })
+					.del();
+	
+				return { error: "Verification code expired", status: 410 };
+			}
+	
+			return authCodeEntry;
+		} catch (error) {
+			console.error("Error in function db.getAuthCode: ", error);
+			return { error: "Internal Server Error", status: 500 };
+		}
+	},
+	deleteAuthCode: async (id) => {
+		try {
+			await database("auth_codes").where({ id }).del();
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deleteAuthCode:", error);
 			return { error };
 		}
 	}

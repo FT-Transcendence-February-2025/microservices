@@ -22,9 +22,30 @@ export default async function (fastify, opts) {
 						token: { type: "string" }
 					},
 					required: ["success"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						error: { type: "error" }
+					},
+					required: ["error"]
+				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "error" }
+					},
+					required: ["error"]
+				},
+				500: {
+					type: "object",
+					properties: {
+						error: { type: "error" }
+					},
+					required: ["error"]
 				}
 			}
 		},
-		handler: authenticationController.login
+		handler: authenticationController.loginSms
 	});
 };

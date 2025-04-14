@@ -22,7 +22,7 @@ const authenticationController = {
 
 		let response;
 		switch (twoFactorInfo.mode) {
-			case "phone":
+			case "phone": {
 				const phoneNumber = cryptoService.decrypt(twoFactorInfo.phone_number, twoFactorInfo.initialization_vector, 
 					twoFactorInfo.auth_tag);
 				if (phoneNumber.error) {
@@ -34,22 +34,23 @@ const authenticationController = {
 				}
 				response = {
 					success: "Additional authentication required",
-					route: "/login/two-factor-auth/sms",
+					route: "/login/sms",
 				};
 				break;
+			}
 			case "email":
 				response = {
 					success: "Additional authentication required",
-					route: "/login/two-factor-auth/email",
+					route: "/login/email",
 				};
 				break;
 			case "app":
 				response = {
 					success: "Additional authentication required",
-					route: "/login/two-factor-auth/app",
+					route: "/login/app",
 				};
 				break;
-			case "off":
+			case "off": {
 				const tokenInfo = await authenticationService.makeTokens(verifyResult.userId, request.headers["user-agent"]);
 				if (tokenInfo.error) {
 					return reply.status(tokenInfo.status).send({ error: tokenInfo.error });
@@ -65,11 +66,41 @@ const authenticationController = {
 					return reply.status(500).send({ error: error });
 				}
 				break;
+			}
 			default:
 				return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
 		reply.status(200).send(response);
+	},
+	loginSms: async (request, reply) => {
+		const { verificationCode } = request.body;
+
+		const user = await db.getUserById(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const authCode = await db.getAuthCode(user.id, verificationCode, "sms");
+		if (authCode.error) {
+			return reply.status(authCode.status).send({ error: authCode.error });
+		}
+
+		const tokenInfo = await authenticationService.makeTokens(user.id, request.headers["user-agent"]);
+		if (tokenInfo.error) {
+			return reply.status(tokenInfo.status).send({ error: tokenInfo.error });
+		}
+		try {
+			reply.setCookie("refreshToken", tokenInfo.refreshToken, tokenInfo.cookieOptions);
+		} catch (error) {
+			console.error(error);
+			return reply.status(500).send({ error: error });
+		}
+
+		await db.deleteAuthCode(authCode.id);
 	},
 	updatePhoneNumber: async (request, reply) => {
 		const { phoneNumber } = request.body;
@@ -135,11 +166,6 @@ const authenticationController = {
 		}
 
 		return reply.status(200).send({ success: "Two factor authentication mode has been changed" });
-	},
-	sms: async (request, reply) => {
-		const { verificationCode } = request.body;
-
-
 	}
 };
 

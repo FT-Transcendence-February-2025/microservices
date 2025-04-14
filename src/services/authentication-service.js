@@ -21,6 +21,44 @@ const authenticationService = {
 		
 		return { userId: user.id };
 	},
+	createToken: (userId, expiresIn) => {
+		try {
+			const token = jwt.sign(
+				{ userId },
+				process.env.SECRET_KEY,
+				{ expiresIn }
+			);
+
+			return token;
+		} catch (error) {
+			console.error("Error in function authenticationService.createToken:", error);
+			return { status: 500, error: "Internal Server Error" };
+		}
+	},
+	saveDevice: async (userAgent, expiresInSeconds, userId, refreshToken) => {
+		try {
+			const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
+			const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+			const device = await db.getDevice(userId, deviceHash);
+			if (device && device.error) {
+				return { status: 500, error: "Internal Server Error" };
+			}
+			if (!device) {
+				const addResult = await db.addDevice(userId, deviceHash, refreshToken, expiresAt);
+				if (addResult.error) {
+					return { status: 500, error: "Internal Server Error" };
+				}
+			} else {
+				const updateResult = await db.updateToken(userId, deviceHash, refreshToken, expiresAt);
+				if (updateResult.error) {
+					return { status: 500, error: "Internal Server Error"};
+				}
+			}
+		} catch (error) {
+			console.error("Error in function authenticationService.saveDevice:", error);
+			return { status: 500, error: "Internal Server Error" };
+		}
+	},
 	makeTokens: async (userId, userAgent) => {
 		try {
 			const refreshToken = jwt.sign(
@@ -55,10 +93,10 @@ const authenticationService = {
 					return { status: 500, error: "Internal Server Error"};
 				}
 			}
-		const userProfile = await userManagementService.getUser(userId);
-		if (userProfile.error) {
-			return { status: 500, error: "Internal Server Error" };
-		}
+			const userProfile = await userManagementService.getUser(userId);
+			if (userProfile.error) {
+				return { status: 500, error: "Internal Server Error" };
+			}
 			const accessToken = jwt.sign(
 				{ userId, displayName: userProfile.displayName },
 				process.env.SECRET_KEY,

@@ -21,7 +21,7 @@ export default async function (fastify, opts) {
 						route: { type: "string" },
 						token: { type: "string" }
 					},
-					required: ["success", "token"]
+					required: ["success"]
 				}
 			}
 		},

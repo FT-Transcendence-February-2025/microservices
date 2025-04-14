@@ -10,19 +10,12 @@ const authenticationController = {
 	login: async (request, reply) => {
 		const { email, password } = request.body;
 
-		const result = await authenticationService(email, password, request.headers["user-agent"]);
-		if (result.error) {
-			return reply.status(result.status).send({ error: result.error });
-		}
-	
-		try {
-			reply.setCookie("refreshToken", result.refreshToken, result.cookieOptions);
-		} catch (error) {
-			console.error(error);
-			return reply.status(500).send({ error: error });
+		const verifyResult = await authenticationService.verifyCredentials(email, password);
+		if (verifyResult.error) {
+			return reply.status(verifyResult.status).send({ error: verifyResult.error });
 		}
 
-		const twoFactorInfo = await db.getTwoFactorInfo(result.userId);
+		const twoFactorInfo = await db.getTwoFactorInfo(verifyResult.userId);
 		if (!twoFactorInfo || twoFactorInfo.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
@@ -35,35 +28,42 @@ const authenticationController = {
 				if (phoneNumber.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
-				const sendResult = await notifyService.sendSms(result.userId, phoneNumber.decrypted);
+				const sendResult = await notifyService.sendSms(verifyResult.userId, phoneNumber.decrypted);
 				if (sendResult.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
 				response = {
 					success: "Additional authentication required",
 					route: "/login/two-factor-auth/sms",
-					token: result.accessToken
 				};
 				break;
 			case "email":
 				response = {
 					success: "Additional authentication required",
 					route: "/login/two-factor-auth/email",
-					token: result.accessToken
 				};
 				break;
 			case "app":
 				response = {
 					success: "Additional authentication required",
 					route: "/login/two-factor-auth/app",
-					token: result.accessToken
 				};
 				break;
 			case "off":
+				const tokenInfo = await authenticationService.makeTokens(verifyResult.userId, request.headers["user-agent"]);
+				if (tokenInfo.error) {
+					return reply.status(tokenInfo.status).send({ error: tokenInfo.error });
+				}
 				response = {
 					success: "You have successfully logged in",
-					token: result.accessToken
+					token: tokenInfo.accessToken
 				};
+				try {
+					reply.setCookie("refreshToken", tokenInfo.refreshToken, tokenInfo.cookieOptions);
+				} catch (error) {
+					console.error(error);
+					return reply.status(500).send({ error: error });
+				}
 				break;
 			default:
 				return reply.status(500).send({ error: "Internal Server Error" });

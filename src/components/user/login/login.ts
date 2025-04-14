@@ -1,5 +1,5 @@
 import LoginTemplate from './login.html?raw';
-import User from '../../../utils/User';
+import User from '../../../utils/UserManager';
 
 const template = document.createElement('template');
 template.innerHTML = LoginTemplate;
@@ -13,10 +13,10 @@ export default class Login extends HTMLElement {
     connectedCallback() {
         const loginForm = this.querySelector('#loginForm');
         if (loginForm)
-            loginForm.addEventListener('submit', this.handleSubmit.bind(this));
+            loginForm.addEventListener('submit', this._handleSubmit.bind(this));
     }
 
-    async handleSubmit(event: Event): Promise<void> {
+    private _handleSubmit(event: Event) {
         event.preventDefault();
         const email = (this.querySelector('#email') as HTMLInputElement).value;
         const password = (this.querySelector('#password') as HTMLInputElement).value;

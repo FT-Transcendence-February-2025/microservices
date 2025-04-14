@@ -1,6 +1,8 @@
 type Route = {
     path: string;
     view: CustomElementConstructor[];
+    preHandler?: () => boolean;
+    redirectOnFail?: string;
 }
 
 export default class Router {
@@ -24,6 +26,16 @@ export default class Router {
     
         const matchedRoute = this._routes.find(route => route.path === location.pathname);
     
+        if (matchedRoute && matchedRoute.preHandler && !matchedRoute.preHandler()) {
+            const redirectPath = matchedRoute.redirectOnFail;
+
+            if (redirectPath)
+                this.navigateTo(redirectPath);
+            else
+                this._root.innerHTML = "<h1>403</h1><p>Forbidden</p>";
+            return;
+        }
+
         const view = matchedRoute ? matchedRoute.view : this._notFound;
         if (!view) {
             this._root.innerHTML = "<h1>404</h1><p>Not Found</p>";
@@ -63,10 +75,15 @@ export default class Router {
         this._route();
     }
 
+    /*
+    Adds navigateTo function to the window objecto to naviagte to another route
+    */
     init() : void {
-        window.addEventListener('popstate', () => { 
+        window.addEventListener('popstate', () => {
             this._route();
         });
         this._route();
+        // @ts-ignore
+        window.navigateTo = this.navigateTo.bind(this);
     }
 }

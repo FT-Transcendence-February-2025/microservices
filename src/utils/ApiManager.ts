@@ -1,3 +1,5 @@
+import User from "./UserManager.js"
+
 async function fetchWithToken(url: string, options: any) {
     const response = await fetch(url, options);
 
@@ -17,9 +19,11 @@ async function fetchWithToken(url: string, options: any) {
             options.headers.Authorization = `Bearer ${accessToken}`;
             return fetch(url, options);
         }
-        // redirect to /login and delete tokens !!!
         localStorage.removeItem('accessToken');
-        throw new Error('Unable to refresh token');
+        User.isloggedIn = false;
+        // @ts-ignore
+        window.navigateTo('/login');
+        alert('Unable to refresh token');
     }
     return response;
 }

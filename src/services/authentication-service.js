@@ -55,7 +55,7 @@ const authenticationService = {
 					return { status: 500, error: "Internal Server Error"};
 				}
 			}
-		const userProfile = await userManagementService.getUser(user.id);
+		const userProfile = await userManagementService.getUser(userId);
 		if (userProfile.error) {
 			return { status: 500, error: "Internal Server Error" };
 		}

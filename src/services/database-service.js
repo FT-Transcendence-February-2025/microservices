@@ -66,9 +66,9 @@ const db = {
 			return { error };
 		}
 	},
-	getUserMatchHistory: async (userId) => {
+	getUserMatchHistory: async (userDisplayName) => {
 		try {
-			return await database("match_history").where({ user_id: userId });
+			return await database("match_history").where({ user_display_name: userDisplayName });
 		} catch (error) {
 			console.error("Error in function db.getUserMatchHistory: ", error);
 			return { error };

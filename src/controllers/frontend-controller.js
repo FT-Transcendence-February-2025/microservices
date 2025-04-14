@@ -53,7 +53,12 @@ const frontendController = {
     }
 	},
 	getUserProfile: async (request, reply) => {
-		const { userId } = request.params;
+		let { userId } = request.params;
+		let ownProfile = false;
+		if (!userId) {
+			ownProfile = true;
+			userId = request.user.id;
+		}
 
 		const requestedUser = await db.getUser(userId);
 		if (!requestedUser) {
@@ -63,13 +68,20 @@ const frontendController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const friends = await db.areFriends(request.user.id, requestedUser.id);
-		if (!friends) {
-			return reply.status(403).send({ error: "Requesting user is not a friend of the requested user" })
+		if (!ownProfile) {
+			const friends = await db.areFriends(request.user.id, requestedUser.id);
+			if (!friends) {
+				return reply.status(403).send({ error: "Requesting user is not a friend of the requested user" })
+			}
 		}
 
 		const connection = frontendController.activeConnections.get(requestedUser.id);
-		const online = connection ? true : false; 
+		const online = connection ? true : false;
+
+		const matchHistory = await db.getUserMatchHistory(requestedUser.display_name);
+		if (matchHistory.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
 
 		return reply.status(200).send({ 
 			success: "Found user profile",
@@ -77,7 +89,8 @@ const frontendController = {
 			avatarPath: requestedUser.avatar_path,
 			wins: requestedUser.wins,
 			loses: requestedUser.loses,
-			online
+			online,
+			matchHistory
 		});
 	},
 	avatarChange: async (request, reply) => {

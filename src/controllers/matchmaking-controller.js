@@ -12,9 +12,8 @@ const matchmakingController = {
 		if (user.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
-
 		const connection = frontendController.activeConnections.get(userId);
-		const online = connection ? true : false; 
+		const online = connection ? true : false;
 
 		return reply.status(200).send({ 
 			success: "Found user profile",

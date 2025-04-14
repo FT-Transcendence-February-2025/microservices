@@ -71,11 +71,12 @@ export default class Queue extends HTMLElement {
         };
     
 
-    private updateUIForMatchCreated(data: { matchId: string, gameUrl?: string }): void {
+    private updateUIForMatchCreated(data: { matchId: string, gameUrl?: string, oppDisplayName?: string }): void {
         this._card.innerHTML = `
         <div class="text-lg font-bold mb-6">Match Ready!</div>
         <div class="text-sm mb-12">
-            Match ID: ${data.matchId}
+            Match ID: ${data.matchId}<br>
+            Opponent: ${data.oppDisplayName}
         </div>
         <button id="startMatchBtn" class="btn-primary w-full mb-4">Start Match</button>
         <a href="/play" class="btn-primary w-full" id="cancelMatchLink">Cancel Match</a>

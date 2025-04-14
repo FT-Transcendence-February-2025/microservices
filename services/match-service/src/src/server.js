@@ -27,11 +27,16 @@ try {
   process.exit(1)
 }
 
-await fastify.register(fastifyCors, {
-  origin: ['http://match:3003', 'http://localhost:3003'],
-  methods: ['GET', 'POST', 'PUT'],
-  credentials: true
-})
+fastify.register(fastifyCors, {
+    origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://match.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.match
+    ],
+    methods: ['GET', 'POST', 'PUT'],
+    credentials: true
+});	
 
 // Register WebSocket
 await fastify.register(fastifyWebsocket)
@@ -44,10 +49,10 @@ fastify.get('/', (request, reply) => {
 
 fastify.register(websocketHandler)
 // fastify.register(matchmakingDbRoute)
-fastify.register(matchesRoute, { prefix: '/matches' })
+fastify.register(matchesRoute, { prefix: `${config.apiPrefix}/matches` })
 fastify.register(matchmakingRoute)
-fastify.register(tournamentRoute, { prefix: '/tournament' })
-fastify.register(tournamentResultsRoute, { prefix: '/tournament/matches' })
+fastify.register(tournamentRoute, { prefix: `${config.apiPrefix}/tournament`})
+fastify.register(tournamentResultsRoute, { prefix: `${config.apiPrefix}/tournament/matches` })
 
 const start = async () => {
   try {

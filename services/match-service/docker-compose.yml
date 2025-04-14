@@ -10,7 +10,7 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        - DEBUG_MODE=${DEBUG_MODE}
+        - DEBUG_MODE=${DEBUG_MODE:-0}
         - DNS_SERVER=8.8.8.8
     image: img_match:latest
     container_name: match
@@ -23,7 +23,7 @@ services:
       DOMAIN: ${DOMAIN}
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
-      DEBUG_MODE: ${DEBUG_MODE}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8
       - 1.1.1.1

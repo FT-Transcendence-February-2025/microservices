@@ -13,7 +13,7 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        - DEBUG_MODE=${DEBUG_MODE}
+        - DEBUG_MODE=${DEBUG_MODE:-0}
         - DNS_SERVER=8.8.8.8
     image: img_auth:latest
     container_name: auth
@@ -31,7 +31,7 @@ services:
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
-      DEBUG_MODE: ${DEBUG_MODE}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8
       - 1.1.1.1

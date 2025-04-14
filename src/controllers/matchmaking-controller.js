@@ -67,7 +67,6 @@ const matchmakingController = {
 		const { invitingId, invitedId } = request.body;
 
 		const invitingUser = await db.getUser(invitingId);
-		console.log("invitingUser:", invitingUser);
 		if (!invitingUser) {
 			return reply.status(404).send({ error: "User not found" });
 		}

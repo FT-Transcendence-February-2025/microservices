@@ -7,7 +7,7 @@ import checkAndCreateTables from "./database/migrations/create-tables.js";
 import cron from "node-cron";
 import db from "./services/database-service.js";
 import registrationRoute from "./routes/frontend/registration-route.js";
-import loginRoute from "./routes/frontend/authentication-route.js";
+import loginRoute from "./routes/frontend/login-route.js";
 import passwordRoute from "./routes/frontend/password-route.js";
 import refreshTokenRoute from "./routes/frontend/refresh-token-route.js";
 import logoutRoute from "./routes/frontend/logout-route.js";
@@ -16,6 +16,8 @@ import verifyEmailRoute from "./routes/frontend/verify-email-route.js";
 import dataChangeRequestRoute from "./routes/frontend/data-change-request-route.js";
 import confirmationLinkRequestRoute from "./routes/frontend/confirmation-link-request-route.js";
 import getUserEmailVerifiedRoute from "./routes/user-management/get-user-email-verified.js";
+import updatePhoneNumberRoute from "./routes/frontend/update-phone-number-route.js";
+import changeTwoFactorAuthModeRoute from "./routes/frontend/change-two-factor-auth-mode-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import fs from "fs";
@@ -102,6 +104,8 @@ fastify.register(fastifyMailer, {
 // fastify.register(dataChangeRequestRoute, { prefix: "/api" });
 // fastify.register(confirmationLinkRequestRoute, { prefix: "/api" });
 // fastify.register(getUserEmailVerifiedRoute, { prefix: "/api" });
+// fastify.register(updatePhoneNumberRoute, { prefix: "/api" });
+// fastify.register(changeTwoFactorAuthMode, { prefix: "/api" });
 fastify.register(registrationRoute);
 fastify.register(loginRoute);
 fastify.register(emailRoute);
@@ -112,8 +116,10 @@ fastify.register(verifyEmailRoute);
 fastify.register(dataChangeRequestRoute);
 fastify.register(confirmationLinkRequestRoute);
 fastify.register(getUserEmailVerifiedRoute);
+fastify.register(updatePhoneNumberRoute);
+fastify.register(changeTwoFactorAuthModeRoute);
 
-const tablesToCheck = ["devices", "email_codes", "users"];
+const tablesToCheck = ["auth_codes", "devices", "email_codes", "two_factor_auth", "users"];
 
 const startServer = async () => {
   try {

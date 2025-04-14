@@ -18,11 +18,13 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						success: { type: "string" },
+						route: { type: "string" },
 						token: { type: "string" }
-					}
+					},
+					required: ["success"]
 				}
 			}
 		},
-		handler: authenticationController
+		handler: authenticationController.login
 	});
 };

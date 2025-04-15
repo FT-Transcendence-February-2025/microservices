@@ -1,5 +1,7 @@
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
 // import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
@@ -23,6 +25,28 @@ const fastify = Fastify({
         colorize: true
       }
     }
+  }
+})
+
+await fastify.register(fastifySwagger, {
+  openapi: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Matchmaking Service API',
+      description: 'API documentation for the Matchmaking service',
+      version: '1.0.0'
+    },
+    servers: [
+      { url: 'http://localhost:3006', description: 'Development server' }
+    ]
+  }
+})
+
+await fastify.register(fastifySwaggerUi, {
+  routePrefix: '/documentation',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: false
   }
 })
 

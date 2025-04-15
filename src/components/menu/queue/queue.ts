@@ -1,5 +1,4 @@
 import queueTemplate from './queue.html?raw';
-import { router } from '../../../index';
 import MatchmakingSocket from '../../../services/matchmakingSocket';
 
 const template = document.createElement('template');
@@ -40,16 +39,21 @@ export default class Queue extends HTMLElement {
                     break;
                 case 'matchStarted':
                     console.log("Match started. Redirecting to game URL:", data.gameUrl);
-                    // window.location.href = data.gameUrl;
-                    router.navigateTo(data.gameUrl);
+                    // @ts-ignore
+                    window.navigateTo(data.gameUrl);
+                    // router.navigateTo(data.gameUrl);
                     break;
                 case 'leaveQueue':
                     console.log("Left the queue");
+                    this._ws?.close();
                     break;
                 case 'matchCancelled':
                     console.log("Match Cancelled")
                     this.displayNotification('Your match has been cancelled. Please try again later.');
-                    setTimeout(() => { router.navigateTo('/play') }, 2000);
+                    setTimeout(() => { 
+                        this._ws?.close();
+                        // @ts-ignore
+                        window.navigateTo('/play'); }, 2000);
                     break;
                 default:
                     console.warn("Received unknown message type:", data.type);
@@ -66,7 +70,8 @@ export default class Queue extends HTMLElement {
                 } else {
                     console.error("WebSocket connection is not available");
                 }
-                router.navigateTo('/play');
+                // @ts-ignore
+                window.navigateTo('/play');
             });   
         };
     
@@ -92,7 +97,6 @@ export default class Queue extends HTMLElement {
             } else {
                 console.error("WebSocket connection is not available");
             }
-            // router.navigateTo('/play');
         });
 
         const startMatchBtn = this._card.querySelector('#startMatchBtn') as HTMLButtonElement;

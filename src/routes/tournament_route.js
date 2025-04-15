@@ -22,10 +22,24 @@ const tournamentMatchSchema = {
     200: {
       type: 'object',
       properties: {
-        statusCode: { type: 'number', multipleOf: 1 },
         success: { type: 'string' },
         message: { type: 'string' }
-      }
+      },
+      required: ['success', 'message']
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      },
+      required: ['error']
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      },
+      required: ['error']
     }
   }
 }

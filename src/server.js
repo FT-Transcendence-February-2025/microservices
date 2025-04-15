@@ -1,5 +1,7 @@
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
 // import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
@@ -8,6 +10,7 @@ import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
+import dotenv from 'dotenv'
 
 // Importing configurations
 import config from './config/config.js';
@@ -17,6 +20,28 @@ const PORT = 3003
 const fastify = Fastify({
 	logger: config.logger,
 });
+
+await fastify.register(fastifySwagger, {
+  openapi: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Matchmaking Service API',
+      description: 'API documentation for the Matchmaking service',
+      version: '1.0.0'
+    },
+    servers: [
+      { url: 'http://localhost:3006', description: 'Development server' }
+    ]
+  }
+})
+
+await fastify.register(fastifySwaggerUi, {
+  routePrefix: '/documentation',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: false
+  }
+})
 
 // Initialize database
 try {

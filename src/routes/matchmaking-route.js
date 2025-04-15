@@ -14,7 +14,22 @@ const responseSchema = {
       properties: {
         success: { type: 'string' },
         displayName: { type: 'string' }
-      }
+      },
+      required: ['success', 'displayName']
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      },
+      required: ['error']
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      },
+      required: ['error']
     }
   }
 }

@@ -7,21 +7,28 @@ import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { deletionController } from './controllers/deletionController.js'
-
-dotenv.config()
+import config from './config/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const PORT = process.env.PORT || 3004
+
+// Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
-  logger: true
-})
+  logger: config.logger,
+});
 
 fastify.register(cors, {
-  origin: true, // or specify allowed origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+	origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://tour.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.tour
+    ],
+	methods: ['GET', 'POST', 'PUT', 'DELETE'],
+	allowedHeaders: ['Content-Type', 'Authorization'], 
+	credentials: true
 })
 
 // fastify.addHook('onRequest', (request, reply, done) => {
@@ -35,8 +42,6 @@ fastify.register(fastifyStatic, {
   prefix: '/', // Serve files at the root URL
 });
 
-const PORT = process.env.PORT || 3003
-
 // Initialize database
 try {
   initDatabase()
@@ -47,7 +52,7 @@ try {
 }
 
 // Routes
-fastify.register(tournamentRoutes, { prefix: '/tournaments' })
+fastify.register(tournamentRoutes, { prefix:  `${config.apiPrefix}/tournament`})
 
 fastify.get('/', (_request, reply) => {
   reply.sendFile('tournament.html');

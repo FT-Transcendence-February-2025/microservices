@@ -10,7 +10,7 @@ const BALL_ACCELERATION = 2;
 const BALL_MAX_SPEED = 25;
 const BALL_RADIUS = 15;
 
-const WINNING_SCORE = 3;
+const WINNING_SCORE = 11;
 const SCORE_DIFFERENCE = 2;
 
 class pongGame {

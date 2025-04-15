@@ -399,7 +399,7 @@ const handleTournamentMessages = async (data, connection) => {
         return
       }
 
-      const gameUrl = `http://localhost:3003/?matchId=${tournamentMatch.id}`
+      const gameUrl = `http://localhost:3000/game?matchId=${tournamentMatch.id}`
 
       activeConnections.forEach((conn, _userId) => {
         if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
@@ -445,7 +445,6 @@ const handleLocalGameMessages = async (data, connection) => {
   switch (data.type) {
   case 'joinQueue': {
     try {
-      // const result = await verifyUser(data.userId)
       const userId = connection.userId
       const displayName = connection.displayName
 
@@ -471,7 +470,7 @@ const handleLocalGameMessages = async (data, connection) => {
           const result = stmt.run(player1.id, player2.id, 'pending', roomCode)
           const matchId = result.lastInsertRowid;
           [player1, player2].forEach((player) => {
-            const opponent = player === player1 ? player2.id : player1.id
+            const opponent = player === player1 ? player2 : player1
             player.socket.send(
               JSON.stringify({
                 type: 'matchCreated',
@@ -582,7 +581,7 @@ const handleLocalGameMessages = async (data, connection) => {
         return
       }
 
-      const gameUrl = `http://localhost:3003/?matchId=${match.id}`
+      const gameUrl = `http://localhost:3000/game?matchId=${match.id}`
 
       // Notify both players
       activeConnections.forEach((conn, _userId) => {
@@ -615,7 +614,8 @@ const handleLocalGameMessages = async (data, connection) => {
       type: 'error',
       message: 'Unsupported local match message type'
     }))
-    // break
+    console.error(`Received unknown message type ${data.type}`)
+    break
   }
 }
 
@@ -729,6 +729,7 @@ const closeHandler = async (connection) => {
           : match.player1_id
 
         const opponent = matchmakingQueue.find((player) => player.id === opponentId)
+        // const opponent = activeConnections.get(opponentId)
 
         if (opponent) {
           opponent.socket.send(

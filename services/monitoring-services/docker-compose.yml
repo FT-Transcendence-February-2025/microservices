@@ -49,6 +49,7 @@ services:
       - "80:80"
       - "443:443"
       - "8080:8080"
+      - "8082:8082"
     # dns:
     #   - ${DNS_SERVER}
     #   - 127.0.0.1
@@ -75,6 +76,9 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "--entrypoints.traefik.address=:8082"        # Define a dedicated entrypoint for prometheus metrics
+      - "--metrics.prometheus=true"                  
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0" # (Optional) Customize histogram
       # Redirect HTTP to HTTPS
       - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
@@ -97,6 +101,32 @@ services:
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD}"
 
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - frontend   # Needed for Traefik routing
+      - backend    # Allows Prometheus to scrape backend services if required
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.example.com`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    # No "ports" mapping here since we’re keeping Prometheus hidden behind Traefik.
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    networks:
+      - frontend   # For external routing via Traefik
+      - backend    # For accessing data sources in your back-end network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.example.com`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
 
   # pebble:

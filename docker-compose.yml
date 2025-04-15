@@ -5,10 +5,10 @@ include:
   - services/user-mgmt-service/docker-compose.yml
   - services/match-service/docker-compose.yml
   - services/tournament-service/docker-compose.yml
-  - services/traefik-service/docker-compose.yml
+  - services/monitoring-services/docker-compose.yml
   - services/frontend-service/docker-compose.yml
   # <--! Deprecrated -->
-  # - services/nginx-DNS-service/docker-compose.yml
+  # - services/game-service/docker-compose.yml
 
 networks:
   frontend:

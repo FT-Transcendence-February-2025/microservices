@@ -73,6 +73,7 @@ const startServer = async () => {
 				process.exit(1);
 			}
 			console.log(`Server listening at ${address}`);
+			console.log(`Server listening at ${config.apiPrefix}`);
 		});
   } catch (error) {
     console.error("Error starting server:", error);

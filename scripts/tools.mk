@@ -60,10 +60,20 @@ watchC:
 w:
 	@while true; do \
 		docker compose logs --follow $$c || { clear; true; }; \
-		sleep 1; \
+		sleep 2; \
 	done
-
-#	watch -n 1 -c 'docker compose logs $$c | tail -n 30| ccze -A'
+checkDbs:
+	@-while true; do \
+		printf "$(LF)$(D_PURPLE) DB auth-users$(P_NC)\n" ; \
+		docker exec -it auth sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
+		printf "$(LF)$(D_PURPLE) DB user$(P_NC)\n" ; \
+		docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
+		sleep 2; clear;  \
+	done
+# printf "$(LF)$(D_PURPLE) DB match$(P_NC)\n" ; \
+# 		docker exec -it match sh -c "sqlite3 /app/src/db/database.sqlite 'SELECT * FROM users;'"; \
+# 		printf "$(LF)$(D_PURPLE) DB tournament$(P_NC)\n" ; \
+# 		docker exec -it tour sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
 # Add all changes to git
 gAdd:
 	@echo $(CYAN) && git add .

@@ -1,7 +1,7 @@
 import PongGame from './gameLogic.js'
 
 const GAME_LOOP_INTERVAL = 1000/60
-const PORT = 3000
+const PORT = 3006
 
 class GameInstanceManager {
 	constructor () {
@@ -10,16 +10,6 @@ class GameInstanceManager {
 	}
 
 	async createGameInstance(matchId, player1Id, player2Id, isLocal = true, tournamentId = null) {
-		const response = await fetch (`http://localhost:3002/get-user/${player1Id}`, {
-			method: 'GET',
-			headers: { 'Content-Type': 'application/json' }
-		});
-		if (response.status !== 200) {
-			return {
-				success: false,
-				message: 'Host verification failed'
-			}
-		}
 		if (this.gameInstances.has(matchId)) {
 			return {
 				success: false,
@@ -109,42 +99,66 @@ class GameInstanceManager {
 	}
 
 	endGame(matchId) {
-		const gameInstance = this.gameInstances.get(matchId)
+			const gameInstance = this.gameInstances.get(matchId)
 
-		if (!gameInstance) return
-		console.log(`Game ended for match ${matchId}`)
+			if (!gameInstance) return
+			console.log(`Game ended for match ${matchId}`)
 
-		if (gameInstance.gameState === 'completed') {
-			if (!gameInstance.isLocal) {
-				if (gameInstance.tournamentId) {
-					this.saveTournamentMatchResults(
-						matchId,
-						gameInstance.tournamentId,
-						gameInstance.player1Id,
-						gameInstance.player2Id,
-						gameInstance.paddleLeft.score,
-						gameInstance.paddleRight.score
-					)
-				} else {
-					this.saveMatchResults(
-						matchId,
-						gameInstance.player1Id,
-						gameInstance.player2Id,
-						gameInstance.paddleLeft.score,
-						gameInstance.paddleRight.score
-					)
+			if (gameInstance.gameState === 'completed') {
+				let winnerId, winnerScore, loserScore
+				if (gameInstance.paddleLeft.score > gameInstance.paddleRight.score) {
+					winnerId = gameInstance.player1Id
+					winnerScore = gameInstance.paddleLeft.score
+					loserScore = gameInstance.paddleRight.score
+				} else if (gameInstance.paddleRight.score > gameInstance.paddleLeft.score) {
+					winnerId = gameInstance.player2Id
+					winnerScore = gameInstance.paddleRight.score
+					loserScore = gameInstance.paddleLeft.score
 				}
+				if (!gameInstance.isLocal) {
+					if (gameInstance.tournamentId) {
+						this.saveTournamentMatchResults(
+							matchId,
+							gameInstance.tournamentId,
+							gameInstance.player1Id,
+							gameInstance.player2Id,
+							gameInstance.paddleLeft.score,
+							gameInstance.paddleRight.score
+						)
+					} else {
+						this.saveMatchResults(
+							matchId,
+							gameInstance.player1Id,
+							gameInstance.player2Id,
+							gameInstance.paddleLeft.score,
+							gameInstance.paddleRight.score
+						)
+					}
+				}
+				const finishMessage = JSON.stringify({
+					type: 'matchFinished',
+					matchId,
+					winnerId,
+					winnerScore,
+					loserScore
+				})
+
+				for (const playerId of gameInstance.connectedPlayers) {
+					const playerConnection = this.playerConnections.get(playerId)
+					console.log(`Sending finishMessage: ${finishMessage} to ${playerConnection}`)
+					if (playerConnection && playerConnection.socket.readyState === 1)
+						playerConnection.socket.send(finishMessage)
+				}
+
+			for (const playerId of gameInstance.connectedPlayers) {
+				this.playerConnections.delete(playerId)
 			}
-		}
 
-		for (const playerId of gameInstance.connectedPlayers) {
-			this.playerConnections.delete(playerId)
+			// set delay before removing game instance
+			setTimeout(() => {
+				this.gameInstances.delete(matchId)
+			}, 5000)
 		}
-
-		// set delay before removing game instance
-		setTimeout(() => {
-			this.gameInstances.delete(matchId)
-		}, 5000)
 	}
 
 	async saveTournamentMatchResults(matchId, tournamentId, player1Id, player2Id, player1Score, player2Score) {

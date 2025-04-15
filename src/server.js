@@ -1,6 +1,5 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
-import dotenv from "dotenv";
 import fastifyWebsocket from "@fastify/websocket";
 import checkAndCreateTables from "./database/migrations/create-tables.js";
 import newUserRoute from "./routes/authentication/new-user-route.js";
@@ -23,35 +22,13 @@ import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
 import getUserFriendList from "./routes/tournament/get-user-friend-list.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
-// import fs from "fs";
+import config from "./config/config.js";
 
-// // Load environment variables
-// if (fs.existsSync(process.env.ENV_FILE_PATH)) {
-// //   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
-	dotenv.config();
-// } else {
-//   console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
-// }
-
-// // Validate required environment variables
-// const requiredVariables = [
-//   "ENV_FILE_PATH",
-//   "NODE_ENV",
-//   "DOMAIN",
-//   "COOKIE_SECRET",
-// ];
-// const missingVariables = requiredVariables.filter((key) => !process.env[key]);
-
-// if (missingVariables.length > 0) {
-//   console.error(
-//     `Missing required environment variables: ${missingVariables.join(", ")}`
-//   );
-//   process.exit(1); // Exit the process with an error code
-// }
+const PORT = 3002
 
 const fastify = Fastify({
-	// logger: true
-});
+	logger: config.logger,
+  });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 
@@ -59,46 +36,24 @@ const fastify = Fastify({
 fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
 
-// // Register routes:
-// fastify.register(newUserRoute, { prefix: "/api" });
-// fastify.register(userExistsRoute, { prefix: "/api" });
-// fastify.register(avatarRoute, { prefix: "/api" });
-// fastify.register(displayNameRoute, { prefix: "/api" });
-// fastify.register(matchmakingRoute, { prefix: "/api" });
-// fastify.register(websocketRoute, { prefix: "/api" });
-// fastify.register(userLogoutRoute, { prefix: "/api" });
-// fastify.register(getFriendsRoute, { prefix: "/api" });
-// fastify.register(getMatchHistoryRoute, { prefix: "/api" });
-// fastify.register(inviteFriendRoute, { prefix: "/api" });
-// fastify.register(respondFriendRoute, { prefix: "/api" });
-// fastify.register(inviteGameRoute, { prefix: "/api" });
-// fastify.register(profileRoute, { prefix: "/api" });
-// fastify.register(inviteTournamentRoute, { prefix: "/api" });
-// fastify.register(removeFriendRoute, { prefix: "/api" });
-// fastify.register(blockUserRoute, { prefix: "/api" });
-// fastify.register(unblockUserRoute, { prefix: "/api" });
-// fastify.register(getBlockListRoute, { prefix: "/api" });
-// fastify.register(getUserFriendList, { prefix: "/api" });
 // Register routes:
-fastify.register(newUserRoute);
-fastify.register(userExistsRoute);
-fastify.register(avatarRoute);
-fastify.register(displayNameRoute);
-fastify.register(getUserRoute);
-fastify.register(websocketRoute);
-fastify.register(userLogoutRoute);
-fastify.register(getFriendsRoute);
-fastify.register(getMatchHistoryRoute);
-fastify.register(inviteFriendRoute);
-fastify.register(respondFriendRoute);
-fastify.register(inviteGameRoute);
-fastify.register(profileRoute);
-fastify.register(inviteTournamentRoute);
-fastify.register(removeFriendRoute);
-fastify.register(blockUserRoute);
-fastify.register(unblockUserRoute);
-fastify.register(getBlockListRoute);
-fastify.register(getUserFriendList);
+fastify.register(newUserRoute, { prefix: config.apiPrefix });
+fastify.register(userExistsRoute, { prefix: config.apiPrefix });
+fastify.register(avatarRoute, { prefix: config.apiPrefix });
+fastify.register(displayNameRoute, { prefix: config.apiPrefix });
+fastify.register(websocketRoute, { prefix: config.apiPrefix });
+fastify.register(userLogoutRoute, { prefix: config.apiPrefix });
+fastify.register(getFriendsRoute, { prefix: config.apiPrefix });
+fastify.register(getMatchHistoryRoute, { prefix: config.apiPrefix });
+fastify.register(inviteFriendRoute, { prefix: config.apiPrefix });
+fastify.register(respondFriendRoute, { prefix: config.apiPrefix });
+fastify.register(inviteGameRoute, { prefix: config.apiPrefix });
+fastify.register(profileRoute, { prefix: config.apiPrefix });
+fastify.register(inviteTournamentRoute, { prefix: config.apiPrefix });
+fastify.register(removeFriendRoute, { prefix: config.apiPrefix });
+fastify.register(blockUserRoute, { prefix: config.apiPrefix });
+fastify.register(unblockUserRoute, { prefix: config.apiPrefix });
+fastify.register(getBlockListRoute, { prefix: config.apiPrefix });
 
 const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 
@@ -112,7 +67,7 @@ const startServer = async () => {
 			return { message: "Fastify server of user-management service running" };
 		});
 
-    fastify.listen({ port: 3002, host: '0.0.0.0' }, (error, address) => {
+    fastify.listen({ port: PORT, host: '0.0.0.0' }, (error, address) => {
 			if (error) {
 				console.error(error);
 				process.exit(1);

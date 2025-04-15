@@ -1,4 +1,5 @@
 import frontendController from "./frontend-controller.js";
+import db from "../services/database-service.js";
 
 const tournamentController = {
 	sendTournamentInvitations: async (request, reply) => {
@@ -36,6 +37,16 @@ const tournamentController = {
 			}
 		}
 		return reply.status(200).send({ success: "Sent tournament invitations to online users" });
+	},
+	getUserFriendList: async (request, reply) => {
+		const { userId } = request.params;
+		
+		const friends = await db.getFriends(userId);
+		if (friends && friends.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Returning users found (can be empty)", friends }); 
 	}
 };
 

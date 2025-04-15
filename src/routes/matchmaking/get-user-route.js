@@ -1,4 +1,4 @@
-import matchmakingController from "../../controllers/matchmaking-controller.js";
+import commonBackendController from "../../controllers/common-backend-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
@@ -44,6 +44,6 @@ export default async function (fastify, opts) {
 				}
 			}
 		},
-		handler: matchmakingController.getUser	
+		handler: commonBackendController.getUser	
 	});
 };

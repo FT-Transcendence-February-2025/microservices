@@ -5,7 +5,6 @@ export default async function (fastify, opts) {
 	fastify.route({
 		method: "GET",
 		url: "/ws",
-		preHandler: jwtTr.verifyAccessToken,
 		wsHandler: frontendController.websocketConnections,
 		handler: (request, reply) => {
 			reply.send({ message: "This is a WebSocket endpoint" });

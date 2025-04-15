@@ -1,64 +1,64 @@
-import authenticationService from "../services/authentication-service.js";
 import avatarService from "../services/avatar-service.js";
 import db from "../services/database-service.js";
 import displayNameService from "../services/display-name-service.js";
+import jwt from "jsonwebtoken";
+import websocketService from "../services/websocket-service.js";
 
 const frontendController = {
 	activeConnections: new Map(),
 	websocketConnections: async (connection, request) => {
-		try {
-			frontendController.activeConnections.set(request.user.id, connection);
-			console.log(`User ${request.user.id} connected`);
+    try {
+			let isVerified = false;
+			const timeout = setTimeout(() => {
+				if (!isVerified) {
+					connection.close(4001, "Token not received or invalid");
+				}
+			}, 5000);
 
-			if (!await authenticationService.getUserEmailVerified(request.user.id)) {
+			let payload;
+			connection.on("message", (data) => {
 				try {
-					connection.send(JSON.stringify({ type: "notification_verify_email" }));
-				} catch (error) {
-					console.error(`Error in function frontendController in function connection.send: `, error, `. Skipping this 
-						notification...`);
-				}
-			}
+					const message = JSON.parse(data);
+					if (message.type === "authenticate" && message.token) {
+						payload = jwt.verify(message.token, process.env.SECRET_KEY);
 
+						isVerified = true;
+						clearTimeout(timeout);
 
-			// Fetch and send pending friend requests
-			const pendingFriendRequests = await db.getPendingInvitations(request.user.id);
-			for (let i = 0; i < pendingFriendRequests.length; i++) {
-				const invitingUser = await db.getUser(pendingFriendRequests[i].inviting_id);
-				if (!invitingUser || invitingUser.error) {
-					console.error(`Error in function frontendController.websocketConnections. Table 'friend_list' has entry id =
-						${pendingFriendRequests[i].id}, but invitingId from this entry was not found in users table. Skipping this
-						notification...`);
-					continue;
-				}
-				try {
-					connection.send(JSON.stringify({ 
-						type: "notification_friend_request",
-						invitingUser: {
-							id: invitingUser.id,
-							displayName: invitingUser.display_name
-						}
-					}));
+						frontendController.activeConnections.set(payload.userId, connection);
+						console.log(`User ${payload.userId} connected`);
+
+						(async () => {
+							await websocketService.notifyFriendRequests(payload.userId, connection);
+							await websocketService.notifyVerifyEmail(payload.userId, connection);
+						})();
+					}
 				} catch (error) {
-					console.error(`Error in function frontendController in function connection.send: `, error, `. Skipping this 
-						notification...`);
+					console.error("Error in function frontendController.websocketConnections:", error);
+					connection.close(4002, "Invalid token or message format");
 				}
-			}
+			});
 
 			connection.on("close", () => {
-				frontendController.activeConnections.delete(request.user.id);
-				console.log(`User ${request.user.id} disconnected`);
+					frontendController.activeConnections.delete(payload.userId);
+					console.log(`User ${payload.userId} disconnected`);
 			});
 
 			connection.on("error", (error) => {
-				console.error(`WebSocket error for user ${request.user.id}:`, error);
+					console.error(`WebSocket error for user ${payload.userId}:`, error);
 			});
-		} catch (error) {
-			console.error("Error in websocketConnections:", error);
-			connection.close(1011, "Internal Server Error"); // 1011 = Server Error
-		}
+    } catch (error) {
+        console.error("Error in websocketConnections:", error);
+        connection.close(1011, "Internal Server Error");
+    }
 	},
 	getUserProfile: async (request, reply) => {
-		const { userId } = request.params;
+		let { userId } = request.params;
+		let ownProfile = false;
+		if (!userId) {
+			ownProfile = true;
+			userId = request.user.id;
+		}
 
 		const requestedUser = await db.getUser(userId);
 		if (!requestedUser) {
@@ -68,13 +68,20 @@ const frontendController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const friends = await db.areFriends(request.user.id, requestedUser.id);
-		if (!friends) {
-			return reply.status(403).send({ error: "Requesting user is not a friend of the requested user" })
+		if (!ownProfile) {
+			const friends = await db.areFriends(request.user.id, requestedUser.id);
+			if (!friends) {
+				return reply.status(403).send({ error: "Requesting user is not a friend of the requested user" })
+			}
 		}
 
 		const connection = frontendController.activeConnections.get(requestedUser.id);
-		const online = connection ? true : false; 
+		const online = connection ? true : false;
+
+		const matchHistory = await db.getUserMatchHistory(requestedUser.display_name);
+		if (matchHistory.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
 
 		return reply.status(200).send({ 
 			success: "Found user profile",
@@ -82,7 +89,8 @@ const frontendController = {
 			avatarPath: requestedUser.avatar_path,
 			wins: requestedUser.wins,
 			loses: requestedUser.loses,
-			online
+			online,
+			matchHistory
 		});
 	},
 	avatarChange: async (request, reply) => {
@@ -115,9 +123,6 @@ const frontendController = {
 	inviteFriend: async (request, reply) => {
 		const { invitedDisplayName } = request.body;
 
-		if (request.user.id === invitedId) {
-			return reply.status(400).send({ error: "Users cannot invite themselves to friends" });
-		}
 		const invitingUser = await db.getUser(request.user.id);
 		if (!invitingUser) {
 			return reply.status(404).send({ error: "Inviting user not found" });
@@ -132,6 +137,9 @@ const frontendController = {
 		}
 		if (invitedUser.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (invitingUser.id === invitedUser.id) {
+			return reply.status(400).send({ error: "Users cannot invite themselves to friends" });
 		}
 
 		const isInvitingUserBlocked = await db.isOnBlockList(invitedUser.id, invitingUser.id);

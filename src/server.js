@@ -20,6 +20,7 @@ import removeFriendRoute from "./routes/frontend/remove-friend.js";
 import blockUserRoute from "./routes/frontend/block-user-route.js";
 import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
+import getUserFriendList from "./routes/tournament/get-user-friend-list.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 import config from "./config/config.js";
 
@@ -35,12 +36,11 @@ const fastify = Fastify({
 fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
 
-// // Register routes:
+// Register routes:
 fastify.register(newUserRoute, { prefix: config.apiPrefix });
 fastify.register(userExistsRoute, { prefix: config.apiPrefix });
 fastify.register(avatarRoute, { prefix: config.apiPrefix });
 fastify.register(displayNameRoute, { prefix: config.apiPrefix });
-// fastify.register(matchmakingRoute, { prefix: config.apiPrefix });
 fastify.register(websocketRoute, { prefix: config.apiPrefix });
 fastify.register(userLogoutRoute, { prefix: config.apiPrefix });
 fastify.register(getFriendsRoute, { prefix: config.apiPrefix });

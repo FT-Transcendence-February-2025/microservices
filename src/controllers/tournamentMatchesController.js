@@ -1,7 +1,7 @@
 import db from '../db/connection.js'
-
+import config from '../config/config.js';
 async function updateUserStats (stats) {
-  const endpoint = 'http://localhost:3002/update-match-history'
+  const endpoint = `${config.endpoints.user}/update-match-history`
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -16,7 +16,7 @@ async function updateUserStats (stats) {
 }
 
 async function updateTournamentMatchScores (scores, tournamentId) {
-  const endpoint = `http://localhost:3004/tournaments/${String(tournamentId)}/updateScores`
+  const endpoint = `${config.endpoints.tour}/tournaments/${String(tournamentId)}/updateScores`
   try {
     const response = await fetch(endpoint, {
       method: 'POST',

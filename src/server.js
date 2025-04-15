@@ -12,21 +12,14 @@ import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
 import dotenv from 'dotenv'
 
-const PORT = 3006
+// Importing configurations
+import config from './config/config.js';
 
-dotenv.config()
+const PORT = 3003
 
 const fastify = Fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'SYS:standard',
-        colorize: true
-      }
-    }
-  }
-})
+	logger: config.logger,
+});
 
 await fastify.register(fastifySwagger, {
   openapi: {
@@ -59,27 +52,32 @@ try {
   process.exit(1)
 }
 
-await fastify.register(fastifyCors, {
-  origin: ['http://user-management:3000', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
-  methods: ['GET', 'POST', 'PUT'],
-  credentials: true
-})
+fastify.register(fastifyCors, {
+    origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://match.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.match
+    ],
+    methods: ['GET', 'POST', 'PUT'],
+    credentials: true
+});	
 
 // Register WebSocket
 await fastify.register(fastifyWebsocket)
 
 fastify.get('/', (request, reply) => {
   reply.send({
-    message: 'Hello Fastify. Server is running!'
+    message: 'Hello Fastify. Match Server is running!'
   })
 })
 
 fastify.register(websocketHandler)
 // fastify.register(matchmakingDbRoute)
-fastify.register(matchesRoute, { prefix: '/matches' })
+fastify.register(matchesRoute, { prefix: `${config.apiPrefix}/matches` })
 fastify.register(matchmakingRoute)
-fastify.register(tournamentRoute, { prefix: '/tournament' })
-fastify.register(tournamentResultsRoute, { prefix: '/tournament/matches' })
+fastify.register(tournamentRoute, { prefix: `${config.apiPrefix}/tournament`})
+fastify.register(tournamentResultsRoute, { prefix: `${config.apiPrefix}/tournament/matches` })
 
 const start = async () => {
   try {

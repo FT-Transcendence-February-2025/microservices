@@ -31,9 +31,11 @@
     "@fastify/swagger-ui": "^5.2.2",
     "@fastify/websocket": "^11.0.2",
     "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.4.7",
     "eslint-plugin-import": "^2.31.0",
     "fastify": "^5.2.1",
     "fastify-plugin": "^5.0.1",
+    "jwt-validator-tr": "^1.0.4",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

@@ -57,7 +57,6 @@ export default class Game extends HTMLElement {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
         this._isLocal = window.location.hash === '#local' ? true : false;
-
         this._upPressed = false;
         this._downPressed = false;
         this._wPressed = false;
@@ -98,6 +97,9 @@ export default class Game extends HTMLElement {
         if (!this._card) {
             throw new Error("Could not find '.card' element")
         }
+            this._socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
+            this._addSocketListener();
+        } 
     }
 
     connectedCallback() {
@@ -258,6 +260,7 @@ export default class Game extends HTMLElement {
                 } else {
                     this._updateGameState(parsedData);
                 }
+                    this._updateGameState(parsedData);
             } catch (error) {
                 console.error('Failed to parse received data:', error);
             }

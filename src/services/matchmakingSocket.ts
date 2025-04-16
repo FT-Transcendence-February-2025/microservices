@@ -1,9 +1,10 @@
+const PORT = 3004
 class MatchmakingSocket {
 	private static instance: WebSocket | null = null;
 
 	public static getInstance(): WebSocket {
 		if (!this.instance || this.instance.readyState > WebSocket.OPEN) {
-			this.instance = new WebSocket(`ws://${window.location.hostname}:3006/ws`);
+			this.instance = new WebSocket(`ws://${window.location.hostname}:${PORT}/ws`);
 
 			this.instance.onopen = (event: Event) => {
 				console.log("Global matchmaking socket connected", event);

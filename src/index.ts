@@ -20,7 +20,7 @@ const rootElement = document.getElementById('root');
 if (!rootElement)
     throw new Error(`Root element not found!`);
 
-const router = new Router(rootElement);
+export const router = new Router(rootElement);
 
 // const isLoggedIn = () => { return User.isloggedIn };
 const isLoggedIn = () => { return true };

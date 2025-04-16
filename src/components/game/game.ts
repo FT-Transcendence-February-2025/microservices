@@ -42,6 +42,8 @@ export default class Game extends HTMLElement {
     private _localGame: PongGame | null;
     private _localGameLoop: number | null;
     private _trail : any;
+    private _card: HTMLElement;
+    private _playerId!: string;
 
     constructor() {
         super();
@@ -82,6 +84,19 @@ export default class Game extends HTMLElement {
             this._runLocalGame();
         }
         else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('matchId');
+            const playerId = urlParams.get('playerId');
+            if (!matchId || !playerId) throw new Error("Missing matchId or playerId");
+            this._playerId = playerId;
+            console.log("Parsed matchId:", matchId, "playerId:", playerId);
+            this._socket = new WebSocket(`ws://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
+            this._addSocketListener();
+        } 
+        this._card = this.querySelector('.card') as HTMLElement;
+        if (!this._card) {
+            throw new Error("Could not find '.card' element")
+        }
             this._socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
             this._addSocketListener();
         } 
@@ -211,7 +226,7 @@ export default class Game extends HTMLElement {
                 this._sendPaddlePosition("up");
                 this._upPressed = true;
                 this._downPressed = false;
-            } 
+            }
             else if (event.key === "ArrowDown" && this._downPressed === false) {
                 this._sendPaddlePosition("down");
                 this._downPressed = true;
@@ -235,6 +250,16 @@ export default class Game extends HTMLElement {
         this._socket.onmessage = (message) => {
             try {
                 const parsedData = JSON.parse(message.data);
+                if (parsedData.type == 'matchFinished') {
+                    console.log('Received finishMessage:', parsedData);
+                    this.updateUIForMatchFinished({
+                        winnerId: parsedData.winnerId,
+                        winnerScore: parsedData.winnerScore,
+                        loserScore: parsedData.loserScore
+                    });
+                } else {
+                    this._updateGameState(parsedData);
+                }
                     this._updateGameState(parsedData);
             } catch (error) {
                 console.error('Failed to parse received data:', error);
@@ -350,6 +375,32 @@ export default class Game extends HTMLElement {
         this._drawBall(ball.x, ball.y);
         this._drawTrail(ball.x, ball.y);
         this._drawScore(paddleLeft.score, paddleRight.score);
+    }
+
+    private updateUIForMatchFinished(data: {winnerId: number, winnerScore: number, loserScore: number }): void {
+        const currentUserId = Number(this._playerId);
+        let resultMessage = "";
+
+        if (currentUserId === data.winnerId) {
+            resultMessage = `YOU WON! Score: ${data.winnerScore}`;
+        } else {
+            resultMessage = `YOU LOST! Score: ${data.loserScore}`;
+        }
+        this._card.innerHTML = `
+        <div class="text-lg font-bold mb-6">${resultMessage}</div>
+        <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
+        `;
+        this._card.style.display = 'flex';
+        const homeBtn = this._card.querySelector('#homeButton') as HTMLAnchorElement;
+        if (homeBtn) {
+            homeBtn.addEventListener('click', () => {
+                this._socket?.close();
+                // @ts-ignore
+                window.navigateTo('/home');
+            });
+        } else {
+            throw new Error("Could not find '#homeButton element");
+        }
     }
 }
 

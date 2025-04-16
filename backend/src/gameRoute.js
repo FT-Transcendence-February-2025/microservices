@@ -1,5 +1,7 @@
 import gameInstanceManager from './gameInstance.js'
 
+const PORT = 3005
+
 export default async function gameRoute(fastify, options) {
     fastify.post('/games', async (request, reply) => {
         console.log('Incoming game creation request: ', request.body)
@@ -99,7 +101,7 @@ export default async function gameRoute(fastify, options) {
         if (!result.success) {
             return reply.code(400).send(result);
         }
-        const gameUrl = `http://localhost:3003/index.html?matchId=${matchId}&playerId=${player1Id}&isLocal=true`
+        const gameUrl = `http://localhost:${PORT}/index.html?matchId=${matchId}&playerId=${player1Id}&isLocal=true`
         return reply.code(200).send({ 
             statusCode: 200,
             gameUrl,

@@ -1,7 +1,7 @@
 import PongGame from './gameLogic.js'
 
 const GAME_LOOP_INTERVAL = 1000/60
-const PORT = 3006
+const PORT = 3004
 
 class GameInstanceManager {
 	constructor () {

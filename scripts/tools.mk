@@ -18,6 +18,7 @@ hash-pass:
 restartDocker:
 	@echo "Stopping rootless Docker..."
 	-pkill -f dockerd-rootless.sh || echo "Docker is not running."
+	@sleep 3
 runDocker: restartDocker
 	sh scripts/runDockerRootless.sh
 pull-Img:
@@ -25,6 +26,8 @@ pull-Img:
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
 	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
 	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
+	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
+    docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
@@ -34,8 +37,9 @@ load-Img:
 	-@docker load -i alpine.tar && \
 	docker load -i node-20-alpine.tar && \
 	docker load -i traefik-v3.3.3.tar && \
-	docker load -i nginx-alpine.tar
-
+	docker load -i nginx-alpine.tar && \
+	docker load -i prometheus.tar && \
+	docker load -i grafana.tar
 
 # Show list of all running Docker containers
 show:

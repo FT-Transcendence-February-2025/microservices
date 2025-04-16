@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken'
 import db from '../../db/connection.js'
 import fetch from 'node-fetch'
-import config from '../../config/config.js';
+import config from '../../config/config.js'
 
-
-dotenv.config()
+// dotenv.config()
 const secretKey = process.env.SECRET_KEY
 // Queue to store waiting players
 const matchmakingQueue = [] // Stores players who are waiting

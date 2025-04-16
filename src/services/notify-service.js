@@ -59,27 +59,27 @@ const notifyService = {
     if (error) {
       return { status, error };
     }
-		const response = await fetch(`${process.env.INFOBIP_BASE_URL}/sms/2/text/advanced`, {
-			method: "POST",
-			headers: {
-				"Authorization": `App ${process.env.INFOBIP_API_KEY}`,
-				"Content-Type": "application/json",
-				"Accept": "application/json"
-			},
-			body: JSON.stringify({
-				messages: [
-					{
-						destinations: [{ to: phoneNumber }],
-						from: process.env.INFOBIP_SENDER_ID,
-						text: `${code} is your Pong verification code.`
-					}
-				]
-			})
-		});
-		if (!response.ok) {
-			console.error(`Error in function notifyService.sendSms: ${response.status} ${response.statusText}`);
-			return { status: response.status, error: "Failed to send SMS" };
-		}
+	// 	const response = await fetch(`${process.env.INFOBIP_BASE_URL}/sms/2/text/advanced`, {
+	// 		method: "POST",
+	// 		headers: {
+	// 			"Authorization": `App ${process.env.INFOBIP_API_KEY}`,
+	// 			"Content-Type": "application/json",
+	// 			"Accept": "application/json"
+	// 		},
+	// 		body: JSON.stringify({
+	// 			messages: [
+	// 				{
+	// 					destinations: [{ to: phoneNumber }],
+	// 					from: process.env.INFOBIP_SENDER_ID,
+	// 					text: `${code} is your Pong verification code.`
+	// 				}
+	// 			]
+	// 		})
+	// 	});
+	// 	if (!response.ok) {
+	// 		console.error(`Error in function notifyService.sendSms: ${response.status} ${response.statusText}`);
+	// 		return { status: response.status, error: "Failed to send SMS" };
+	// 	}
 		
 		return { success: true };
 	}

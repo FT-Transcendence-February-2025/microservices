@@ -4,34 +4,25 @@ import authenticationController from "../../controllers/authentication-controlle
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/two-factor-authentication/change-mode",
+		url: "/two-factor-authentication/app/delete",
 		schema: {
-			body: {
-				type: "object",
-				properties: {
-					mode: {
-						type: "string",
-						enum: ["off", "phone", "email", "app"]
-					}
-				},
-				required: ["mode"]
-			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						success: { type: "string" },
+						token: { type: "string" }
 					},
 					required: ["success"]
 				},
-				400: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				404: {
+				410: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -48,6 +39,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: authenticationController.changeTwoFactorAuthMode
+		handler: authenticationController.deleteAuthenticatorApp
 	});
 };

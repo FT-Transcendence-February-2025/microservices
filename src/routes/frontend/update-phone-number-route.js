@@ -4,7 +4,7 @@ import authenticationController from "../../controllers/authentication-controlle
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/update-phone-number",
+		url: "/two-factor-authentication/sms/update-phone-number",
 		schema: {
 			body : {
 				type: "object",

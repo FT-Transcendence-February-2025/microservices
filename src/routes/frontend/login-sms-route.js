@@ -1,9 +1,10 @@
+import jwtTr from "jwt-validator-tr";
 import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/login-sms",
+		url: "/login/two-factor-authentication/sms",
 		schema: {
 			body : {
 				type: "object",
@@ -27,29 +28,27 @@ export default async function (fastify, opts) {
 				404: {
 					type: "object",
 					properties: {
-						success: { type: "string" },
-						token: { type: "string" }
+						error: { type: "string" }
 					},
-					required: ["success"]
+					required: ["error"]
 				},
 				410: {
 					type: "object",
 					properties: {
-						success: { type: "string" },
-						token: { type: "string" }
+						error: { type: "string" }
 					},
-					required: ["success"]
+					required: ["error"]
 				},
 				500: {
 					type: "object",
 					properties: {
-						success: { type: "string" },
-						token: { type: "string" }
+						error: { type: "string" }
 					},
-					required: ["success"]
+					required: ["error"]
 				}
 			}
 		},
-		handler: authenticationController.login
+		preHandler: jwtTr.verifySessionToken,
+		handler: authenticationController.loginSms
 	});
 };

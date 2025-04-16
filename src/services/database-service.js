@@ -189,19 +189,79 @@ const db = {
 			return { error };
     }
 	},
-	updatePhoneNumber: async (userId, phoneNumber, initializationVector, authTag) => {
+	updatePhoneNumber: async (userId, phoneNumber, phoneInitializationVector, phoneAuthTag) => {
 		try {
 			await database("two_factor_auth")
 				.where({ user_id: userId })
 				.update({
 					phone_number: phoneNumber,
-					initialization_vector: initializationVector,
-					auth_tag: authTag
+					phone_initialization_vector: phoneInitializationVector,
+					phone_auth_tag: phoneAuthTag
 				});
 			return { success: true };
 		} catch (error) {
 			console.error("Error in function db.updatePhoneNumber: ", error);
 			return { error };
+		}
+	},
+	deletePhoneNumber: async (userId) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					phone_number: null,
+					phone_initialization_vector: null,
+					phone_auth_tag: null
+				});
+	
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deletePhoneNumber:", error);
+			return { error: "Internal Server Error", status: 500 };
+		}
+	},
+	updateApp: async (userId, appSecret, appInitializationVector, appAuthTag, appEnabled) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					app_secret: appSecret,
+					app_initialization_vector: appInitializationVector,
+					app_auth_tag: appAuthTag,
+					app_enabled: appEnabled
+				});
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateApp: ", error);
+			return { error };
+		}
+	},
+	updateAppEnabled: async (userId, appEnabled) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({ app_enabled: appEnabled });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateAppEnabled: ", error);
+			return { error };
+		}
+	},
+	deleteApp: async (userId) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					app_secret: null,
+					app_initialization_vector: null,
+					app_auth_tag: null,
+					app_enabled: false
+				});
+	
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deleteApp:", error);
+			return { error: "Internal Server Error", status: 500 };
 		}
 	},
 	updateMode: async (userId, newMode) => {

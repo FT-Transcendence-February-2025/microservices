@@ -8,6 +8,8 @@ import cron from "node-cron";
 import db from "./services/database-service.js";
 import registrationRoute from "./routes/frontend/registration-route.js";
 import loginRoute from "./routes/frontend/login-route.js";
+import loginSmsRoute from "./routes/frontend/login-sms-route.js";
+import loginAppRoute from "./routes/frontend/login-app-route.js";
 import passwordRoute from "./routes/frontend/password-route.js";
 import refreshTokenRoute from "./routes/frontend/refresh-token-route.js";
 import logoutRoute from "./routes/frontend/logout-route.js";
@@ -18,6 +20,9 @@ import confirmationLinkRequestRoute from "./routes/frontend/confirmation-link-re
 import getUserEmailVerifiedRoute from "./routes/user-management/get-user-email-verified.js";
 import updatePhoneNumberRoute from "./routes/frontend/update-phone-number-route.js";
 import changeTwoFactorAuthModeRoute from "./routes/frontend/change-two-factor-auth-mode-route.js";
+import deletePhoneNumberRoute from "./routes/frontend/delete-phone-number-route.js";
+import addAuthenticatorAppRoute from "./routes/frontend/add-authenticator-app-route.js";
+import confirmAuthenticatorAppRoute from "./routes/frontend/confirm-authenticator-app-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import fs from "fs";
@@ -108,6 +113,8 @@ fastify.register(fastifyMailer, {
 // fastify.register(changeTwoFactorAuthMode, { prefix: "/api" });
 fastify.register(registrationRoute);
 fastify.register(loginRoute);
+fastify.register(loginSmsRoute);
+fastify.register(loginAppRoute);
 fastify.register(emailRoute);
 fastify.register(passwordRoute);
 fastify.register(refreshTokenRoute);
@@ -118,6 +125,9 @@ fastify.register(confirmationLinkRequestRoute);
 fastify.register(getUserEmailVerifiedRoute);
 fastify.register(updatePhoneNumberRoute);
 fastify.register(changeTwoFactorAuthModeRoute);
+fastify.register(deletePhoneNumberRoute);
+fastify.register(addAuthenticatorAppRoute);
+fastify.register(confirmAuthenticatorAppRoute);
 
 const tablesToCheck = ["auth_codes", "devices", "email_codes", "two_factor_auth", "users"];
 

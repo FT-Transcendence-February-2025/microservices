@@ -2,6 +2,8 @@ import authenticationService from "../services/authentication-service.js";
 import cryptoService from "../services/crypto-service.js";
 import notifyService from "../services/notify-service.js";
 import db from "../services/database-service.js";
+import speakeasy from "speakeasy";
+import qrcode from "qrcode";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -23,8 +25,11 @@ const authenticationController = {
 		let response;
 		switch (twoFactorInfo.mode) {
 			case "phone": {
-				const phoneNumber = cryptoService.decrypt(twoFactorInfo.phone_number, twoFactorInfo.initialization_vector, 
-					twoFactorInfo.auth_tag);
+				const phoneNumber = cryptoService.decrypt(
+					twoFactorInfo.phone_number,
+					twoFactorInfo.phone_initialization_vector, 
+					twoFactorInfo.phone_auth_tag
+				);
 				if (phoneNumber.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
@@ -32,9 +37,14 @@ const authenticationController = {
 				if (sendResult.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
+				const sessionToken = authenticationService.createToken({ userId: verifyResult.userId }, "5m");
+				if (sessionToken.error) {
+					return reply.status(sessionToken.status).send({ error: sessionToken.error });
+				}
 				response = {
 					success: "Additional authentication required",
 					route: "/login/sms",
+					token: sessionToken
 				};
 				break;
 			}
@@ -42,25 +52,33 @@ const authenticationController = {
 				response = {
 					success: "Additional authentication required",
 					route: "/login/email",
+					token: sessionToken
 				};
 				break;
-			case "app":
+			case "app": {
+				console.log("in app");
+				const sessionToken = authenticationService.createToken({ userId: verifyResult.userId }, "5m");
+				if (sessionToken.error) {
+					return reply.status(sessionToken.status).send({ error: sessionToken.error });
+				}
 				response = {
 					success: "Additional authentication required",
 					route: "/login/app",
+					token: sessionToken
 				};
 				break;
+			}
 			case "off": {
-				const tokenInfo = await authenticationService.makeTokens(verifyResult.userId, request.headers["user-agent"]);
-				if (tokenInfo.error) {
-					return reply.status(tokenInfo.status).send({ error: tokenInfo.error });
+				const access = await authenticationService.giveUserAccess(verifyResult.userId, request.headers["user-agent"]);
+				if (access.error) {
+					return reply.status(access.status).send({ error: access.error });
 				}
 				response = {
 					success: "You have successfully logged in",
-					token: tokenInfo.accessToken
+					token: access.accessToken
 				};
 				try {
-					reply.setCookie("refreshToken", tokenInfo.refreshToken, tokenInfo.cookieOptions);
+					reply.setCookie("refreshToken", access.refreshToken, access.cookieOptions);
 				} catch (error) {
 					console.error(error);
 					return reply.status(500).send({ error: error });
@@ -70,7 +88,7 @@ const authenticationController = {
 			default:
 				return reply.status(500).send({ error: "Internal Server Error" });
 		}
-
+		console.log("response:", response);
 		reply.status(200).send(response);
 	},
 	loginSms: async (request, reply) => {
@@ -84,23 +102,81 @@ const authenticationController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const authCode = await db.getAuthCode(user.id, verificationCode, "sms");
+		const authCode = await db.getAuthCode(request.user.id, verificationCode, "sms");
 		if (authCode.error) {
 			return reply.status(authCode.status).send({ error: authCode.error });
 		}
 
-		const tokenInfo = await authenticationService.makeTokens(user.id, request.headers["user-agent"]);
-		if (tokenInfo.error) {
-			return reply.status(tokenInfo.status).send({ error: tokenInfo.error });
+		const access = await authenticationService.giveUserAccess(request.user.id, request.headers["user-agent"]);
+		if (access.error) {
+			return reply.status(access.status).send({ error: access.error });
 		}
 		try {
-			reply.setCookie("refreshToken", tokenInfo.refreshToken, tokenInfo.cookieOptions);
+			reply.setCookie("refreshToken", access.refreshToken, access.cookieOptions);
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function authenticationController.loginSms:", error);
 			return reply.status(500).send({ error: error });
 		}
 
 		await db.deleteAuthCode(authCode.id);
+
+		return reply.status(200).send({
+			success: "You have successfully logged in",
+			token: access.accessToken
+		});
+	},
+	loginApp: async (request, reply) => {
+		const twoFactorInfo = await db.getTwoFactorInfo(request.user.id);
+		if (!twoFactorInfo) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (twoFactorInfo.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (
+			!twoFactorInfo.app_secret ||
+			!twoFactorInfo.app_initialization_vector ||
+			!twoFactorInfo.app_auth_tag ||
+			!twoFactorInfo.app_enabled
+		) {
+			return reply.status(400).send({ error: "Authenticator 2fa not set up" });
+		}
+
+		const secret = cryptoService.decrypt(
+			twoFactorInfo.app_secret,
+			twoFactorInfo.app_initialization_vector,
+			twoFactorInfo.app_auth_tag
+		);
+		if (secret.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const { verificationCode } = request.body;
+
+		const verified = speakeasy.totp.verify({
+			secret: secret.decrypted,
+			encoding: "base32",
+			token: verificationCode
+		});
+		if (!verified) {
+			return reply.status(400).send({ error: "Invalid token" });
+		}
+
+		const access = await authenticationService.giveUserAccess(request.user.id, request.headers["user-agent"]);
+		if (access.error) {
+			return reply.status(access.status).send({ error: access.error });
+		}
+		try {
+			reply.setCookie("refreshToken", access.refreshToken, access.cookieOptions);
+		} catch (error) {
+			console.error("Error in function authenticationController.loginSms:", error);
+			return reply.status(500).send({ error: error });
+		}
+
+		return reply.status(200).send({
+			success: "You have successfully logged in",
+			token: access.accessToken
+		});
 	},
 	updatePhoneNumber: async (request, reply) => {
 		const { phoneNumber } = request.body;
@@ -121,13 +197,138 @@ const authenticationController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const updateResult = await db.updatePhoneNumber(request.user.id, encrypted.encrypted, encrypted.initializationVector, 
-			encrypted.authTag);
+		const updateResult = await db.updatePhoneNumber(
+			request.user.id,
+			encrypted.encrypted,
+			encrypted.initializationVector, 
+			encrypted.authTag
+		);
 		if (updateResult.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
 		return reply.status(200).send({ success: "Phone number has been added" });
+	},
+	deletePhoneNumber: async (request, reply) => {
+		const deleteResult = await db.deletePhoneNumber(request.user.id);
+		if (deleteResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const updateModeResult = await db.updateMode(userId, "email");
+		if (updateModeResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Phone number has been removed" });
+	},
+	addAuthenticatorApp: async (request, reply) => {
+		try {
+			const user = await db.getUserById(request.user.id);
+			if (!user) {
+				return reply.status(404).send({ error: "User not found" });
+			}
+			if (user.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+			if (!user.email_verified) {
+				return reply.status(400).send({ error: "Email needs to be verified first" });
+			}
+		
+			const secret = speakeasy.generateSecret({
+				name: `Pong (${user.email})`,
+				issuer: "Pong"
+			});
+		
+			const encrypted = cryptoService.encrypt(secret.base32);
+			if (encrypted.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+		
+			const updateResult = await db.updateApp(
+				request.user.id,
+				encrypted.encrypted,
+				encrypted.initializationVector,
+				encrypted.authTag,
+				false
+			);
+			if (updateResult.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+		
+			const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
+			if (qrCodeDataURL.error) {
+				return reply.status(500).send({ error: "Internal Server Error" });
+			}
+		
+			return reply.status(200).send({
+				success: "Sending QR code. Send code from the application on the next route",
+				qrCode: qrCodeDataURL,
+				route: "/confirm-authenticator-app"
+			});
+		} catch (error) {
+			console.error("Error in authenticationController.addAuthenticatorApp:", error);
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+	},
+	confirmAuthenticatorApp: async (request, reply) => {
+		const twoFactorInfo = await db.getTwoFactorInfo(request.user.id);
+		if (!twoFactorInfo) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (twoFactorInfo.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (
+			!twoFactorInfo.app_secret ||
+			!twoFactorInfo.app_initialization_vector ||
+			!twoFactorInfo.app_auth_tag
+		) {
+			return reply.status(400).send({ error: "Authenticator 2fa not added" });
+		}
+
+		const secret = cryptoService.decrypt(
+			twoFactorInfo.app_secret,
+			twoFactorInfo.app_initialization_vector,
+			twoFactorInfo.app_auth_tag
+		);
+		if (secret.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const { verificationCode } = request.body;
+
+		const verified = speakeasy.totp.verify({
+			secret: secret.decrypted,
+			encoding: "base32",
+			token: verificationCode,
+		});
+		if (!verified) {
+			return reply.status(400).send({ error: "Invalid token" });
+		}
+
+		const enableResult = await db.updateAppEnabled(request.user.id, true);
+		if (enableResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Authenticator app successfully added" });
+	},
+	deleteAuthenticatorApp: async (request, reply) => {
+		const twoFactorInfo = await db.getTwoFactorInfo(user.id);
+		if (!twoFactorInfo) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (twoFactorInfo.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		if (!twoFactorInfo.app_secret && !twoFactorInfo.app_initialization_vector && !twoFactorInfo.app_auth_tag) {
+			return reply.status(400).send({ error: "Authenticator app is already removed" });
+		}
+
+		
+
 	},
 	changeTwoFactorAuthMode: async (request, reply) => {
 		const { mode } = request.body;
@@ -155,8 +356,10 @@ const authenticationController = {
 			return reply.status(400).send({ error: "This mode is already set" });
 		}
 
-		if (mode === "phone" 
-			&& (!twoFactorInfo.phone_number || !twoFactorInfo.initialization_vector || !twoFactorInfo.auth_tag)) {
+		if (
+			mode === "phone" &&
+			(!twoFactorInfo.phone_number || !twoFactorInfo.phone_initialization_vector || !twoFactorInfo.phone_auth_tag)
+		) {
 			return reply.status(400).send({ error: "User has to add phone number first" });
 		}
 

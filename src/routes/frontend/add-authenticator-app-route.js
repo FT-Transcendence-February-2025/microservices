@@ -4,34 +4,26 @@ import authenticationController from "../../controllers/authentication-controlle
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/two-factor-authentication/change-mode",
+		url: "/two-factor-authentication/app/add",
 		schema: {
-			body: {
-				type: "object",
-				properties: {
-					mode: {
-						type: "string",
-						enum: ["off", "phone", "email", "app"]
-					}
-				},
-				required: ["mode"]
-			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						success: { type: "string" },
+						qrCode: { type: "string" },
+						route: { type: "string" }
 					},
-					required: ["success"]
+					required: ["success", "qrCode", "route"]
 				},
-				400: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				404: {
+				400: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -48,6 +40,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: authenticationController.changeTwoFactorAuthMode
+		handler: authenticationController.addAuthenticatorApp
 	});
 };

@@ -21,51 +21,22 @@ const authenticationService = {
 		
 		return { userId: user.id };
 	},
-	createToken: (userId, expiresIn) => {
+	giveUserAccess: async (userId, userAgent) => {
 		try {
-			const token = jwt.sign(
-				{ userId },
-				process.env.SECRET_KEY,
-				{ expiresIn }
-			);
-
-			return token;
-		} catch (error) {
-			console.error("Error in function authenticationService.createToken:", error);
-			return { status: 500, error: "Internal Server Error" };
-		}
-	},
-	saveDevice: async (userAgent, expiresInSeconds, userId, refreshToken) => {
-		try {
-			const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
-			const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-			const device = await db.getDevice(userId, deviceHash);
-			if (device && device.error) {
+			const userProfile = await userManagementService.getUser(userId);
+			if (userProfile.error) {
 				return { status: 500, error: "Internal Server Error" };
 			}
-			if (!device) {
-				const addResult = await db.addDevice(userId, deviceHash, refreshToken, expiresAt);
-				if (addResult.error) {
-					return { status: 500, error: "Internal Server Error" };
-				}
-			} else {
-				const updateResult = await db.updateToken(userId, deviceHash, refreshToken, expiresAt);
-				if (updateResult.error) {
-					return { status: 500, error: "Internal Server Error"};
-				}
+			const accessToken = authenticationService.createToken({ userId, displayName: userProfile.displayName }, "15m");
+			if (accessToken.error) {
+				return { status: accessToken.status, error: accessToken.error };
 			}
-		} catch (error) {
-			console.error("Error in function authenticationService.saveDevice:", error);
-			return { status: 500, error: "Internal Server Error" };
-		}
-	},
-	makeTokens: async (userId, userAgent) => {
-		try {
-			const refreshToken = jwt.sign(
-				{ userId },
-				process.env.SECRET_KEY,
-				{ expiresIn: "7d" }
-			);
+	
+			const refreshToken = authenticationService.createToken({ userId }, "7d");
+			if (refreshToken.error) {
+				return { status: refreshToken.status, error: refreshToken.error };
+			}
+	
 			const expiresInSeconds = 7 * 24 * 60 * 60;
 			const cookieOptions = {
 				signed: true,
@@ -75,39 +46,57 @@ const authenticationService = {
 				path: "/",
 				maxAge: expiresInSeconds
 			};
-
-			const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
-			const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-			const device = await db.getDevice(userId, deviceHash);
-			if (device && device.error) {
-				return { status: 500, error: "Internal Server Error" };
+			const saveResult = await saveDevice(userAgent, expiresInSeconds, userId, refreshToken);
+			if (saveResult.error) {
+				return { status: saveResult.status, error: saveResult.error };
 			}
-			if (!device) {
-				const addResult = await db.addDevice(userId, deviceHash, refreshToken, expiresAt);
-				if (addResult.error) {
-					return { status: 500, error: "Internal Server Error" };
-				}
-			} else {
-				const updateResult = await db.updateToken(userId, deviceHash, refreshToken, expiresAt);
-				if (updateResult.error) {
-					return { status: 500, error: "Internal Server Error"};
-				}
-			}
-			const userProfile = await userManagementService.getUser(userId);
-			if (userProfile.error) {
-				return { status: 500, error: "Internal Server Error" };
-			}
-			const accessToken = jwt.sign(
-				{ userId, displayName: userProfile.displayName },
-				process.env.SECRET_KEY,
-				{ expiresIn: "15m" }
-			);
-
-			return { refreshToken, accessToken, cookieOptions };
+	
+			return { accessToken, refreshToken, cookieOptions };
 		} catch (error) {
-			console.error("Error in token creation, in function authenticationService: ", error);
+			console.error("Error in function authenticationService.giveUserAccess:", error);
 			return { status: 500, error: "Internal Server Error" };
 		}
+	},
+	createToken: (payload, expiresIn) => {
+		try {
+			const token = jwt.sign(
+				payload,
+				process.env.SECRET_KEY,
+				{ expiresIn }
+			);
+	
+			return token;
+		} catch (error) {
+			console.error("Error in function authenticationService.createToken:", error);
+			return { status: 500, error: "Internal Server Error" };
+		}
+	}
+};
+
+const saveDevice = async (userAgent, expiresInSeconds, userId, refreshToken) => {
+	try {
+		const deviceHash = crypto.createHash('sha256').update(userAgent).digest('hex');
+		const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+		const device = await db.getDevice(userId, deviceHash);
+		if (device && device.error) {
+			return { status: 500, error: "Internal Server Error" };
+		}
+		if (!device) {
+			const addResult = await db.addDevice(userId, deviceHash, refreshToken, expiresAt);
+			if (addResult.error) {
+				return { status: 500, error: "Internal Server Error" };
+			}
+		} else {
+			const updateResult = await db.updateToken(userId, deviceHash, refreshToken, expiresAt);
+			if (updateResult.error) {
+				return { status: 500, error: "Internal Server Error"};
+			}
+		}
+
+		return { success: true };
+	} catch (error) {
+		console.error("Error in function authenticationService.saveDevice:", error);
+		return { status: 500, error: "Internal Server Error" };
 	}
 };
 

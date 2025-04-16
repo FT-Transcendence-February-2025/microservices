@@ -1,5 +1,5 @@
 import gameTemplate from './game.html?raw';
-import PongGame from "./utils/LocalGame.js"
+import PongGame from "../../utils/LocalGame.js"
 
 const template = document.createElement('template');
 template.innerHTML = gameTemplate;
@@ -94,12 +94,8 @@ export default class Game extends HTMLElement {
             this._addSocketListener();
         } 
         this._card = this.querySelector('.card') as HTMLElement;
-        if (!this._card) {
+        if (!this._card)
             throw new Error("Could not find '.card' element")
-        }
-            this._socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
-            this._addSocketListener();
-        } 
     }
 
     connectedCallback() {
@@ -118,23 +114,91 @@ export default class Game extends HTMLElement {
         document.removeEventListener("keydown", this._handleKeyDown);
         if (this._isLocal && this._localGameLoop)
             clearInterval(this._localGameLoop);
+    }
 
+    private _renderGameResult(gameEndState: GameState) {
+        const gameResult = this.querySelector('#gameResult') as HTMLElement;
+        if (!gameResult)
+            throw new Error("Could not find gameResult element");
+        gameResult.innerHTML = `
+            <div class="fixed inset-0 flex items-center justify-center z-[9999]">
+                <div class="card text-center w-120">
+                    <h1 class="mb-6">- Game Result -</h1>
+                    <div class="flex justify-around mb-6 text-xl font-semibold">
+                        <div>
+                            <div>Left Player</div>
+                            <div id="left-score" class="text-4xl text-blue-600">${gameEndState.paddleLeft.score}</div>
+                        </div>
+                        <div>
+                            <div>Right Player</div>
+                            <div id="right-score" class="text-4xl text-red-600">${gameEndState.paddleRight.score}</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary w-full mb-4" onClick="window.navigateTo('/home')">Home</a>
+                    <button class="btn-primary w-full" onClick="window.navigateTo('/game#local')">Rematch</a>
+                </div>
+            </div>
+        `;
     }
 
     private _runLocalGame() {
-        this._localGameLoop = setInterval(() => {
+        this._localGame
+        this._localGameLoop = window.setInterval(() => {
             this._localGame?.update();
             this._updateGameState(this._localGame?.getGameState());
-            if (this._localGame?.isGameOver() && this._localGameLoop)
+            if (this._localGame?.isGameOver() && this._localGameLoop) {
                 clearInterval(this._localGameLoop);
+                this._renderGameResult(this._localGame?.getGameState());
+            }
         }, LOCAL_GAME_LOOP_INTERVAL);
     }
 
     private _handleTouchStart(event: TouchEvent) : void {
         event.preventDefault();
-
         if (this._isLocal) {
-            // needs to be implemented
+            let leftUp = false;
+            let leftDown = false;
+            let rightUp = false;
+            let rightDown = false;
+            for (let i = 0; i < event.touches.length; i++) {
+                const touch = event.touches[i];
+                const x = touch.clientX;
+                const y = touch.clientY;
+                const isLeftSide = x < window.innerWidth / 2;
+                const isTopHalf = y < window.innerHeight / 2;
+
+                if (isLeftSide) {
+                    if (isTopHalf)
+                        leftUp = true;
+                    else
+                        leftDown = true;
+                } 
+                else {
+                    if (isTopHalf)
+                        rightUp = true;
+                    else
+                        rightDown = true;
+                }
+            }
+            if (leftUp && !this._wPressed) {
+                this._localGame?.setPaddleDir('left', 'up');
+                this._wPressed = true;
+                this._sPressed = false;
+            } else if (leftDown && !this._sPressed) {
+                this._localGame?.setPaddleDir('left', 'down');
+                this._sPressed = true;
+                this._wPressed = false;
+            }
+            if (rightUp && !this._upPressed) {
+                this._localGame?.setPaddleDir('right', 'up');
+
+                this._upPressed = true;
+                this._downPressed = false;
+            } else if (rightDown && !this._downPressed) {
+                this._localGame?.setPaddleDir('right', 'down');
+                this._downPressed = true;
+                this._upPressed = false;
+            }
         }
         else {
             const touchX = event.touches[event.touches.length - 1].clientX; 
@@ -154,9 +218,41 @@ export default class Game extends HTMLElement {
     
     private _handleTouchEnd(event: TouchEvent) : void {
         event.preventDefault();
-
         if (this._isLocal) {
-            // needs to be implemented
+            let leftUp = false;
+            let leftDown = false;
+            let rightUp = false;
+            let rightDown = false;
+            for (let i = 0; i < event.touches.length; i++) {
+                const touch = event.touches[i];
+                const x = touch.clientX;
+                const y = touch.clientY;
+                const isLeftSide = x < window.innerWidth / 2;
+                const isTopHalf = y < window.innerHeight / 2;
+        
+                if (isLeftSide) {
+                    if (isTopHalf)
+                        leftUp = true;
+                    else
+                        leftDown = true;
+                }
+                else {
+                    if (isTopHalf)
+                        rightUp = true;
+                    else
+                        rightDown = true;
+                }
+            }
+            if (!leftUp && !leftDown && (this._wPressed || this._sPressed)) {
+                this._localGame?.setPaddleDir('left', 'none');
+                this._wPressed = false;
+                this._sPressed = false;
+            }
+            if (!rightUp && !rightDown && (this._upPressed || this._downPressed)) {
+                this._localGame?.setPaddleDir('right', 'none');
+                this._upPressed = false;
+                this._downPressed = false;
+            } 
         }
         else {
             if (event.touches.length === 0) {
@@ -276,7 +372,6 @@ export default class Game extends HTMLElement {
         this._gameState.paddleRight.y = parsedData.paddleRight.y / SERVER_PLAY_FIELD_HEIGHT * this._canvas.height;
         this._gameState.paddleLeft.score = parsedData.paddleLeft.score;
         this._gameState.paddleRight.score = parsedData.paddleRight.score;
-        // console.log('pre Render');
         this._renderGame();
     }
 

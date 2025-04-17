@@ -21,7 +21,6 @@ import blockUserRoute from "./routes/frontend/block-user-route.js";
 import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
 import getUserFriendListRoute from "./routes/tournament/get-user-friend-list-route.js";
-
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 import config from "./config/config.js";
 
@@ -57,7 +56,6 @@ fastify.register(unblockUserRoute, { prefix: config.apiPrefix });
 fastify.register(getBlockListRoute, { prefix: config.apiPrefix });
 fastify.register(getUserRoute, { prefix: config.apiPrefix });
 fastify.register(getUserFriendListRoute, { prefix: config.apiPrefix });
-
 
 const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 

@@ -24,6 +24,7 @@ import deletePhoneNumberRoute from "./routes/frontend/delete-phone-number-route.
 import addAuthenticatorAppRoute from "./routes/frontend/add-authenticator-app-route.js";
 import confirmAuthenticatorAppRoute from "./routes/frontend/confirm-authenticator-app-route.js";
 import deleteAuthenticatorAppRoute from "./routes/frontend/delete-authenticator-app-route.js";
+import resendTwoFactorVerificationCodeRoute from "./routes/frontend/resend-two-factor-verification-code-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 import config from "./config/config.js";
@@ -87,6 +88,7 @@ fastify.register(deletePhoneNumberRoute, { prefix: config.apiPrefix });
 fastify.register(addAuthenticatorAppRoute, { prefix: config.apiPrefix });
 fastify.register(confirmAuthenticatorAppRoute, { prefix: config.apiPrefix });
 fastify.register(deleteAuthenticatorAppRoute, { prefix: config.apiPrefix });
+fastify.register(resendTwoFactorVerificationCodeRoute, { prefix: config.apiPrefix });
 
 const tablesToCheck = ["auth_codes", "devices", "two_factor_auth", "users"];
 

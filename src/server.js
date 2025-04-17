@@ -21,12 +21,22 @@ import cron from 'node-cron';
 import db from './services/database-service.js';
 // Importing configurations
 import config from './config/config.js';
+import { metricsRoute, addMetricsHook } from './config/metrics.js';
+import { addLoggingHooks } from './config/logging.js';
 
 const PORT = 3001
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
   logger: config.logger,
 });
+
+
+// Add the logging hooks
+addLoggingHooks(fastify);
+// Add the metrics hook to track all requests
+addMetricsHook(fastify);
+// Expose the /metrics endpoint
+metricsRoute(fastify);
 
 // Register plugins
 fastify.register(fastifyBcrypt, { saltWorkFactor: 12 });

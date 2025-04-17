@@ -27,7 +27,7 @@ import config from "./config/config.js";
 const PORT = 3002
 
 const fastify = Fastify({
-	logger: config.logger,
+	// logger: config.logger,
   });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end

@@ -13,7 +13,7 @@ const passwordController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 		
-		const emailCode = await db.getEmailCode(user.email, verificationCode, "password");
+		const emailCode = await db.getAuthCode(user.id, verificationCode, "password_change");
 		if (emailCode.error) {
 			return reply.status(emailCode.status).send({ error: emailCode.error });
 		}
@@ -23,7 +23,7 @@ const passwordController = {
 			return reply.status(passwordChangeResult.status).send({ error: passwordChangeResult.error });
 		}
 
-		await db.deleteEmailCode(emailCode.id);
+		await db.deleteAuthCode(emailCode.id);
 
 		return reply.send({ success: passwordChangeResult.message });
 	}

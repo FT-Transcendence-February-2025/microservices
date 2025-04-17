@@ -11,7 +11,7 @@ export default async function (fastify, opts) {
 				properties: {
 					mode: {
 						type: "string",
-						enum: ["off", "phone", "email", "app"]
+						enum: ["off", "sms", "email", "app"]
 					}
 				},
 				required: ["mode"]

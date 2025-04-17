@@ -4,23 +4,25 @@ import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
 const notifyService = {
-  sendEmail: async ({ settings , receiver }) => {
+  sendEmail: async ({ settings, receiver }) => {
     const { mailer } = fastify;
 		let accessGate, options;
-		switch (settings.type) {
-			case "emailConfirm":
+		switch (settings.emailType) {
+			case "link": {
 				accessGate = `http://localhost:3001/verify-email/${
-					generateConfirmationToken(settings.userId, settings.type, 10)
+					generateConfirmationToken(settings.userId, settings.emailType, 10)
 				}`;
 				options = generateEmailConfirmationOptions(receiver, accessGate);
 				break;
-			case "code":
-				accessGate = generateEmailCode(receiver, settings.dataToChange);
+			}
+			case "code": {
+				accessGate = generateAuthCode(settings.userId, settings.codeType);
 				if (accessGate.error) {
 					return { status: accessGate.status, error: accessGate.error };
 				}
-				options = generateEmailCodeOptions(receiver, accessGate.code);
+				options = generateAuthCodeOptions(receiver, accessGate.code);
 				break;
+			}
 			default:
         fastify.log.error(`Unknown email type: ${settings.type}`);
         return { status: 400, error: "Invalid email type" };
@@ -33,7 +35,7 @@ const notifyService = {
       return { status: 500, error: "Something went wrong" };
     }
   },
-	verifyConfirmationToken: (token, action) => {
+	verifyConfirmationToken: (token, type) => {
 		try {
 			const [identifier, userId, receivedSignature, timestamp, expirationMinutes] = token.split("-");
 	
@@ -43,7 +45,7 @@ const notifyService = {
 			}
 	
 			const hmac = crypto.createHmac("sha256", process.env.SECRET_KEY);
-			hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
+			hmac.update(`${identifier}:${userId}:${type}:${timestamp}:${expirationMinutes}`);
 			const expectedSignature = hmac.digest("hex").substr(0, 8);
 	
 			if (receivedSignature === expectedSignature) {
@@ -85,27 +87,16 @@ const notifyService = {
 	}
 };
 
-const generateConfirmationToken = (userId, action, expirationMinutes) => {
+const generateConfirmationToken = (userId, type, expirationMinutes) => {
 	const identifier = uuidv4().split("-")[0];
 	const timestamp = Math.floor(Date.now() / 1000);
 
 	const hmac = crypto.createHmac("sha256", process.env.SECRET_KEY);
 
-	hmac.update(`${identifier}:${userId}:${action}:${timestamp}:${expirationMinutes}`);
+	hmac.update(`${identifier}:${userId}:${type}:${timestamp}:${expirationMinutes}`);
 	const signature = hmac.digest("hex").substr(0, 8);
 
 	return `${identifier}-${userId}-${signature}-${timestamp}-${expirationMinutes}`;
-};
-
-const generateEmailCode = (email, dataToChange) => {
-	const code = Math.floor(100000 + Math.random() * 900000).toString();
-	const expiresAt = Math.floor(Date.now() / 1000 + 10 * 60);
-	const addResult = db.addEmailCode(email, code, expiresAt, dataToChange);
-	if (addResult.error) {
-		return { error: "Internal Server Error", status: 500 };
-	}
-
-	return { code };
 };
 
 const generateAuthCode = (userId, type) => {
@@ -146,11 +137,11 @@ const generateEmailConfirmationOptions = (receiver, confirmationLink) => ({
   `
 });
 
-const generateEmailCodeOptions = (receiver, code) => ({
+const generateAuthCodeOptions = (receiver, code) => ({
   to: receiver,
   subject: "Confirmation code",
   html: `
-    <p>Here is the code you need to use to change your login data:</p>
+    <p>Here is the requested confirmation code for Pong site:</p>
     <p style="
         display: inline-block;
         cursor: default;

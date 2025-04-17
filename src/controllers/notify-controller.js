@@ -3,7 +3,7 @@ import notifyService from "../services/notify-service.js";
 
 const notifyController = {
 	sendCode: async (request, reply) => {
-		const { email, dataToChange } = request.body;
+		const { email, action } = request.body;
 		const user = await db.getUserByEmail(email);
 		if (!user) {
 			return reply.status(404).send({ error: "Provided email is not valid" });
@@ -17,8 +17,8 @@ const notifyController = {
 
 		const sendResult = await notifyService.sendEmail({
 			settings: {
-				type: "code",
-				dataToChange
+				emailType: "code",
+				codeType: action
 			},
 			receiver: email
 		});
@@ -39,7 +39,7 @@ const notifyController = {
 
 		const sendResult = await notifyService.sendEmail({
 			settings: {
-				type: "emailConfirm",
+				emailType: "link",
 				userId: user.id
 			},
 			receiver: user.email

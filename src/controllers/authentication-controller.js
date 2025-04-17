@@ -24,16 +24,16 @@ const authenticationController = {
 
 		let response;
 		switch (twoFactorInfo.mode) {
-			case "phone": {
-				const phoneNumber = cryptoService.decrypt(
-					twoFactorInfo.phone_number,
-					twoFactorInfo.phone_initialization_vector, 
-					twoFactorInfo.phone_auth_tag
+			case "sms": {
+				const smsInfo = cryptoService.decrypt(
+					twoFactorInfo.sms_phone_number,
+					twoFactorInfo.sms_initialization_vector, 
+					twoFactorInfo.sms_auth_tag
 				);
-				if (phoneNumber.error) {
+				if (smsInfo.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
-				const sendResult = await notifyService.sendSms(verifyResult.userId, phoneNumber.decrypted);
+				const sendResult = await notifyService.sendSms(verifyResult.userId, smsInfo.decrypted);
 				if (sendResult.error) {
 					return reply.status(500).send({ error: "Internal Server Error" });
 				}
@@ -48,15 +48,30 @@ const authenticationController = {
 				};
 				break;
 			}
-			case "email":
+			case "email": {
+				const sendResult = await notifyService.sendEmail({
+					settings: {
+						emailType: "code",
+						userId: verifyResult.userId,
+						codeType: "email_auth"
+					},
+					receiver: email
+				});
+				if (sendResult.error) {
+					return reply.status(500).send({ error: "Internal Server Error" });
+				}
+				const sessionToken = authenticationService.createToken({ userId: verifyResult.userId }, "5m");
+				if (sessionToken.error) {
+					return reply.status(sessionToken.status).send({ error: sessionToken.error });
+				}
 				response = {
 					success: "Additional authentication required",
 					route: "/login/email",
 					token: sessionToken
 				};
 				break;
+			}
 			case "app": {
-				console.log("in app");
 				const sessionToken = authenticationService.createToken({ userId: verifyResult.userId }, "5m");
 				if (sessionToken.error) {
 					return reply.status(sessionToken.status).send({ error: sessionToken.error });
@@ -88,7 +103,6 @@ const authenticationController = {
 			default:
 				return reply.status(500).send({ error: "Internal Server Error" });
 		}
-		console.log("response:", response);
 		reply.status(200).send(response);
 	},
 	loginSms: async (request, reply) => {
@@ -102,7 +116,23 @@ const authenticationController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const authCode = await db.getAuthCode(request.user.id, verificationCode, "sms");
+		const twoFactorInfo = await db.getTwoFactorInfo(request.user.id);
+		if (!twoFactorInfo) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (twoFactorInfo.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (
+			!twoFactorInfo.mode !== "sms" ||
+			!twoFactorInfo.sms_phone_number ||
+			!twoFactorInfo.sms_initialization_vector ||
+			!twoFactorInfo.sms_auth_tag
+		) {
+			return reply.status(400).send({ error: "SMS 2fa not set up" });
+		}
+
+		const authCode = await db.getAuthCode(request.user.id, verificationCode, "sms_auth");
 		if (authCode.error) {
 			return reply.status(authCode.status).send({ error: authCode.error });
 		}
@@ -134,6 +164,7 @@ const authenticationController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 		if (
+			!twoFactorInfo.mode !== "app" ||
 			!twoFactorInfo.app_secret ||
 			!twoFactorInfo.app_initialization_vector ||
 			!twoFactorInfo.app_auth_tag ||
@@ -178,6 +209,51 @@ const authenticationController = {
 			token: access.accessToken
 		});
 	},
+	loginEmail: async (request, reply) => {
+		const user = await db.getUserById(request.user.id);
+		if (!user) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (user.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		const twoFactorInfo = await db.getTwoFactorInfo(request.user.id);
+		if (!twoFactorInfo) {
+			return reply.status(404).send({ error: "User not found" });
+		}
+		if (twoFactorInfo.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+		if (twoFactorInfo.mode !== "email") {
+			return reply.status(400).send({ error: "Email 2fa not set up" });
+		}
+
+		const { verificationCode } = request.body;
+
+		const authCode = await db.getAuthCode(request.user.id, verificationCode, "email_auth");
+		if (authCode.error) {
+			return reply.status(authCode.status).send({ error: authCode.error });
+		}
+
+		const access = await authenticationService.giveUserAccess(request.user.id, request.headers["user-agent"]);
+		if (access.error) {
+			return reply.status(access.status).send({ error: access.error });
+		}
+		try {
+			reply.setCookie("refreshToken", access.refreshToken, access.cookieOptions);
+		} catch (error) {
+			console.error("Error in function authenticationController.loginSms:", error);
+			return reply.status(500).send({ error: error });
+		}
+
+		await db.deleteAuthCode(authCode.id);
+
+		return reply.status(200).send({
+			success: "You have successfully logged in",
+			token: access.accessToken
+		});
+	},
 	updatePhoneNumber: async (request, reply) => {
 		const { phoneNumber } = request.body;
 		
@@ -215,7 +291,7 @@ const authenticationController = {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const updateModeResult = await db.updateMode(userId, "email");
+		const updateModeResult = await db.updateMode(request.user.id, "email");
 		if (updateModeResult.error) {
 			return reply.status(500).send({ error: "Internal Server Error" });
 		}
@@ -315,7 +391,7 @@ const authenticationController = {
 		return reply.status(200).send({ success: "Authenticator app successfully added" });
 	},
 	deleteAuthenticatorApp: async (request, reply) => {
-		const twoFactorInfo = await db.getTwoFactorInfo(user.id);
+		const twoFactorInfo = await db.getTwoFactorInfo(request.user.id);
 		if (!twoFactorInfo) {
 			return reply.status(404).send({ error: "User not found" });
 		}
@@ -327,8 +403,17 @@ const authenticationController = {
 			return reply.status(400).send({ error: "Authenticator app is already removed" });
 		}
 
-		
+		const deleteResult = await db.deleteApp(request.user.id);
+		if (deleteResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
 
+		const updateModeResult = await db.updateMode(request.user.id, "email");
+		if (updateModeResult.error) {
+			return reply.status(500).send({ error: "Internal Server Error" });
+		}
+
+		return reply.status(200).send({ success: "Authenticator application has been removed" });
 	},
 	changeTwoFactorAuthMode: async (request, reply) => {
 		const { mode } = request.body;
@@ -357,10 +442,22 @@ const authenticationController = {
 		}
 
 		if (
-			mode === "phone" &&
-			(!twoFactorInfo.phone_number || !twoFactorInfo.phone_initialization_vector || !twoFactorInfo.phone_auth_tag)
+			mode === "sms" &&
+			(!twoFactorInfo.sms_phone_number || !twoFactorInfo.sms_initialization_vector || !twoFactorInfo.sms_auth_tag)
 		) {
 			return reply.status(400).send({ error: "User has to add phone number first" });
+		}
+
+		if (
+			mode === "app" &&
+			(
+				!twoFactorInfo.app_secret ||
+				!twoFactorInfo.app_initialization_vector ||
+				!twoFactorInfo.app_auth_tag ||
+				!twoFactorInfo.app_enabled
+			)
+		) {
+			return reply.status(400).send({ error: "User has to add authenticator app first" });
 		}
 
 		const updateResult = await db.updateMode(request.user.id, mode);

@@ -7,7 +7,7 @@ const createAuthCodesTable = async () => {
       table.integer("user_id").notNullable().references("id").inTable("users").onDelete("CASCADE");
 			table.integer("code").notNullable();
       table.bigInteger("expires_at").notNullable();
-			table.enu("type", ["sms", "email"]).notNullable();
+			table.enu("type", ["sms_auth", "email_auth", "email_change", "password_change"]).notNullable();
     });
     console.log("Auth codes table created");
   } catch (error) {

@@ -21,7 +21,28 @@ export default async function (fastify, opts) {
 						route: { type: "string" },
 						token: { type: "string" }
 					},
-					required: ["success"]
+					required: ["success", "token"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				404: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
+				},
+				500: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				}
 			}
 		},

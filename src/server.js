@@ -1,6 +1,5 @@
 import Fastify from "fastify";
 import fastifyBcrypt from "fastify-bcrypt";
-import dotenv from "dotenv";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
 import checkAndCreateTables from "./database/migrations/create-tables.js";
@@ -8,6 +7,9 @@ import cron from "node-cron";
 import db from "./services/database-service.js";
 import registrationRoute from "./routes/frontend/registration-route.js";
 import loginRoute from "./routes/frontend/login-route.js";
+import loginSmsRoute from "./routes/frontend/login-sms-route.js";
+import loginAppRoute from "./routes/frontend/login-app-route.js";
+import loginEmailRoute from "./routes/frontend/login-email-route.js";
 import passwordRoute from "./routes/frontend/password-route.js";
 import refreshTokenRoute from "./routes/frontend/refresh-token-route.js";
 import logoutRoute from "./routes/frontend/logout-route.js";
@@ -18,44 +20,18 @@ import confirmationLinkRequestRoute from "./routes/frontend/confirmation-link-re
 import getUserEmailVerifiedRoute from "./routes/user-management/get-user-email-verified.js";
 import updatePhoneNumberRoute from "./routes/frontend/update-phone-number-route.js";
 import changeTwoFactorAuthModeRoute from "./routes/frontend/change-two-factor-auth-mode-route.js";
+import deletePhoneNumberRoute from "./routes/frontend/delete-phone-number-route.js";
+import addAuthenticatorAppRoute from "./routes/frontend/add-authenticator-app-route.js";
+import confirmAuthenticatorAppRoute from "./routes/frontend/confirm-authenticator-app-route.js";
+import deleteAuthenticatorAppRoute from "./routes/frontend/delete-authenticator-app-route.js";
 const { default: fastifyMailer } = await import('fastify-mailer');
 ////////////////////////////////////////////////////DOCKER CONTAINER end
-import fs from "fs";
+import config from "./config/config.js";
 
-// // Load environment variables
-// if (fs.existsSync(process.env.ENV_FILE_PATH)) {
-// //   dotenv.config({ paxth: process.env.ENV_FILE_PATH });
-	dotenv.config();
-// } else {
-//   console.warn(`Environment file not found at ${process.env.ENV_FILE_PATH}`);
-// }
-
-// // Validate required environment variables
-// const requiredVariables = [
-//   "ENV_FILE_PATH",
-//   "NODE_ENV",
-//   "DOMAIN",
-//   "COOKIE_SECRET",
-// ];
-// const missingVariables = requiredVariables.filter((key) => !process.env[key]);
-
-// if (missingVariables.length > 0) {
-//   console.error(
-//     `Missing required environment variables: ${missingVariables.join(", ")}`
-//   );
-//   process.exit(1); // Exit the process with an error code
-// }
+const PORT = 3001;
 
 const fastify = Fastify({
-	// logger: {
-	//   transport: {
-	// 	target: 'pino-pretty', // Use pino-pretty for pretty printing.
-	// 	options: {
-	// 	  translateTime: 'SYS:standard', // Formats the timestamp into a human-readable date.
-	// 	  colorize: true, // Colorize output in development.
-	// 	}
-	//   }
-	// }
+	logger: config.logger,
 });
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
@@ -64,16 +40,14 @@ fastify.register(fastifyBcrypt, {
   saltWorkFactor: 12
 });
 
-// TODO: modify this later (current settings are for testing local frontend).
-// new update to work in docker compose
 fastify.register(fastifyCors, {
-    origin: [
-        `https://${process.env.DOMAIN}`,
-        `http://auth.${process.env.DOMAIN}`,
-		`locahost`
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+	origin: [
+		`https://${process.env.DOMAIN}`,
+		`http://auth.${process.env.DOMAIN}`,
+	`locahost`
+	],
+	methods: ["GET", "POST", "PUT", "DELETE"],
+	credentials: true
 });	
 
 
@@ -94,32 +68,27 @@ fastify.register(fastifyMailer, {
   }
 });
 
-// fastify.register(registrationRoute, { prefix: "/api" });
-// fastify.register(loginRoute, { prefix: "/api" });
-// fastify.register(emailRoute, { prefix: "/api" });
-// fastify.register(passwordRoute, { prefix: "/api" });
-// fastify.register(refreshTokenRoute, { prefix: "/api" });
-// fastify.register(logoutRoute, { prefix: "/api" });
-// fastify.register(verifyEmailRoute, { prefix: "/api" });
-// fastify.register(dataChangeRequestRoute, { prefix: "/api" });
-// fastify.register(confirmationLinkRequestRoute, { prefix: "/api" });
-// fastify.register(getUserEmailVerifiedRoute, { prefix: "/api" });
-// fastify.register(updatePhoneNumberRoute, { prefix: "/api" });
-// fastify.register(changeTwoFactorAuthMode, { prefix: "/api" });
-fastify.register(registrationRoute);
-fastify.register(loginRoute);
-fastify.register(emailRoute);
-fastify.register(passwordRoute);
-fastify.register(refreshTokenRoute);
-fastify.register(logoutRoute);
-fastify.register(verifyEmailRoute);
-fastify.register(dataChangeRequestRoute);
-fastify.register(confirmationLinkRequestRoute);
-fastify.register(getUserEmailVerifiedRoute);
-fastify.register(updatePhoneNumberRoute);
-fastify.register(changeTwoFactorAuthModeRoute);
+fastify.register(registrationRoute, { prefix: config.apiPrefix });
+fastify.register(loginRoute, { prefix: config.apiPrefix });
+fastify.register(loginSmsRoute, { prefix: config.apiPrefix });
+fastify.register(loginAppRoute, { prefix: config.apiPrefix });
+fastify.register(loginEmailRoute, { prefix: config.apiPrefix });
+fastify.register(emailRoute, { prefix: config.apiPrefix });
+fastify.register(passwordRoute, { prefix: config.apiPrefix });
+fastify.register(refreshTokenRoute, { prefix: config.apiPrefix });
+fastify.register(logoutRoute, { prefix: config.apiPrefix });
+fastify.register(verifyEmailRoute, { prefix: config.apiPrefix });
+fastify.register(dataChangeRequestRoute, { prefix: config.apiPrefix });
+fastify.register(confirmationLinkRequestRoute, { prefix: config.apiPrefix });
+fastify.register(getUserEmailVerifiedRoute, { prefix: config.apiPrefix });
+fastify.register(updatePhoneNumberRoute, { prefix: config.apiPrefix });
+fastify.register(changeTwoFactorAuthModeRoute, { prefix: config.apiPrefix });
+fastify.register(deletePhoneNumberRoute, { prefix: config.apiPrefix });
+fastify.register(addAuthenticatorAppRoute, { prefix: config.apiPrefix });
+fastify.register(confirmAuthenticatorAppRoute, { prefix: config.apiPrefix });
+fastify.register(deleteAuthenticatorAppRoute, { prefix: config.apiPrefix });
 
-const tablesToCheck = ["auth_codes", "devices", "email_codes", "two_factor_auth", "users"];
+const tablesToCheck = ["auth_codes", "devices", "two_factor_auth", "users"];
 
 const startServer = async () => {
   try {
@@ -129,19 +98,19 @@ const startServer = async () => {
     // Run scheduled refresh token check and delete expired tokens.
     cron.schedule("0 */12 * * *", async () => {
       await db.deleteExpiredTokens();
-    	await db.deleteExpiredEmailCodes();
+    	await db.deleteExpiredAuthCodes();
 		});
 
     // Perform an initial cleanup of expired tokens.
     await db.deleteExpiredTokens();
-		await db.deleteExpiredEmailCodes();
+		await db.deleteExpiredAuthCodes();
 
     // Start the Fastify server.
     fastify.get("/", (request, reply) => {
       return { message: "Fastify server of authentication-service running" };
     });
 
-    fastify.listen({ port: 3001, host: '0.0.0.0' }, (error, address) => {
+    fastify.listen({ port: PORT, host: '0.0.0.0' }, (error, address) => {
       if (error) {
         console.error(error);
         process.exit(1);
@@ -157,5 +126,3 @@ const startServer = async () => {
 startServer();
 
 export default fastify;
-
-// TODO: check and fix error codes.

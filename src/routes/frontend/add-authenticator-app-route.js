@@ -1,38 +1,29 @@
 import jwtTr from "jwt-validator-tr";
-import notifyController from "../../controllers/notify-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/data-change-request",
+		url: "/two-factor-authentication/app/add",
 		schema: {
-			body: {
-				type: "object",
-				properties: {
-					email: { type: "string" },
-					action: {
-						type: "string",
-						enum: ["email_change", "password_change"]
-					}
-				},
-				required: ["email", "action"]
-			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						success: { type: "string" },
+						qrCode: { type: "string" },
+						route: { type: "string" }
 					},
-					required: ["success"]
+					required: ["success", "qrCode", "route"]
 				},
-				400: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				404: {
+				400: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -49,6 +40,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCode
+		handler: authenticationController.addAuthenticatorApp
 	});
 };

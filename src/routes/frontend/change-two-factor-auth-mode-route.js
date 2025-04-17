@@ -4,14 +4,14 @@ import authenticationController from "../../controllers/authentication-controlle
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/change-two-factor-auth-mode",
+		url: "/two-factor-authentication/change-mode",
 		schema: {
 			body: {
 				type: "object",
 				properties: {
 					mode: {
 						type: "string",
-						enum: ["off", "phone", "email", "app"]
+						enum: ["off", "sms", "email", "app"]
 					}
 				},
 				required: ["mode"]

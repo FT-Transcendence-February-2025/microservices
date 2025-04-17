@@ -20,13 +20,15 @@ export default async function (fastify, opts) {
 					type: "object",
 					properties: {
 						success: { type: "string" }
-					}
+					},
+					required: ["success"]
 				},
 				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
-					}
+					},
+					required: ["error"]
 				}
 			}
 		},

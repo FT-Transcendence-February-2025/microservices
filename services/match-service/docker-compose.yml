@@ -1,9 +1,60 @@
+
+volumes:
+  match-vol:
+    driver: local
+    name: match-vol
+
 services:
-  sqlite:
-    image: nouchka/sqlite3
-    container_name: sqlite3
-    stdin_open: true # Keep container running
-    tty: true # Keep container running
+  match:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - DEBUG_MODE=${DEBUG_MODE:-0}
+        - DNS_SERVER=8.8.8.8
+    image: img_match:latest
+    container_name: match
+    hostname: match
     volumes:
-      - ./data:/data
-    command: sh # Use shell to keep container
+      - match-vol:/usr/src/app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DOMAIN: ${DOMAIN}
+      IP: ${IP}
+      DOMAIN_TEST: ${DOMAIN_TEST}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    networks:
+      backend:
+        ipv4_address: 172.18.0.4
+    labels:
+      - "traefik.enable=true"
+      # --- Public Router: Externally facing ---
+      # Matches any request coming to the public domain with the /api/match prefix
+      - "traefik.http.routers.api-match-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/match`)"
+      - "traefik.http.routers.api-match-public.entrypoints=websecure"
+      - "traefik.http.routers.api-match-public.tls=true"
+      - "traefik.http.routers.api-match-public.priority=90"
+      # Apply middlewares: one for Host rewriting and one for path rewriting
+      - "traefik.http.routers.api-match-public.middlewares=change-host-to-match,rewrite-match-path"
+
+      # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
+      # Matches any request coming from wildcard subdomains with /api/match prefix
+      # - "traefik.http.routers.api-match-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/match`)"
+      # - "traefik.http.routers.api-match-internal.entrypoints=websecure"
+      # - "traefik.http.routers.api-match-internal.tls=true"
+      # # Use the same middlewares to rewrite Host and Path
+      # - "traefik.http.routers.api-match-internal.middlewares=change-host-to-match,rewrite-match-path"
+      # # Middleware: Change the Host header to the internal hostname (match.domain)
+      - "traefik.http.middlewares.change-host-to-match.headers.customrequestheaders.Host=match.${DOMAIN}"
+      # Middleware: Rewrite the incoming path. Strips the /api/match prefix so that:
+      #   /api/match/task  →  /api/task
+      - "traefik.http.middlewares.rewrite-match-path.replacePathRegex.regex=^/api/match(.*)"
+      - "traefik.http.middlewares.rewrite-match-path.replacePathRegex.replacement=/api$1"
+      # Service Definition: match microservice backend
+      - "traefik.http.services.match-service.loadbalancer.server.port=3003"
+
+

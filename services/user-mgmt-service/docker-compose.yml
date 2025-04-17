@@ -13,7 +13,7 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        - DEBUG_MODE=${DEBUG_MODE}
+        - DEBUG_MODE=${DEBUG_MODE:-0}
         - DNS_SERVER=8.8.8.8
     image: img_user:latest
     container_name: user
@@ -31,7 +31,7 @@ services:
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
-      DEBUG_MODE: ${DEBUG_MODE}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -39,8 +39,7 @@ services:
       - "3002"
     networks:
       backend:
-       aliases:
-          - user
+        ipv4_address: 172.18.0.3
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---
@@ -49,8 +48,14 @@ services:
       - "traefik.http.routers.api-user-public.entrypoints=websecure"
       - "traefik.http.routers.api-user-public.tls=true"
       - "traefik.http.routers.api-user-public.priority=90"
-      # Apply middlewares: one for Host rewriting and one for path rewriting
-      - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path"
+        # Apply middlewares: one for blocking and others for Host and Path rewriting
+      - "traefik.http.routers.api-user-public.middlewares=block-new-user,change-host-to-user,rewrite-user-path"
+
+      # Middleware: Block requests to /api/user/new-user
+      - "traefik.http.middlewares.block-new-user.rule=Path(`/api/user/new-user`)"
+      - "traefik.http.middlewares.block-new-user.customResponse.statusCode=403"
+      - "traefik.http.middlewares.block-new-user.customResponse.contentType=text/plain"
+      - "traefik.http.middlewares.block-new-user.customResponse.body=Access Denied"
 
       # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
       # Matches any request coming from wildcard subdomains with /api/user prefix
@@ -68,6 +73,3 @@ services:
 
       # Service Definition: user microservice backend
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"
-
-
-

@@ -22,4 +22,5 @@ COPY src .
 
 EXPOSE 3002
 
+# CMD ["sh", "-c", "node src/database/migrations/create-users-table.js && npm run dev"]
 CMD ["npm", "run", "dev"]

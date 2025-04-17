@@ -26,11 +26,11 @@ DEBUG="$1"
 if [ "$DEBUG" -eq 1 ]; then
 	echo "########### ---- Debug mode is enabled ---- ###########3"
 fi
-export $(egrep '(SSL|DATA|ADMIN_EMAIL|AUTH_ENV)=' ./secrets/.env.tmp)
+export $(egrep '(SSL|DATA|ADMIN_EMAIL|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.tmp)
 export DOMAIN=$(hostname)
 IP=$(ip route get 8.8.8.8 | awk '{print $7}')
 echo "# --- COMPOSE & TRAEFIK SERVICE --- #" >> .env
-grep -vE '^(TOKEN|AUTH_ENV)=' ./secrets/.env.tmp >> .env
+grep -vE '^(TOKEN|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.tmp >> .env
 
 
 echo $ADMIN_EMAIL > $SSL/adminEmail.txt
@@ -41,6 +41,7 @@ GROUP_ID=$(id -g)
 HOST_USER=$USER
 DOMAIN=$DOMAIN
 IP=$IP
+AUTH_DASHBOARD=$(echo "$AUTH_DASHBOARD" | sed 's/\$/\$\$/g')
 # ---------- VOLUMES ---------- #
 NGINX_VOL=$PWD/$DATA/nginx
 FASTIFY_VOL=$PWD/$DATA/fastify

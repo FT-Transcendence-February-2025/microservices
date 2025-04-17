@@ -13,10 +13,12 @@ define createDir
 		printf "$(LF)  🟢  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! \n"; \
 	fi
 endef
-
+hash-pass:
+	htpasswd -nb pongAdmin yourpassword
 restartDocker:
 	@echo "Stopping rootless Docker..."
 	-pkill -f dockerd-rootless.sh || echo "Docker is not running."
+	@sleep 3
 runDocker: restartDocker
 	sh scripts/runDockerRootless.sh
 pull-Img:
@@ -24,17 +26,20 @@ pull-Img:
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
 	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
 	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
+	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
+    docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
 		echo "One or more tar files are missing. Running pull-Img..."; \
 		$(MAKE) pull-Img; \
 	fi
-	-docker load -i alpine.tar && \
-	-docker load -i node-20-alpine.tar && \
-	-docker load -i traefik-v3.3.3.tar && \
-	-docker load -i nginx-alpine.tar
-
+	-@docker load -i alpine.tar && \
+	docker load -i node-20-alpine.tar && \
+	docker load -i traefik-v3.3.3.tar && \
+	docker load -i nginx-alpine.tar && \
+	docker load -i prometheus.tar && \
+	docker load -i grafana.tar
 
 # Show list of all running Docker containers
 show:
@@ -56,7 +61,23 @@ showAll:
 watchC:
 	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
-
+w:
+	@while true; do \
+		docker compose logs --follow $$c || { clear; true; }; \
+		sleep 2; \
+	done
+checkDbs:
+	@-while true; do \
+		printf "$(LF)$(D_PURPLE) DB auth-users$(P_NC)\n" ; \
+		docker exec -it auth sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
+		printf "$(LF)$(D_PURPLE) DB user$(P_NC)\n" ; \
+		docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
+		sleep 2; clear;  \
+	done
+# printf "$(LF)$(D_PURPLE) DB match$(P_NC)\n" ; \
+# 		docker exec -it match sh -c "sqlite3 /app/src/db/database.sqlite 'SELECT * FROM users;'"; \
+# 		printf "$(LF)$(D_PURPLE) DB tournament$(P_NC)\n" ; \
+# 		docker exec -it tour sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"; \
 # Add all changes to git
 gAdd:
 	@echo $(CYAN) && git add .
@@ -152,19 +173,7 @@ cert:
 # docker rm alpine
 testCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
-# docker run --rm -v /sgoinfre/$USER/data:/certs -it debian:bullseye sh -c 'apt-get update && apt-get install -y libnss3-tools curl && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/privkey.key -cert-file /certs/fullchain.crt ${USER}.pong.42.fr'
-#	@mkcert -key-file secrets/$(arg)/privkey.key -cert-file secrets/$(arg)/fullchain.crt ${USER}.pong.42.fr
 
-# Generate SSL certificates using Certbot
-# cerbot:
-# 	$(call createDir,$(SSL))
-# 	@HOST=$(shell hostname -s) ; \
-# 	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt]; then \
-# 		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
-# 	else \
-# 		rm -rf $(SSL)/*; \
-# 		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/etc/letsencrypt -v $(SSL):/var/lib/letsencrypt -v $(SSL):/var/log/letsencrypt -p 80:80 -p 443:443 certbot/certbot sh -c "certbot certonly --standalone -d $(shell hostname) && cp /etc/letsencrypt/live/$(shell hostname)/privkey.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).key && cp /etc/letsencrypt/live/$(shell hostname)/fullchain.pem /etc/letsencrypt/live/$(shell hostname)/$(shell hostname -s).crt"; \
-# 	fi
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

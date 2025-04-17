@@ -64,17 +64,21 @@ configure_rootless_networking() {
 # Function to configure DNS for Docker
 configure_docker_dns() {
     DNS_FILE="$HOME/.config/docker/daemon.json"
-    DNS_SERVERS='{"dns": ["8.8.8.8", "1.1.1.1"]}'
+    # This is the DNS configuration that we want to add.
+    NEW_DNS='{"dns": ["8.8.8.8", "1.1.1.1"]}'
 
     mkdir -p "$(dirname "$DNS_FILE")"
 
     if [ -f "$DNS_FILE" ]; then
         echo "✔ DNS configuration file already exists. Updating..."
+        # Back up the current file
+        cp "$DNS_FILE" "${DNS_FILE}.bak"
+        jq '. + {"dns": ["8.8.8.8", "1.1.1.1"]}' "$DNS_FILE" > "$DNS_FILE.tmp" && mv "$DNS_FILE.tmp" "$DNS_FILE"
     else
         echo "✔ Creating DNS configuration file for Docker..."
+        echo "$NEW_DNS" > "$DNS_FILE"
     fi
 
-    echo "$DNS_SERVERS" > "$DNS_FILE"
     echo "✔ DNS servers added to $DNS_FILE."
 }
 

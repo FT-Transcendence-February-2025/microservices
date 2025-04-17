@@ -3,17 +3,15 @@
 # The team lead is the code owner for all files
 * @VictoriaLizCor
 # The team members owner for all files in the services/ directory
-./services @VictoriaLizCor 
 ./services/authentication-service/src @cptfran
-#./services/backend-service
-#./services/frontend-service
-./services/game-service/src @mottjes
+./services/frontend-service @mottjes
+./services/game-service/src @mottjes @MemoCSales
 ./services/tournament-service @frbeyer1 @MemoCSales
 services/match-service @MemoCSales
-#./services/user-management-service
-#./services/nginx-DNS-service
+./services/user-management-service  @cptfran
+
 
 # The documentation team is the code owner for all files in the docs/ directory
 docs/ @VictoriaLizCor
 
-<!-- cptfran frbeyer1 MemoCSales mottjes VictoriaLizCor -->
+# Contributors: <!-- cptfran frbeyer1 MemoCSales mottjes VictoriaLizCor -->

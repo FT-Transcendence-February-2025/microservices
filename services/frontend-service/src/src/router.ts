@@ -64,9 +64,11 @@ export default class Router {
     }
 
     init() : void {
-        window.addEventListener('popstate', () => { 
+        window.addEventListener('popstate', () => {
             this._route();
         });
         this._route();
+        // @ts-ignore
+        window.navigateTo = this.navigateTo.bind(this);
     }
 }

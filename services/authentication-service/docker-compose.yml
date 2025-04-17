@@ -13,9 +13,9 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        - DEBUG_MODE=${DEBUG_MODE}
+        - DEBUG_MODE=${DEBUG_MODE:-0}
         - DNS_SERVER=8.8.8.8
-    image: img_authentication:latest
+    image: img_auth:latest
     container_name: auth
     hostname: auth
     volumes:
@@ -31,7 +31,7 @@ services:
       IP: ${IP}
       DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
-      DEBUG_MODE: ${DEBUG_MODE}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -39,8 +39,7 @@ services:
       - "3001"
     networks:
       backend:
-       aliases:
-          - auth
+        ipv4_address: 172.18.0.2
     # command: sh -c 'echo "$(hostname -i) auth.$DOMAIN" >> /etc/hosts && exec npm run dev'
     labels:
     - "traefik.enable=true"

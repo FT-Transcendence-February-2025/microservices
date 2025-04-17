@@ -1,5 +1,5 @@
 import jwtTr from "jwt-validator-tr";
-import frontendController from "../../controllers/frontend-controller";
+import frontendController from "../../controllers/frontend-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
@@ -9,13 +9,10 @@ export default async function (fastify, opts) {
 			body: {
 				type: "object",
 				properties: {
-					invitingId: {
-						type: "number",
-						multipleOf: 1
-					},
+					invitingDisplayName: { type: "string" },
 					accepted: { type: "boolean" }
 				},
-				required: ["invitingId", "accepted"]
+				required: ["invitingDisplayName", "accepted"]
 			},
 			response: {
 				200: {
@@ -24,6 +21,13 @@ export default async function (fastify, opts) {
 						success: { type: "string" }
 					},
 					required: ["success"]
+				},
+				400: {
+					type: "object",
+					properties: {
+						error: { type: "string" }
+					},
+					required: ["error"]
 				},
 				500: {
 					type: "object",

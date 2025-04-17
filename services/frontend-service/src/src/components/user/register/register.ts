@@ -13,10 +13,10 @@ export default class Register extends HTMLElement {
     connectedCallback() {
         const registerForm = this.querySelector("#registerForm");
         if (registerForm)
-            registerForm.addEventListener('submit', this.handleSubmit.bind(this));
+            registerForm.addEventListener('submit', this._handleSubmit.bind(this));
     }
 
-    async handleSubmit(event: Event): Promise<void> {
+    private _handleSubmit(event: Event) {
         event.preventDefault();
         const displayName = (this.querySelector('#displayName') as HTMLInputElement).value; 
         const email = (this.querySelector('#email') as HTMLInputElement).value;

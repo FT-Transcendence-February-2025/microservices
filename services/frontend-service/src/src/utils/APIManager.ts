@@ -17,8 +17,9 @@ async function fetchWithToken(url: string, options: any) {
             options.headers.Authorization = `Bearer ${accessToken}`;
             return fetch(url, options);
         }
-        // redirect to /login and delete tokens !!!
         localStorage.removeItem('accessToken');
+        // @ts-ignore
+        window.navigateTo('/login');
         throw new Error('Unable to refresh token');
     }
     return response;

@@ -39,8 +39,8 @@ export default class Game extends HTMLElement {
 
         window.location.hash === '#local' ? this._local = true : this._local = false;
 
-        this._local === true ? this._secondSocket = new WebSocket(`ws://${window.location.hostname}:3000/game`) : this._secondSocket = null;
-        this._socket = new WebSocket(`ws://${window.location.hostname}:3000/game`);
+        this._local === true ? this._secondSocket = new WebSocket(`ws://${window.location.hostname}:3001/game`) : this._secondSocket = null;
+        this._socket = new WebSocket(`ws://${window.location.hostname}:3001/game`);
         this.addSocketListener();
         this._upPressed = false;
         this._downPressed = false;
@@ -66,7 +66,7 @@ export default class Game extends HTMLElement {
     connectedCallback() {
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
-
+        
         document.addEventListener("touchstart", this.handleTouchStart.bind(this));
         document.addEventListener("touchend", this.handleTouchEnd.bind(this));
         document.addEventListener("keyup", this.handleKeyUp.bind(this));
@@ -106,7 +106,7 @@ export default class Game extends HTMLElement {
         event.preventDefault();
 
         if (this._local) {
-            
+            // 
         }
         else {
             if (event.touches.length === 0) {
@@ -128,11 +128,11 @@ export default class Game extends HTMLElement {
         }
         if (this._local) {
             if (event.key === "w" && this._wPressed === true) {
-                this.sendPaddlePositionSecondSocket("none");
+                this.sendPaddlePositionLocal("none", "left");
                 this._wPressed = false;
             }
             else if (event.key === "s" && this._sPressed === true) {
-                this.sendPaddlePositionSecondSocket("none");
+                this.sendPaddlePositionLocal("none", "left");
                 this._downPressed = false;
             }
         }
@@ -151,12 +151,12 @@ export default class Game extends HTMLElement {
         }
         if (this._local) {
             if (event.key === "w" && this._wPressed === false) {
-                this.sendPaddlePositionSecondSocket("up");
+                this.sendPaddlePositionLocal("up", "right");
                 this._wPressed = true;
                 this._sPressed = false;
             } 
             else if (event.key === "s" && this._sPressed === false) {
-                this.sendPaddlePositionSecondSocket("down");
+                this.sendPaddlePositionLocal("down", "right");
                 this._sPressed = true;
                 this._wPressed = false;
             }
@@ -238,14 +238,24 @@ export default class Game extends HTMLElement {
             this._socket.send(JSON.stringify(data));
     }
 
-    sendPaddlePositionSecondSocket(direction: string) : void {
+    sendPaddlePositionLocal(direction: string, side: string) {
         const data = {
             type: "paddleMove",
             dir: direction,
+            side: side
         };
         if (this._secondSocket && this._secondSocket.readyState === WebSocket.OPEN)
             this._secondSocket.send(JSON.stringify(data));
     }
+
+    // sendPaddlePositionSecondSocket(direction: string) : void {
+    //     const data = {
+    //         type: "paddleMove",
+    //         dir: direction,
+    //     };
+    //     if (this._secondSocket && this._secondSocket.readyState === WebSocket.OPEN)
+    //         this._secondSocket.send(JSON.stringify(data));
+    // }
 
     drawPaddle (x: number, y: number) : void {
         this._ctx.fillStyle = COLOR;

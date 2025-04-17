@@ -12,7 +12,6 @@ const authenticationController = {
 		const { userId, displayName } = request.body;
 		const newUserResult = await db.addUser(userId, displayName, DEFAULT_AVATAR_PATH, 0, 0);
 		if (newUserResult.error) {
-			console.error("Error while creating new user ", newUserResult.error);
 			return reply.status(newUserResult.status).send({ error: "Internal Server Error" });
 		}
 	
@@ -37,7 +36,7 @@ const authenticationController = {
 		if (!connection) {
 			return reply.status(404).send({ error: "User not found on online list" });
 		}
-		connection.socket.close(1000, "User logged out");
+		connection.close(1000, "User logged out");
 		frontendController.activeConnections.delete(userId);
 
 		return reply.status(200).send({ success: "User status changed to offline" });

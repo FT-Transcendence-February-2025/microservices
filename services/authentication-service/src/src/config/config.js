@@ -22,6 +22,14 @@ const config = {
             colorize: true,
           },
         },
+		customLogLevel: (req, res, err) => {
+			// Suppress logs for /metrics
+			if (req.url === '/metrics') {
+			  return 'silent';
+			}
+			// Default log level
+			return err ? 'error' : 'info';
+		},
       }
     : true,
   isDocker,

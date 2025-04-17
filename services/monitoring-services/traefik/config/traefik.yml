@@ -33,6 +33,8 @@ entryPoints:
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
+  metrics:
+    address: ":8082" 
 
 providers:
   docker:
@@ -42,6 +44,14 @@ providers:
   #   filename: /etc/traefik/dynamic_conf.yml
   #   watch: true
 
+metrics:
+  prometheus:
+    entryPoint: metrics
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
 
 
 # self certificates
@@ -87,7 +97,10 @@ tcpServersTransport:
 
 log:
   level: DEBUG
-accessLog: {}
+  # filePath: "/traefik/logs/traefik.log"
+accessLog:
+  # filePath: "/traefik/logs/access.log"
+  bufferingSize: 100
 global:
   checkNewVersion: false
   sendAnonymousUsage: false

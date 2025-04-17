@@ -8,8 +8,10 @@ RUN apk add --no-cache curl ca-certificates openssl jq && \
 # # Copy static configuration
 COPY ./config/traefik.yml /etc/traefik/traefik.yml
 
+RUN mkdir -p /etc/traefik/logs && \
+    chmod -R 777 /etc/traefik/logs
 # Create and set permissions for acme.json
-RUN touch /etc/traefik/acme.json && chmod 600 /etc/traefik/acme.json
+# RUN touch /etc/traefik/acme.json && chmod 600 /etc/traefik/acme.json
 
 # Expose ports
 EXPOSE 80
@@ -32,3 +34,5 @@ RUN --mount=type=secret,id=ssl_key.key,dst=/run/secrets/ssl_key.key \
     cp /run/secrets/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt && \
     update-ca-certificates
 CMD ["traefik", "--configFile=/etc/traefik/traefik.yml"]
+# CMD ["sh", "-c", "traefik --configFile=/etc/traefik/traefik.yml | tee /traefik/logs/access.log"]
+# CMD ["sh", "-c", "traefik --configFile=/etc/traefik/traefik.yml | tee /etc/traefik/logs/traefik.log"]

@@ -100,11 +100,11 @@ ft_transcendence
 
 <!-- things to DO
  [] health monitoring
- [] PROMETEUS / TRAEFIK METRIC
- [] 
- [] 
- []
- []
+ [x] PROMETEUS / TRAEFIK METRIC
+ [] restric routes for all services 
+ [] include endpoint /metrics in all services
+ [] chage to production mode
+ [] persistant data
  [] 
 
 

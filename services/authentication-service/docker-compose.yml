@@ -3,9 +3,13 @@ secrets:
     file: ${AUTH_ENV}
 
 volumes:
-  authentication-vol:
+  auth-vol:
     driver: local
-    name: authentication-vol
+    name: auth-vol
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DATA}/auth
 
 services:
   auth:
@@ -19,7 +23,7 @@ services:
     container_name: auth
     hostname: auth
     volumes:
-      - authentication-vol:/usr/src/app
+      - auth-vol:/usr/src/app
     restart: unless-stopped
     secrets:
       - envFile
@@ -29,7 +33,6 @@ services:
       NODE_ENV: development
       DOMAIN: ${DOMAIN}
       IP: ${IP}
-      DOMAIN_TEST: ${DOMAIN_TEST}
       ENV_FILE_PATH: /run/secrets/envFile
       DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
@@ -68,8 +71,8 @@ services:
     - "traefik.http.middlewares.rewrite-auth-path.replacePathRegex.replacement=/api$1"
     # - "traefik.http.routers.api-auth-internal.middlewares=auth-ip-whitelist"
     # - "traefik.http.middlewares.auth-ip-whitelist.ipwhitelist.sourcerange=172.18.0.0/24"
-    # Service Definition: Authentication microservice backend
-    - "traefik.http.services.authentication-service.loadbalancer.server.port=3001"
+    # Service Definition: auth microservice backend
+    - "traefik.http.services.auth-service.loadbalancer.server.port=3001"
 
 
   # - "traefik.http.middlewares.api-headers.headers.accesscontrolallowmethods=GET,POST,OPTIONS"

@@ -20,14 +20,24 @@ import removeFriendRoute from "./routes/frontend/remove-friend.js";
 import blockUserRoute from "./routes/frontend/block-user-route.js";
 import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
+import getUserFriendListRoute from "./routes/tournament/get-user-friend-list-route.js";
 ////////////////////////////////////////////////////DOCKER CONTAINER start
-import config from "./config/config.js";
+import { metricsRoute, addMetricsHook } from './config/metrics.js';
+import { addLoggingHooks } from './config/logging.js';
 
-const PORT = 3002
-
+const PORT = 3001
+// Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
-	logger: config.logger,
-  });
+  logger: config.logger,
+});
+
+
+// Add the logging hooks
+addLoggingHooks(fastify);
+// Add the metrics hook to track all requests
+addMetricsHook(fastify);
+// Expose the /metrics endpoint
+metricsRoute(fastify);
 
 ////////////////////////////////////////////////////DOCKER CONTAINER end
 
@@ -35,12 +45,11 @@ const fastify = Fastify({
 fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
 
-// // Register routes:
+// Register routes:
 fastify.register(newUserRoute, { prefix: config.apiPrefix });
 fastify.register(userExistsRoute, { prefix: config.apiPrefix });
 fastify.register(avatarRoute, { prefix: config.apiPrefix });
 fastify.register(displayNameRoute, { prefix: config.apiPrefix });
-// fastify.register(matchmakingRoute, { prefix: config.apiPrefix });
 fastify.register(websocketRoute, { prefix: config.apiPrefix });
 fastify.register(userLogoutRoute, { prefix: config.apiPrefix });
 fastify.register(getFriendsRoute, { prefix: config.apiPrefix });
@@ -54,6 +63,8 @@ fastify.register(removeFriendRoute, { prefix: config.apiPrefix });
 fastify.register(blockUserRoute, { prefix: config.apiPrefix });
 fastify.register(unblockUserRoute, { prefix: config.apiPrefix });
 fastify.register(getBlockListRoute, { prefix: config.apiPrefix });
+fastify.register(getUserRoute, { prefix: config.apiPrefix });
+fastify.register(getUserFriendListRoute, { prefix: config.apiPrefix });
 
 const tablesToCheck = ["block_list", "friend_list", "match_history", "users"];
 

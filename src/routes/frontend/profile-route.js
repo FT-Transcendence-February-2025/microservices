@@ -4,17 +4,13 @@ import frontendController from "../../controllers/frontend-controller.js";
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "GET",
-		url: "/profile/:userId",
+		url: "/profile/:displayName",
 		schema: {
 			params: {
 				type: "object",
 				properties: {
-					userId: {
-						type: "number",
-						multipleOf: 1
-					}
-				},
-				required: ["userId"]
+					displayName: { type: "string" }
+				}
 			},
 			response: {
 				200: {
@@ -25,9 +21,25 @@ export default async function (fastify, opts) {
 						avatarPath: { type: "string" },
 						wins: { type: "number" },
 						loses: { type: "number" },
-						online: { type: "boolean" }
+						online: { type: "boolean" },
+						matchHistory: {
+							type: "array",
+							items: {
+								type: "object",
+								properties: {
+									userDisplayName: { type: "string" },
+									opponentDisplayName: { type: "string" },
+									userScore: { type: "number" },
+									opponentScore: { type: "number" },
+									matchDate: { 
+										type: "string",
+										format: "date-time"
+									}
+								}
+							}
+						}
 					},
-					required: ["success", "displayName", "avatarPath", "wins", "loses", "online"]
+					required: ["success", "displayName", "avatarPath", "wins", "loses", "online", "matchHistory"]
 				},
 				403: {
 					type: "object",

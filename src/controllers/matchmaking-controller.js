@@ -2,7 +2,7 @@ import db from "../services/database-service.js";
 import frontendController from "./frontend-controller.js";
 
 const matchmakingController = {
-	getUser: async (request, reply) => {
+	getMatchHistory: async (request, reply) => {
 		const { userId } = request.params;
 
 		const user = await db.getUser(userId);
@@ -10,25 +10,10 @@ const matchmakingController = {
 			return reply.status(404).send({ error: "User not found" });
 		}
 		if (user.error) {
-			return reply.status(500).send({ error: "Internal Server Error" });
+				return reply.status(500).send({ error: "Internal Server Error" });
 		}
 
-		const connection = frontendController.activeConnections.get(userId);
-		const online = connection ? true : false; 
-
-		return reply.status(200).send({ 
-			success: "Found user profile",
-			displayName: user.display_name,
-			avatarPath: user.avatar_path,
-			wins: user.wins,
-			loses: user.loses,
-			online
-		});
-	},
-	getMatchHistory: async (request, reply) => {
-		const { userId } = request.params;
-
-		const matchHistory = db.getUserMatchHistory(userId);
+		const matchHistory = db.getUserMatchHistory(user.display_name);
 		if (!matchHistory) {
 			return reply.status(200).send({ success: "Match history for this user is empty" });
 		}
@@ -68,7 +53,7 @@ const matchmakingController = {
 		const { invitingId, invitedId } = request.body;
 
 		const invitingUser = await db.getUser(invitingId);
-		if (!invitingId) {
+		if (!invitingUser) {
 			return reply.status(404).send({ error: "User not found" });
 		}
 		if (invitingUser.error) {

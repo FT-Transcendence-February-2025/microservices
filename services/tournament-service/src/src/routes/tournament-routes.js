@@ -6,17 +6,7 @@ import { playersController } from '../controllers/playersController.js';
 import { joinController } from '../controllers/joinController.js';
 import { deletionController } from '../controllers/deletionController.js';
 
-// TODO finish methods schema
-
 export default async function (fastify) {
-
-  // fastify.get('/', async (request, reply) => {
-  //   return reply.sendFile('tournament.html');
-  // });
-
-  // fastify.get('/:tournamentId', async (request, reply) => {
-  //   return reply.sendFile('host.html');
-  // });
   
   //add to users table
   fastify.post('/addUser', {
@@ -59,7 +49,7 @@ export default async function (fastify) {
     }, handler: inviteController.sendInvite
   })
   
-  //fill tournament table with settings and info
+  //fill tournament table
   fastify.post('/:tournamentId/updateTournament', {    
     schema: {
       params: {
@@ -84,6 +74,7 @@ export default async function (fastify) {
     }, handler:updateController.updateTournament
   })
   
+  //fill scores table
   fastify.post('/:tournamentId/updateScores', {    
     schema: {
       params: {

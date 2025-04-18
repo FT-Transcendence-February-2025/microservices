@@ -5,22 +5,8 @@ export const deletionController = {
   async deleteTournament(request, reply) {
     const { tournamentId} = request.params;
     try {
-      const deleteScores = db.prepare('DELETE FROM scores WHERE tournament_id = ?').run(tournamentId);
-      // if (deleteScores.changes === 0) {
-      //   return reply.code(404).send({
-      //     statusCode: 404,
-      //     error: 'Scores not found',
-      //     message: `No Scores found with ID ${tournamentId}`
-      //   });
-      // }
-      const deletePlayers = db.prepare('DELETE FROM players WHERE tournament_id = ?').run(tournamentId);
-      // if (deletePlayers.changes === 0) {
-      //   return reply.code(404).send({
-      //       statusCode: 404,
-      //       error: 'Players not found',
-      //       message: `No Players found in Tournament: ${tournamentId}`
-      //   });
-      // }
+      db.prepare('DELETE FROM scores WHERE tournament_id = ?').run(tournamentId);
+      db.prepare('DELETE FROM players WHERE tournament_id = ?').run(tournamentId);
       const deleteTournament = db.prepare('DELETE FROM tournaments WHERE id = ?').run(tournamentId);
       if (deleteTournament.changes === 0) {
         return reply.code(404).send({

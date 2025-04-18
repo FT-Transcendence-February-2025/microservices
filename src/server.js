@@ -6,32 +6,31 @@ import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import config from './config/config.js'
+import { deletionController } from './controllers/deletionController.js'
 
-dotenv.config()
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+////////////////////////////////////////////////////DOCKER CONTAINER start
+import config from './config/config.js';
+import { metricsRoute, addMetricsHook } from './config/metrics.js';
+import { addLoggingHooks } from './config/logging.js';
 
 const PORT = process.env.PORT || 3004
-
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
   logger: config.logger,
 });
 
-fastify.register(cors, {
-	origin: [
-        `https://${process.env.DOMAIN}`,
-        `http://tour.${process.env.DOMAIN}`,
-		    `http://${process.env.IP}:${PORT}`,
-		    config.endpoints.tour,
-        '*'
-    ],
-	methods: ['GET', 'POST', 'PUT', 'DELETE'],
-	allowedHeaders: ['Content-Type', 'Authorization'], 
-	credentials: true
-})
+
+// Add the logging hooks
+addLoggingHooks(fastify);
+// Add the metrics hook to track all requests
+addMetricsHook(fastify);
+// Expose the /metrics endpoint
+metricsRoute(fastify);
+
+////////////////////////////////////////////////////DOCKER CONTAINER end
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // fastify.addHook('onRequest', (request, reply, done) => {
 //   console.log('Raw URL:', request.raw.url);

@@ -11,6 +11,7 @@ import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
 //////////////DOCKER CONTAINER start
+import config from './config/config.js';
 import { metricsRoute, addMetricsHook } from './config/metrics.js';
 import { addLoggingHooks } from './config/logging.js';
 

@@ -53,11 +53,20 @@ export const addMetricsHook = (fastify) => {
 export default register;
 ///////////////////////////////
 
-import { metricsRoute, addMetricsHook } from './config/metrics.js'; // Import metrics logic
+import { metricsRoute, addMetricsHook } from './config/metrics.js';
+import { addLoggingHooks } from './config/logging.js';
 
+const PORT = 3001
+// Create your Fastify instance with the logger configuration from config.
+const fastify = Fastify({
+  logger: config.logger,
+});
+
+
+// Add the logging hooks
+addLoggingHooks(fastify);
 // Add the metrics hook to track all requests
 addMetricsHook(fastify);
-
 // Expose the /metrics endpoint
 metricsRoute(fastify);
 // DOCKER DAEMON

@@ -1,21 +1,20 @@
 import jwtTr from "jwt-validator-tr";
-import notifyController from "../../controllers/notify-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/data-change-request",
+		url: "/two-factor-authentication/change-mode",
 		schema: {
 			body: {
 				type: "object",
 				properties: {
-					email: { type: "string" },
-					action: {
+					mode: {
 						type: "string",
-						enum: ["email_change", "password_change"]
+						enum: ["off", "sms", "email", "app"]
 					}
 				},
-				required: ["email", "action"]
+				required: ["mode"]
 			},
 			response: {
 				200: {
@@ -49,6 +48,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCodeDataChange
+		handler: authenticationController.changeTwoFactorAuthMode
 	});
 };

@@ -133,53 +133,53 @@ const db = {
 			return { error };
     }
 	},
-	addEmailCode: async (email, code, expiresAt, type) => {
+	addAuthCode: async (userId, code, expiresAt, type) => {
 		try {
-			await database("email_codes").insert({ email, code, expires_at: expiresAt, type });
+			await database("auth_codes").insert({ user_id: userId, code, expires_at: expiresAt, type });
 			return { success: true };
 		} catch (error) {
-			console.error("Error in function db.addEmailCode: ", error);
+			console.error("Error in function db.addAuthCode: ", error);
 			return { error };
 		}
 	},
-	getEmailCode: async (email, code, type) => {
+	getAuthCode: async (userId, code, type) => {
 		try {
-			const emailCodeEntry = await database("email_codes")
-				.where({ email, code, type })
+			const authCodeEntry = await database("auth_codes")
+				.where({ user_id: userId, code, type })
 				.first();
-			if (!emailCodeEntry) {
+			if (!authCodeEntry) {
 				return { error: "Verification code invalid", status: 404 };
 			}
 
 			const currentTime = Math.floor(Date.now() / 1000);
-			if (currentTime > emailCodeEntry.expires_at) {
-				await database("email_codes")
-					.where({ email, code, type })
+			if (currentTime > authCodeEntry.expires_at) {
+				await database("auth_codes")
+					.where({ user_id: userId, code, type })
 					.del();
 	
 				return { error: "Verification code expired", status: 410 };
 			}
 	
-			return emailCodeEntry;
+			return authCodeEntry;
 		} catch (error) {
-			console.error("Error in function db.getEmailCode: ", error);
+			console.error("Error in function db.getAuthCode: ", error);
 			return { error: "Internal Server Error", status: 500 };
 		}
 	},
-	deleteEmailCode: async (id) => {
+	deleteAuthCode: async (id) => {
 		try {
-			await database("email_codes").where({ id }).del();
+			await database("auth_codes").where({ id }).del();
 			return { success: true };
 		} catch (error) {
-			console.error(error);
+			console.error("Error in function db.deleteAuthCode:", error);
 			return { error };
 		}
 	},
-	deleteExpiredEmailCodes: async () => {
-		console.log("Running scheduled expired email codes removal...");
+	deleteExpiredAuthCodes: async () => {
+		console.log("Running scheduled expired auth codes removal...");
 		try {
 			const currentDate = Math.floor(Date.now() / 1000);
-			const deletedRows = await database("email_codes")
+			const deletedRows = await database("auth_codes")
 				.where("expires_at", "<", currentDate)
 				.del();
 
@@ -188,7 +188,110 @@ const db = {
 			console.error("Error in function db.deleteExpiredTokens: ", error);
 			return { error };
     }
-	}
+	},
+	updatePhoneNumber: async (userId, smsPhoneNumber, smsInitializationVector, smsAuthTag) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					sms_phone_number: smsPhoneNumber,
+					sms_initialization_vector: smsInitializationVector,
+					sms_auth_tag: smsAuthTag
+				});
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updatePhoneNumber: ", error);
+			return { error };
+		}
+	},
+	deletePhoneNumber: async (userId) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					sms_phone_number: null,
+					sms_initialization_vector: null,
+					sms_auth_tag: null
+				});
+	
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deletePhoneNumber:", error);
+			return { error: "Internal Server Error", status: 500 };
+		}
+	},
+	updateApp: async (userId, appSecret, appInitializationVector, appAuthTag, appEnabled) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					app_secret: appSecret,
+					app_initialization_vector: appInitializationVector,
+					app_auth_tag: appAuthTag,
+					app_enabled: appEnabled
+				});
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateApp: ", error);
+			return { error };
+		}
+	},
+	updateAppEnabled: async (userId, appEnabled) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({ app_enabled: appEnabled });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateAppEnabled: ", error);
+			return { error };
+		}
+	},
+	deleteApp: async (userId) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({
+					app_secret: null,
+					app_initialization_vector: null,
+					app_auth_tag: null,
+					app_enabled: false
+				});
+	
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.deleteApp:", error);
+			return { error: "Internal Server Error", status: 500 };
+		}
+	},
+	updateMode: async (userId, newMode) => {
+		try {
+			await database("two_factor_auth")
+				.where({ user_id: userId })
+				.update({ mode: newMode });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.updateMode:", error);
+			return { error };
+		}
+	},
+	getTwoFactorInfo: async (userId) => {
+		try {
+			return await database("two_factor_auth").where({ user_id: userId }).first();
+		} catch (error) {
+			console.error("Error in function db.get2faInfo:", error);
+			return { error };
+		}
+	},
+	addUserTwoFactor: async (userId) => {
+		try {
+			await database("two_factor_auth").insert({ user_id: userId, mode: "off" });
+			return { success: true };
+		} catch (error) {
+			console.error("Error in function db.addUserTwoFactor: ", error);
+			return { error };
+		}
+	},
 };
 
 export default db;

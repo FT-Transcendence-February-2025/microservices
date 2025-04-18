@@ -1,21 +1,20 @@
 import jwtTr from "jwt-validator-tr";
-import notifyController from "../../controllers/notify-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/data-change-request",
+		url: "/two-factor-authentication/sms/update-phone-number",
 		schema: {
-			body: {
+			body : {
 				type: "object",
 				properties: {
-					email: { type: "string" },
-					action: {
+					phoneNumber: {
 						type: "string",
-						enum: ["email_change", "password_change"]
-					}
+						pattern: "^\\+[0-9]{6,15}$"
+					},
 				},
-				required: ["email", "action"]
+				required: ["phoneNumber"]
 			},
 			response: {
 				200: {
@@ -25,14 +24,14 @@ export default async function (fastify, opts) {
 					},
 					required: ["success"]
 				},
-				400: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				404: {
+				400: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -49,6 +48,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCodeDataChange
+		handler: authenticationController.updatePhoneNumber
 	});
 };

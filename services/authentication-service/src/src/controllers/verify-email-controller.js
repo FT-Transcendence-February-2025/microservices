@@ -4,7 +4,7 @@ import db from "../services/database-service.js"
 const verifyEmailController = async (request, reply) => {
 	const { token } = request.params;
 
-	const verificationResult = notifyService.verifyConfirmationToken(token, "emailConfirm");
+	const verificationResult = notifyService.verifyConfirmationToken(token, "link");
 	if (verificationResult.error) {
 		return reply.status(401).send({ error: verificationResult.error });
 	}

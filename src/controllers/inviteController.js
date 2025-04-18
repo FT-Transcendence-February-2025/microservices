@@ -1,4 +1,5 @@
-const UM_SERVICE_URL = 'http://localhost:3002';
+import config from '../config/config.js';
+
 import db from '../db/database.js'
 
 export const inviteController = {
@@ -24,7 +25,7 @@ export const inviteController = {
             const ids = userIds
             console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `Sending invite for tournament: ${tournamentName}`);
 
-            const response = await fetch(`${UM_SERVICE_URL}/invite-tournament`, {
+            const response = await fetch(`${config.endpoints.user}/invite-tournament`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

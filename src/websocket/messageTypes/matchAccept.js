@@ -75,8 +75,6 @@ export async function tournamentMatchAccept (data, connection, matchAcceptances)
       return
     }
 
-    const gameUrl = `http://localhost:3000/game?matchId=${tournamentMatch.id}`
-
     activeConnections.forEach((conn, _userId) => {
       if (conn.userId === tournamentMatch.player1_id || conn.userId === tournamentMatch.player2_id) {
         const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(tournamentMatch, conn.userId, activeConnections)
@@ -86,7 +84,7 @@ export async function tournamentMatchAccept (data, connection, matchAcceptances)
             matchId: tournamentMatch.id,
             oppId: specificOpponentId,
             oppDisplayName: specificOpponentDisplayName,
-            gameUrl: `${gameUrl}&playerId=${conn.userId}`
+            playerId: conn.userId
           }))
       }
     })
@@ -172,9 +170,6 @@ export async function onlineMatchAccept (data, connection, matchAcceptances) {
       return
     }
 
-    const gameUrl = `http://localhost:3000/game?matchId=${match.id}`
-
-    // Notify both players
     activeConnections.forEach((conn, _userId) => {
       if (conn.userId === match.player1_id || conn.userId === match.player2_id) {
         const { specificOpponentId, specificOpponentDisplayName } = getOpponentDetails(match, connection.userId, activeConnections)
@@ -183,7 +178,7 @@ export async function onlineMatchAccept (data, connection, matchAcceptances) {
           matchId: match.id,
           oppId: specificOpponentId,
           oppDisplayName: specificOpponentDisplayName,
-          gameUrl: `${gameUrl}&playerId=${conn.userId}`
+          playerId: conn.userId
         }))
       }
     })

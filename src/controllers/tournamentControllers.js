@@ -1,7 +1,11 @@
 import { tournamentService } from '../db/tournamentService.js'
 import { databaseService } from '../db/databaseService.js'
 import db from '../db/database.js'
-const UM_SERVICE_URL = 'http://localhost:3000';
+import config from '../config/config.js';
+
+// const UM_SERVICE_URL = `${config.endpoints.match}`;
+const UM_SERVICE_URL = `${config.endpoints.user}`;
+// const UM_SERVICE_URL = 'http://localhost:3000';
 
 export const tournamentController = {
 

@@ -25,7 +25,7 @@ import getUserFriendListRoute from "./routes/tournament/get-user-friend-list-rou
 import { metricsRoute, addMetricsHook } from './config/metrics.js';
 import { addLoggingHooks } from './config/logging.js';
 
-const PORT = 3001
+const PORT = 3002
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
   logger: config.logger,

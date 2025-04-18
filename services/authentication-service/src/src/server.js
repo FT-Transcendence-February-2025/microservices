@@ -53,7 +53,8 @@ fastify.register(fastifyCors, {
         `https://${process.env.DOMAIN}`,
         `http://auth.${process.env.DOMAIN}`,
 		`http://${process.env.IP}:${PORT}`,
-		config.endpoints.auth
+		config.endpoints.auth,
+		'*'
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true

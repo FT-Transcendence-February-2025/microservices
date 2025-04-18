@@ -37,11 +37,22 @@ const __dirname = path.dirname(__filename);
 //   console.log('Parsed URL:', request.url);
 //   done();
 // });
+fastify.register(cors, {
+	origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://tour.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.tour
+    ],
+	methods: ['GET', 'POST', 'PUT', 'DELETE'],
+	allowedHeaders: ['Content-Type', 'Authorization'], 
+	credentials: true
+})
 
-fastify.register(fastifyStatic, {
-  root: path.join(__dirname, 'public'),
-  prefix: '/', // Serve files at the root URL
-});
+// fastify.register(fastifyStatic, {
+//   root: path.join(__dirname, 'public'),
+//   prefix: '/', // Serve files at the root URL
+// });
 
 // Initialize database
 try {

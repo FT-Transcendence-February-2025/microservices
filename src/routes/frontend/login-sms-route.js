@@ -1,38 +1,38 @@
 import jwtTr from "jwt-validator-tr";
-import notifyController from "../../controllers/notify-controller.js";
+import authenticationController from "../../controllers/authentication-controller.js";
 
 export default async function (fastify, opts) {
 	fastify.route({
 		method: "POST",
-		url: "/data-change-request",
+		url: "/login/two-factor-authentication/sms",
 		schema: {
-			body: {
+			body : {
 				type: "object",
 				properties: {
-					email: { type: "string" },
-					action: {
+					verificationCode: {
 						type: "string",
-						enum: ["email_change", "password_change"]
+						pattern: "^[0-9]{6}$"
 					}
 				},
-				required: ["email", "action"]
+				required: ["verificationCode"]
 			},
 			response: {
 				200: {
 					type: "object",
 					properties: {
-						success: { type: "string" }
+						success: { type: "string" },
+						token: { type: "string" }
 					},
 					required: ["success"]
 				},
-				400: {
+				404: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
 					},
 					required: ["error"]
 				},
-				404: {
+				410: {
 					type: "object",
 					properties: {
 						error: { type: "string" }
@@ -48,7 +48,7 @@ export default async function (fastify, opts) {
 				}
 			}
 		},
-		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCodeDataChange
+		preHandler: jwtTr.verifySessionToken,
+		handler: authenticationController.loginSms
 	});
 };

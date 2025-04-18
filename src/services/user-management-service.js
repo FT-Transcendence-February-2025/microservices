@@ -1,6 +1,20 @@
 import config from '../config/config.js';
 
 const userManagementService = {
+	getUser: async (userId) => {
+		const response = await fetch(`http://localhost:3002/get-user/${userId}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+		});
+
+		if (!response.ok) {
+			console.error("Error in function userManagementService.getUser:", response.status, response.statusText);
+			return { error: "Failed to get user from User Management Service" };
+		}
+
+		const data = await response.json();
+		return data;
+	},
 	displayNameExists: async (displayName) => {
 		const response = await fetch(`${config.endpoints.user}/user-exists`, {
 			method: "POST",
@@ -8,9 +22,8 @@ const userManagementService = {
 			body: JSON.stringify({ displayName })
 		});
 
-
 		if (!response.ok) {
-			console.error("Error in function userManagementService.displayNameExists: Error validating display name");
+			console.error("Error in function userManagementService.displayNameExists:", response.status, response.statusText);
 			return { error: "Failed to check display name in User Management Service" };
 		}
 
@@ -25,7 +38,7 @@ const userManagementService = {
     });
 
     if (!response.ok) {
-			console.error("Error in function userManagementService.sendId: Error creating user in user management service:", response.error);
+			console.error("Error in function userManagementService.sendId:", response.status, response.statusText);
 			return { error: "Failed to create user in User Management Service" };
     }
 
@@ -39,7 +52,7 @@ const userManagementService = {
 		});
 
 		if (!response.ok) {
-			console.error("Error in function userManagementService.informUserLogout: Error informing user management about user logout:", response.error);
+			console.error("Error in function userManagementService.informUserLogout:", response.status, response.statusText);
 			return { error: "Failed to inform user management about user logout" };
 		}
 	}

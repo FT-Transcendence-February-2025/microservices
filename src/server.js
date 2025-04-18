@@ -3,7 +3,6 @@ import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
-// import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
@@ -39,7 +38,7 @@ await fastify.register(fastifySwagger, {
       version: '1.0.0'
     },
     servers: [
-      { url: `http://localhost:${PORT}`, description: 'Development server' }
+      { url: `${config.endpoints.match}`, description: 'Development server' }
     ]
   }
 })

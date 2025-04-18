@@ -1,7 +1,7 @@
 import PongGame from './gameLogic.js'
+import config from './config/config.js';
 
 const GAME_LOOP_INTERVAL = 1000/60
-const PORT = 3004
 
 class GameInstanceManager {
 	constructor () {
@@ -166,7 +166,7 @@ class GameInstanceManager {
 			const winnerId = player1Score > player2Score ? player1Id :
 				(player2Score > player1Score ? player2Id : null);
 			
-			const response = await fetch(`http://localhost:${PORT}/tournament/matches/results`, {
+			const response = await fetch(`${config.endpoints.tour}/tournament/matches/results`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -191,7 +191,7 @@ class GameInstanceManager {
 			const winnerId = player1Score > player2Score ? player1Id :
 							(player2Score > player1Score ? player2Id : null);
 
-			const response = await fetch(`http://localhost:${PORT}/matches/results`, {
+			const response = await fetch(`${config.endpoints.tour}/matches/results`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

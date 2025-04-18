@@ -11,6 +11,12 @@ const registrationController = async (request, reply) => {
 		return reply.status(registrationResult.status).send({ error: registrationResult.error });
 	}
 
+	const addResult = await db.addUserTwoFactor(registrationResult.userId);
+	if (addResult.error) {
+		await db.deleteUser(registrationResult.userId);
+		return reply.status(500).send({ error: "Internal Server Error" });
+	}
+
 	const sendResult = await userManagementService.sendId(registrationResult.userId, registrationResult.displayName);
 	if (sendResult.error) {
 		await db.deleteUser(registrationResult.userId);

@@ -3,6 +3,10 @@ volumes:
   tour-vol:
     driver: local
     name: tour-vol
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DATA}/tour
 
 services:
   tour:
@@ -22,7 +26,6 @@ services:
       NODE_ENV: development
       DOMAIN: ${DOMAIN}
       IP: ${IP}
-      DOMAIN_TEST: ${DOMAIN_TEST}
       DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8

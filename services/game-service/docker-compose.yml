@@ -1,0 +1,63 @@
+
+volumes:
+  game-vol:
+    driver: local
+    name: game-vol
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DATA}/game
+
+services:
+  game:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - DEBUG_MODE=${DEBUG_MODE:-0}
+        - DNS_SERVER=8.8.8.8
+    image: img_game:latest
+    container_name: game
+    hostname: game
+    volumes:
+      - game-vol:/usr/src/app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DOMAIN: ${DOMAIN}
+      IP: ${IP}
+      DEBUG_MODE: ${DEBUG_MODE:-0}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    networks:
+      backend:
+        ipv4_address: 172.18.0.5
+    labels:
+      - "traefik.enable=true"
+      # --- Public Router: Externally facing ---
+      # gamees any request coming to the public domain with the /api/game prefix
+      - "traefik.http.routers.api-game-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/game`)"
+      - "traefik.http.routers.api-game-public.entrypoints=websecure"
+      - "traefik.http.routers.api-game-public.tls=true"
+      - "traefik.http.routers.api-game-public.priority=90"
+      # Apply middlewares: one for Host rewriting and one for path rewriting
+      - "traefik.http.routers.api-game-public.middlewares=change-host-to-game,rewrite-game-path"
+
+      # --- Internal Router: Dynamic Wildcard gameing for Subdomains ---
+      # gamees any request coming from wildcard subdomains with /api/game prefix
+      # - "traefik.http.routers.api-game-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/game`)"
+      # - "traefik.http.routers.api-game-internal.entrypoints=websecure"
+      # - "traefik.http.routers.api-game-internal.tls=true"
+      # # Use the same middlewares to rewrite Host and Path
+      # - "traefik.http.routers.api-game-internal.middlewares=change-host-to-game,rewrite-game-path"
+      # # Middleware: Change the Host header to the internal hostname (game.domain)
+      - "traefik.http.middlewares.change-host-to-game.headers.customrequestheaders.Host=game.${DOMAIN}"
+      # Middleware: Rewrite the incoming path. Strips the /api/game prefix so that:
+      #   /api/game/task  →  /api/task
+      - "traefik.http.middlewares.rewrite-game-path.replacePathRegex.regex=^/api/game(.*)"
+      - "traefik.http.middlewares.rewrite-game-path.replacePathRegex.replacement=/api$1"
+      # Service Definition: game microservice backend
+      - "traefik.http.services.game-service.loadbalancer.server.port=3005"
+
+

@@ -12,7 +12,7 @@ const emailController = async (request, reply) => {
 		return reply.status(500).send({ error: "Internal Server Error" });
 	}
 	
-	const emailCode = await db.getEmailCode(user.email, verificationCode, "email");
+	const emailCode = await db.getAuthCode(user.id, verificationCode, "email_change");
 	if (emailCode.error) {
 		return reply.status(emailCode.status).send({ error: emailCode.error });
 	}
@@ -22,7 +22,7 @@ const emailController = async (request, reply) => {
 		return reply.status(changeResult.status).send({ error: changeResult.error });
 	}
 
-	await db.deleteEmailCode(emailCode.id);
+	await db.deleteAuthCode(emailCode.id);
 
 	return reply.send({ success: changeResult.success });
 };

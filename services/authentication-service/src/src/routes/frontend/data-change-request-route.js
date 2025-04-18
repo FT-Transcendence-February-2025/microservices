@@ -10,12 +10,12 @@ export default async function (fastify, opts) {
 				type: "object",
 				properties: {
 					email: { type: "string" },
-					dataToChange: {
+					action: {
 						type: "string",
-						enum: ["email", "password"]
+						enum: ["email_change", "password_change"]
 					}
 				},
-				required: ["email", "dataToChange"]
+				required: ["email", "action"]
 			},
 			response: {
 				200: {
@@ -49,6 +49,6 @@ export default async function (fastify, opts) {
 			}
 		},
 		preHandler: jwtTr.verifyAccessToken,
-		handler: notifyController.sendCode
+		handler: notifyController.sendCodeDataChange
 	});
 };

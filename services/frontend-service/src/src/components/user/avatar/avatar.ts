@@ -1,5 +1,5 @@
 import avatarTemplate from './avatar.html?raw';
-import User from './../../..//utils/User.js'
+import User from '../../../utils/UserManager.js'
 
 const template = document.createElement('template');
 template.innerHTML = avatarTemplate;
@@ -11,12 +11,12 @@ export default class Avatar extends HTMLElement {
     
         const avatarButton = this.querySelector('#avatarButton');
         const userDropdown = this.querySelector('#userDropdown');
-        const displayName = this.querySelector('#displayName');
         const logoutLink = this.querySelector('#logoutLink');
         const profileLink = this.querySelector('#profileLink') as HTMLAnchorElement | null;
 
-        if (displayName)
-            displayName.textContent = User.displayName;
+        const image = this.querySelector('#avatar') as HTMLImageElement;
+        if (image)
+            image.src = User.avatarPath;
 
         if (avatarButton && userDropdown)
         avatarButton.addEventListener('click', () => {

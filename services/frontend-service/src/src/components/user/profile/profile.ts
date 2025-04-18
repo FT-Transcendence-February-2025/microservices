@@ -1,5 +1,5 @@
 import ProfileTemplate from './profile.html?raw';
-import User from '../../../utils/User.js'
+import User from '../../../utils/UserManager.js'
 
 const template = document.createElement('template');
 template.innerHTML = ProfileTemplate;
@@ -20,7 +20,7 @@ export default class Profile extends HTMLElement {
     }
 
     private _getProfile() {
-        User.getProfile(window.location.hash)
+        User.getFriendProfile(window.location.hash)
         .then((profile: IProfile) => {
             if (profile) {
                 const displayName = this.querySelector('#displayName');

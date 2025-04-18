@@ -3,6 +3,10 @@ volumes:
   front-vol:
     driver: local
     name: front-vol
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DATA}/front
 
 services:
   front:
@@ -25,7 +29,6 @@ services:
       DOMAIN: ${DOMAIN}
       VITE_HOST: ${DOMAIN}
       IP: ${IP}
-      DOMAIN_TEST: ${DOMAIN_TEST}
       VITE_PORT: "3000"
       DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:

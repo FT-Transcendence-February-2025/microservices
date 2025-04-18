@@ -1,8 +1,32 @@
+# prometheus/config/prometheus.yml
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - 'alert.rules'
+
 scrape_configs:
+  - job_name: 'traefik'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['traefik:8082']  # 'traefik' is the service name; port must match the entryPoint in traefik.yml
+
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['prometheus:9090']
+  
+  - job_name: 'backend_services'
+    metrics_path: /metrics
+    static_configs:
+      - targets: 
+          - 'auth:3001'
+          - 'user:3002'
+          - 'match:3003'
+          - 'tour:3004'
+          - 'game:3005'
+          # - 'front:3000'
+    # Replace PORT with the correct port numbers your services expose metrics on.
+  # - job_name: "node"	
+  #   static_configs:
+  #   - targets: ["nodeexporter:9100"]     

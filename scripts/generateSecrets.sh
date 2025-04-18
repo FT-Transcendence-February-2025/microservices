@@ -36,16 +36,13 @@ grep -vE '^(TOKEN|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.tmp >> .env
 echo $ADMIN_EMAIL > $SSL/adminEmail.txt
 cat <<EOF >> .env
 USER=$USER
-USER_ID=$(id -u)
-GROUP_ID=$(id -g)
+UID=$(id -u)
+GID=$(id -g)
 HOST_USER=$USER
 DOMAIN=$DOMAIN
 IP=$IP
 AUTH_DASHBOARD=$(echo "$AUTH_DASHBOARD" | sed 's/\$/\$\$/g')
-# ---------- VOLUMES ---------- #
-NGINX_VOL=$PWD/$DATA/nginx
-FASTIFY_VOL=$PWD/$DATA/fastify
-TRAEFIK_VOL=$PWD/$DATA/traefik
+DATA=$PWD/$DATA
 # ---------- CERTIFICATES ---------- #
 SSL_PATH=$PWD/$SSL
 SSL_CRT=$PWD/$SSL/$(hostname -s).crt

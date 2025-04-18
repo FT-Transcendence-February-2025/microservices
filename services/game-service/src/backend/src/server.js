@@ -4,15 +4,28 @@ import fastifyStatic from '@fastify/static';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import gameRoute from './gameRoute.js';
+////////////////////////////////////////////////////DOCKER CONTAINER start
+import config from './config/config.js';
+import { metricsRoute, addMetricsHook } from './config/metrics.js';
+import { addLoggingHooks } from './config/logging.js';
 
+// Create your Fastify instance with the logger configuration from config.
+const fastify = Fastify({
+  logger: config.logger,
+});
+
+// Add the logging hooks
+addLoggingHooks(fastify);
+// Add the metrics hook to track all requests
+addMetricsHook(fastify);
+// Expose the /metrics endpoint
+metricsRoute(fastify);
+
+////////////////////////////////////////////////////DOCKER CONTAINER end
+const PORT = 3005;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const PORT = 3002;
 const HOST = "0.0.0.0";
-
-const fastify = Fastify({
-    // logger: true
-});
 
 await fastify.register(fastifyStatic, {
     root: join(__dirname, '..', '..', 'frontend', 'public'),

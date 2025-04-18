@@ -3,6 +3,10 @@ volumes:
   match-vol:
     driver: local
     name: match-vol
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DATA}/match
 
 services:
   match:
@@ -22,7 +26,6 @@ services:
       NODE_ENV: development
       DOMAIN: ${DOMAIN}
       IP: ${IP}
-      DOMAIN_TEST: ${DOMAIN_TEST}
       DEBUG_MODE: ${DEBUG_MODE:-0}
     dns:
       - 8.8.8.8

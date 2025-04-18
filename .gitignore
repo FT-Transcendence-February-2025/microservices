@@ -16,4 +16,16 @@ secrets/
 .settings/
 *.tar
 users.csv
+monitoring-services.code-workspace
+volumes/
 
+# Ignore node_modules in all subdirectories
+node_modules/
+
+# Ignore dependencies installed via npm or yarn
+yarn.lock
+
+# Ignore build files, logs, and temporary artifacts
+dist/
+coverage/
+logs/

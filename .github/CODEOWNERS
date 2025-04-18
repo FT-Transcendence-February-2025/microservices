@@ -1,17 +1,14 @@
 # .github/CODEOWNERS
 # This file designates code owners for specific files or directories
+# The team members owner for all files in the services/ directory
+services/authentication-service/src @cptfran
+services/frontend-service/src @mottjes
+services/game-service/src @mottjes @MemoCSales
+services/tournament-service/src @frbeyer1 @MemoCSales
+services/match-service/src @MemoCSales
+services/user-management-service/src @cptfran
 # The team lead is the code owner for all files
 * @VictoriaLizCor
-# The team members owner for all files in the services/ directory
-./services/authentication-service/src @cptfran
-./services/frontend-service @mottjes
-./services/game-service/src @mottjes @MemoCSales
-./services/tournament-service @frbeyer1 @MemoCSales
-services/match-service @MemoCSales
-./services/user-management-service  @cptfran
 
-
-# The documentation team is the code owner for all files in the docs/ directory
-docs/ @VictoriaLizCor
 
 # Contributors: <!-- cptfran frbeyer1 MemoCSales mottjes VictoriaLizCor -->

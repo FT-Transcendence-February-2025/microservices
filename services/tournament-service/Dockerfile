@@ -16,6 +16,7 @@ RUN npm install --include=dev
 
 RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	npm install --save-dev pino-pretty; \
+	npm install --save-dev prom-client; \
 	fi
 
 COPY src .

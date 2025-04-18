@@ -3,16 +3,12 @@ import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
-// import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
-// import dotenv from 'dotenv'
-
-// Importing configurations
 import config from './config/config.js'
 
 const PORT = 3004
@@ -30,7 +26,7 @@ await fastify.register(fastifySwagger, {
       version: '1.0.0'
     },
     servers: [
-      { url: `http://localhost:${PORT}`, description: 'Development server' }
+      { url: `${config.endpoints.match}`, description: 'Development server' }
     ]
   }
 })

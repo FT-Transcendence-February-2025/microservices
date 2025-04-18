@@ -1,4 +1,5 @@
-import config from '../config/config.js';
+import config from '../config/config.js'
+
 export async function verifyUser (userId) {
   try {
     const response = await fetch(`${config.endpoints.user}/get-user/${userId}`, {

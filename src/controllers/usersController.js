@@ -1,5 +1,6 @@
 import {userService} from '../db/userService.js'
-const UM_SERVICE_URL = 'http://localhost:3002';
+import config from '../config/config.js'
+const UM_SERVICE_URL = config.endpoints.user;
 
 export const usersController = {
 

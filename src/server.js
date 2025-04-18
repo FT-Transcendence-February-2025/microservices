@@ -6,7 +6,7 @@ import { initDatabase } from './db/schema.js'
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { deletionController } from './controllers/deletionController.js'
+import config from './config/config.js'
 
 dotenv.config()
 
@@ -24,8 +24,9 @@ fastify.register(cors, {
 	origin: [
         `https://${process.env.DOMAIN}`,
         `http://tour.${process.env.DOMAIN}`,
-		`http://${process.env.IP}:${PORT}`,
-		config.endpoints.tour
+		    `http://${process.env.IP}:${PORT}`,
+		    config.endpoints.tour,
+        '*'
     ],
 	methods: ['GET', 'POST', 'PUT', 'DELETE'],
 	allowedHeaders: ['Content-Type', 'Authorization'], 
@@ -38,10 +39,10 @@ fastify.register(cors, {
 //   done();
 // });
 
-fastify.register(fastifyStatic, {
-  root: path.join(__dirname, 'public'),
-  prefix: '/', // Serve files at the root URL
-});
+// fastify.register(fastifyStatic, {
+//   root: path.join(__dirname, 'public'),
+//   prefix: '/', // Serve files at the root URL
+// });
 
 // Initialize database
 try {
@@ -55,9 +56,9 @@ try {
 // Routes
 fastify.register(tournamentRoutes, { prefix:  `${config.apiPrefix}/tournament`})
 
-fastify.get('/', (_request, reply) => {
-  reply.sendFile('tournament.html');
-})
+// fastify.get('/', (_request, reply) => {
+//   reply.sendFile('tournament.html');
+// })
 
 const start = async () => {
   try {
@@ -84,13 +85,21 @@ process.on('SIGINT', async () => {
 })
 
 /*TODO:
+  -add active confirm and change to join, update tournament and delete user
+  -maybe deactivate route for tournament instead of using delete route
+  -add open flag to update tournament
+
   -call get friends from um, check who has created a tournament and if ended_at is not filled yet 
   -if not deleting tms we need indacator to know which one is active
   -accept player to join the tournament -> for now not, only basic behavior
   -handle tournament time -> do with timestamp i get in update tournament request
   -handle deleting info via status
 
-
+  meeting:
+  - config mistake
+  - active bool in table, needed from matchmaking after ending or quitting
+  - open bool
+  - implement getting userId
 
 after push from 42 computer, in order to run on laptop:
 

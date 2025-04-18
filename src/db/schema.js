@@ -14,7 +14,7 @@ export function initDatabase () {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS players (
       player_id INTEGER NOT NULL,
-      tournament_id INTEGER NOT NULL,
+      tournament_id TEXT NOT NULL,
       joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(player_id, tournament_id),
       FOREIGN KEY (player_id) REFERENCES users(user_id),
@@ -22,28 +22,30 @@ export function initDatabase () {
     )
     `).run()
   
-  // Tournaments table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS tournaments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
       created_by TEXT NOT NULL,
       current_round INTEGER DEFAULT 0,
       size INTEGER,
-      registration_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      registration_deadline TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      registration_start_time TIMESTAMP,
+      registration_deadline TIMESTAMP,
       winner_id TEXT,
       schedule TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      started_at TIMESTAMP DEFAULT NULL,
-      ended_at TIMESTAMP DEFAULT NULL
+      created_at TIMESTAMP,
+      started_at TIMESTAMP,
+      ended_at TIMESTAMP,
+      active INTEGER,
+      open INTEGER
     )
     `).run()
+  
     
   // Scores table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS scores (
-      tournament_id INTEGER NOT NULL,
+      tournament_id TEXT NOT NULL,
       round_number INTEGER,
       match_index INTEGER,
       winner_id TEXT,

@@ -45,6 +45,23 @@ export default async function (fastify) {
       properties: {
           tournamentId: { type: 'string', minLength: 1 }
         }
+      },
+      body: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+					userId: {
+						type: "number",
+						multipleOf: 1
+					},
+          ids: {
+            type: "array",
+            items: { 
+              type: "number",
+              multipleOf: 1
+            }
+          }
+        }
       }
     }, handler: inviteController.sendInvite
   })

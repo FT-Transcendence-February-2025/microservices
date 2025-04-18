@@ -1,5 +1,5 @@
 import db from '../db/connection.js'
-import config from '../config/config.js';
+import config from '../config/config.js'
 
 async function updateUserStats (stats) {
   const endpoint = `${config.endpoints.user}/update-match-history`

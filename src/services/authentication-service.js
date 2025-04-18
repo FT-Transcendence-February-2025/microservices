@@ -2,11 +2,8 @@ import config from "../config/config.js";
 
 const authenticationService = {
 	getUserEmailVerified: async (userId) => {
-<<<<<<< HEAD
+	// please checkendpoint
     const response = await fetch(`${config.endpoints.auth}/get-user-email-verified`, {
-=======
-    const response = await fetch(`${config.endpoints.user}/get-user-email-verified`, {
->>>>>>> e118a7e1c000b383a938ec85f3a2cae1c6b74a10
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ userId })

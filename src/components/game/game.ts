@@ -42,7 +42,7 @@ export default class Game extends HTMLElement {
     private _localGame: PongGame | null;
     private _localGameLoop: number | null;
     private _trail : any;
-    private _card: HTMLElement;
+    private _gameResult: HTMLElement;
     private _playerId!: string;
 
     constructor() {
@@ -93,10 +93,10 @@ export default class Game extends HTMLElement {
             console.log("Parsed matchId:", matchId, "playerId:", playerId);
             this._socket = new WebSocket(`wss://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
             this._addSocketListener();
-        } 
-        this._card = this.querySelector('.card') as HTMLElement;
-        if (!this._card)
-            throw new Error("Could not find '.card' element")
+        }
+        this._gameResult = this.querySelector('#gameResult') as HTMLElement;
+        if (!this._gameResult)
+            throw new Error("Could not find gameResult element");
     }
 
     connectedCallback() {
@@ -118,10 +118,7 @@ export default class Game extends HTMLElement {
     }
 
     private _renderGameResult(gameEndState: GameState) {
-        const gameResult = this.querySelector('#gameResult') as HTMLElement;
-        if (!gameResult)
-            throw new Error("Could not find gameResult element");
-        gameResult.innerHTML = `
+        this._gameResult.innerHTML = `
             <div class="fixed inset-0 flex items-center justify-center z-[9999]">
                 <div class="card text-center w-120">
                     <h1 class="mb-6">- Game Result -</h1>
@@ -482,12 +479,14 @@ export default class Game extends HTMLElement {
         } else {
             resultMessage = `YOU LOST! Score: ${data.loserScore}`;
         }
-        this._card.innerHTML = `
-        <div class="text-lg font-bold mb-6">${resultMessage}</div>
-        <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
+        this._gameResult.innerHTML = `
+        <div class="card absolute z-20 flex flex-col items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style="display: none;">
+            <div class="text-lg font-bold mb-6">${resultMessage}</div>
+            <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
+        </div>
         `;
-        this._card.style.display = 'flex';
-        const homeBtn = this._card.querySelector('#homeButton') as HTMLAnchorElement;
+        this._gameResult.style.display = 'flex';
+        const homeBtn = this._gameResult.querySelector('#homeButton') as HTMLAnchorElement;
         if (homeBtn) {
             homeBtn.addEventListener('click', () => {
                 this._socket?.close();

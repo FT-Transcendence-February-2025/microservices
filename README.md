@@ -24,6 +24,7 @@
 ----- other -----:
 
 - !!! responsiveness !!!
+- documentation
 - background video
 - favicon
 - use absolute paths for module imports

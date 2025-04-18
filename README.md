@@ -105,7 +105,9 @@ ft_transcendence
  [] include endpoint /metrics in all services
  [] chage to production mode
  [] persistant data
- [] 
+ [] include socket to game/match/tournament
+ [] include metrics to nginx server
+ 
 
 
 -- >

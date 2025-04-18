@@ -16,18 +16,29 @@ endef
 hash-pass:
 	htpasswd -nb pongAdmin yourpassword
 restartDocker:
+	@if grep -qi "ubuntu" /etc/os-release; then \
+		echo "Ubuntu detected - skipping Docker restart."; \
+		exit 0; \
+	fi
 	@echo "Stopping rootless Docker..."
-	-pkill -f dockerd-rootless.sh || echo "Docker is not running."
+	-pkill -f "dockerd-rootless.sh" || echo "Docker is not running."
 	@sleep 3
+
 runDocker: restartDocker
+	@if grep -qi "ubuntu" /etc/os-release; then \
+		echo "Ubuntu detected - skipping Docker start."; \
+		exit 0; \
+	fi
+	@echo "Starting rootless Docker..."
 	sh scripts/runDockerRootless.sh
+
 pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
 	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
 	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
 	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
-    docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
+	docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \

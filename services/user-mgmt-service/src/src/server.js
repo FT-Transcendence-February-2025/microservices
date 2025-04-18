@@ -45,6 +45,19 @@ metricsRoute(fastify);
 // Register plugins:
 fastify.register(fastifyMultipart);
 fastify.register(fastifyWebsocket);
+fastify.register(cors, {
+	origin: [
+        `https://${process.env.DOMAIN}`,
+        `http://user.${process.env.DOMAIN}`,
+		`http://${process.env.IP}:${PORT}`,
+		config.endpoints.tour,
+		'localhost', // How auth service has it
+		'0' //it works for Fredi
+    ],
+	methods: ['GET', 'POST', 'PUT', 'DELETE'],
+	allowedHeaders: ['Content-Type', 'Authorization'], 
+	credentials: true
+})
 
 // Register routes:
 fastify.register(newUserRoute, { prefix: config.apiPrefix });

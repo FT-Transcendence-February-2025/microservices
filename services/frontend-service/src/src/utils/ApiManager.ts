@@ -1,3 +1,5 @@
+import User from "./UserManager.js"
+
 async function fetchWithToken(url: string, options: any) {
     const response = await fetch(url, options);
 
@@ -18,9 +20,10 @@ async function fetchWithToken(url: string, options: any) {
             return fetch(url, options);
         }
         localStorage.removeItem('accessToken');
+        User.isloggedIn = false;
         // @ts-ignore
         window.navigateTo('/login');
-        throw new Error('Unable to refresh token');
+        alert('Unable to refresh token');
     }
     return response;
 }

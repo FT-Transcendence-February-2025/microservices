@@ -1,9 +1,34 @@
-import { postApiData, postApiFormData, getApiData } from './APIManager.js'
+import { postApiData, postApiFormData, getApiData } from './ApiManager.js'
 
-export default class User {
+export default class UserManager {
     static displayName: string = '';
     static email: string = '';
-    static avatar: HTMLImageElement = new Image();
+    static avatarPath: string = '';
+    static isloggedIn: boolean = false;
+
+    static async checkAndRestoreSession(): Promise<void>{
+        const accessToken = localStorage.getItem('accessToken');
+    
+        const hasCookie = (name: string): boolean  => {
+            const cookieName = `${name}=`;
+            return document.cookie.includes(cookieName);
+        }
+
+        if (hasCookie('refreshToken') || accessToken) {
+            this.getProfile()
+            .then(profile => {
+                if (profile) {
+                    this.displayName = profile.displayName;
+                    this.email = profile.email;
+                    this.avatarPath = profile.avatarPath;
+                    this.isloggedIn = true;
+                    return;
+                }
+            });
+        }
+        // @ts-ignore
+        window.navigateTo('/login');
+    }
 
     static async login(email: string, password: string): Promise<boolean> {
         try {
@@ -18,6 +43,7 @@ export default class User {
 
             if (response.ok) {
                 localStorage.setItem('accessToken', data.token);
+                this.isloggedIn = true;
                 return true;
             }
             else {
@@ -61,6 +87,7 @@ export default class User {
 
             if (response.ok) {
                 localStorage.removeItem('accessToken');
+                this.isloggedIn = false;
                 return true;
             }
             else {
@@ -81,7 +108,7 @@ export default class User {
             const response = await postApiData('/api/user/display-name', body);
 
             if (response.ok) {
-                User.displayName = displayName;
+                UserManager.displayName = displayName;
                 return true;
             }
             else {
@@ -102,7 +129,7 @@ export default class User {
             const response = await postApiData('/api/auth/email', body);
            
             if (response.ok) {
-                User.email = email;
+                UserManager.email = email;
                 return true;
             }
             else {
@@ -145,8 +172,7 @@ export default class User {
             const data = await response.json();
 
             if (response.ok) {
-                const avatarUrl = data.filePath;
-                User.avatar.src = avatarUrl;
+                UserManager.avatarPath = data.avatarPath;
                 return true;
             }
             else {
@@ -189,7 +215,27 @@ export default class User {
 
     // }
 
-    static async getProfile(displayName: string) {
+    static async getProfile(): Promise<any> {
+        try {
+            const response = await getApiData(`/api/user/profile`);
+            const data = await response.json();
+
+            if (response.ok) {
+                return data;
+            }
+            else {
+                const error = data?.error || response.statusText || "Server returned an error.";
+                console.error(`Getting own profile: ${error}`);
+                return null;
+            }
+
+        } catch (error: any) {
+            console.error(`Getting own profile: ${error.message}`);
+            return null;
+        }
+    }
+
+    static async getFriendProfile(displayName: string): Promise<any> {
         try {
             const response = await getApiData(`/api/user/profile/${displayName}`);
             const data = await response.json();
@@ -199,12 +245,12 @@ export default class User {
             }
             else {
                 const error = data?.error || response.statusText || "Server returned an error.";
-                console.error(`Getting friend list failed: ${error}`);
+                console.error(`Getting friend profile failed: ${error}`);
                 return null;
             }
             
         } catch (error: any) {
-            console.error(`Getting friend list failed: ${error.message}`);
+            console.error(`Getting friend profile failed: ${error.message}`);
             return null;
         }
     }

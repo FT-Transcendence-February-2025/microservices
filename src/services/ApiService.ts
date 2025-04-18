@@ -1,4 +1,4 @@
-import User from "./UserManager.js"
+import User from "./UserService.js"
 
 async function fetchWithToken(url: string, options: any) {
     const response = await fetch(url, options);

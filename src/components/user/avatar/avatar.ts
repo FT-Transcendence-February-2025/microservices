@@ -1,5 +1,5 @@
 import avatarTemplate from './avatar.html?raw';
-import User from '../../../utils/UserManager.js'
+import User from '../../../services/UserService.js'
 
 const template = document.createElement('template');
 template.innerHTML = avatarTemplate;

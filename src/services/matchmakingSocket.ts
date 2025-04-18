@@ -4,7 +4,7 @@ class MatchmakingSocket {
 
 	public static getInstance(): WebSocket {
 		if (!this.instance || this.instance.readyState > WebSocket.OPEN) {
-			this.instance = new WebSocket(`ws://${window.location.hostname}:${PORT}/ws`);
+			this.instance = new WebSocket(`wss://${window.location.hostname}:${PORT}/ws`);
 
 			this.instance.onopen = (event: Event) => {
 				console.log("Global matchmaking socket connected", event);

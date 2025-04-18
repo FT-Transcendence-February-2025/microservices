@@ -1,5 +1,5 @@
 import gameTemplate from './game.html?raw';
-import PongGame from "../../utils/LocalGame.js"
+import PongGame from "./utils/LocalGame.js";
 
 const template = document.createElement('template');
 template.innerHTML = gameTemplate;
@@ -87,10 +87,11 @@ export default class Game extends HTMLElement {
             const urlParams = new URLSearchParams(window.location.search);
             const matchId = urlParams.get('matchId');
             const playerId = urlParams.get('playerId');
-            if (!matchId || !playerId) throw new Error("Missing matchId or playerId");
+            if (!matchId || !playerId)
+                throw new Error("Missing matchId or playerId");
             this._playerId = playerId;
             console.log("Parsed matchId:", matchId, "playerId:", playerId);
-            this._socket = new WebSocket(`ws://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
+            this._socket = new WebSocket(`wss://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
             this._addSocketListener();
         } 
         this._card = this.querySelector('.card') as HTMLElement;

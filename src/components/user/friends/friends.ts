@@ -1,5 +1,5 @@
 import FriendsTemplate from './friends.html?raw';
-import User from '../../../utils/UserManager';
+import User from '../../../services/UserService';
 
 const template = document.createElement('template');
 template.innerHTML = FriendsTemplate;

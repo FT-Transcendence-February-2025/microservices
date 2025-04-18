@@ -51,7 +51,7 @@ export const addMetricsHook = (fastify) => {
 };
 
 export default register;
-///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////DOCKER CONTAINER start
 
 import { metricsRoute, addMetricsHook } from './config/metrics.js';
 import { addLoggingHooks } from './config/logging.js';
@@ -69,6 +69,7 @@ addLoggingHooks(fastify);
 addMetricsHook(fastify);
 // Expose the /metrics endpoint
 metricsRoute(fastify);
+////////////////////////////////////////////////////DOCKER CONTAINER end
 // DOCKER DAEMON
 // {
 // 	"metrics-addr": "0.0.0.0:9323",

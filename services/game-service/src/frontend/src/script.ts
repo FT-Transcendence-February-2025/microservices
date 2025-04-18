@@ -42,8 +42,8 @@ if (urlParams.has('matchId') && urlParams.has('playerId')) {
 }
 
 const socket = matchId && playerId
-    ? new WebSocket(`ws://${window.location.hostname}:3002/games/${matchId}?playerId=${playerId}`)
-    : new WebSocket(`ws://${window.location.hostname}:3002/games`);
+    ? new WebSocket(`ws://${window.location.hostname}:3003/games/${matchId}?playerId=${playerId}`)
+    : new WebSocket(`ws://${window.location.hostname}:3003/games`);
 
 function updateGameState(parsedData: any) {
     if (!isGameState(parsedData))

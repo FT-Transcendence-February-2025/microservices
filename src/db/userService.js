@@ -1,7 +1,6 @@
 import db from './database.js'
-import config from '../config/config.js';
-
-const UM_SERVICE_URL = `${config.endpoints.user}`;
+import config from '../config/config.js'
+const UM_SERVICE_URL = config.endpoints.user;
 
 export const userService = {
     async addUser(userId){

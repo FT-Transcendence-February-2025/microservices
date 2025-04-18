@@ -1,11 +1,9 @@
 import { tournamentService } from '../db/tournamentService.js'
 import { databaseService } from '../db/databaseService.js'
 import db from '../db/database.js'
-import config from '../config/config.js';
-
-// const UM_SERVICE_URL = `${config.endpoints.match}`;
-const UM_SERVICE_URL = `${config.endpoints.user}`;
-// const UM_SERVICE_URL = 'http://localhost:3000';
+import { v4 as uuidv4 } from 'uuid';
+import config from '../config/config.js'
+const UM_SERVICE_URL = config.endpoints.user;
 
 export const tournamentController = {
 
@@ -33,36 +31,42 @@ export const tournamentController = {
       
       const insertTournament = db.prepare(`
         INSERT INTO tournaments
-      (name, created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, created_at, started_at, ended_at)
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, name, created_by, current_round, size, registration_start_time, registration_deadline, winner_id, schedule, created_at, started_at, ended_at, active, open)
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       
-      const tournamentId = insertTournament.run(
+      const now = new Date().toISOString();
+      const deadline = new Date();
+      deadline.setDate(deadline.getDate() + 7);
+  
+      const tournamentId = uuidv4();
+      insertTournament.run(
+        tournamentId,
         "default",
         userId,
         0,
         0,
+        now,
+        deadline.toISOString(),
         null,
         null,
+        now,
         null,
         null,
-        Date.now(),
-        null,
-        null
-      ).lastInsertRowid
+        1,
+        1
+      )
       
       console.log(`Created tournament with ID: ${tournamentId}`)
 
       const { success, scoreId, error, details } = await databaseService.newScores(tournamentId, 0, 0);
       if (success) {
-          console.log(`New score entry created with ID: ${scoreId}`);
+          console.log(`Score table added at position: ${scoreId}`);
       } else {
           // Handle logical errors (e.g., foreign key violations)
           console.error('Failed to create score entry:', error);
           console.error('Details:', details);
       }
-      
-      console.log(`Score table added at position: ${scoreId}`)
       
       const registerPlayer = tournamentService.registerPlayer(tournamentId, userId)
       if (!registerPlayer.success) {

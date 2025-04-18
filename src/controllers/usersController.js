@@ -1,7 +1,6 @@
 import {userService} from '../db/userService.js'
-import config from '../config/config.js';
-
-const UM_SERVICE_URL = `${config.endpoints.user}`;
+import config from '../config/config.js'
+const UM_SERVICE_URL = config.endpoints.user;
 
 export const usersController = {
 

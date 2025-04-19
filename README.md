@@ -89,6 +89,7 @@ ft_transcendence
 - Each service can be accessed through the API gateway, which handles routing and security.
 - Refer to individual service documentation for specific API endpoints and usage instructions.
 
+
 ## Contributing
 
 - @cptfran
@@ -109,5 +110,25 @@ ft_transcendence
  [] include metrics to nginx server
  
 
+# Authentication (highest priority)
+- "traefik.http.routers.authentication-service.priority=300"
+
+# API Backend Services
+- "traefik.http.routers.user-mgmt-service.priority=290"
+- "traefik.http.routers.game-service.priority=280"
+- "traefik.http.routers.match-service.priority=270"
+- "traefik.http.routers.tournament-service.priority=260"
+
+# Frontend
+- "traefik.http.routers.frontend-service.priority=190"
+
+# Infrastructure Services
+- "traefik.http.routers.elasticsearch.priority=75"
+- "traefik.http.routers.traefik-api.priority=80"      
+- "traefik.http.routers.kibana.priority=80"
+- "traefik.http.routers.alertmanager.priority=70"
+- "traefik.http.routers.traefik-dashboard.priority=60" 
+- "traefik.http.routers.traefik-metrics.priority=40"
+- "traefik.http.routers.nginx-dns-service.priority=20"
 
 -- >

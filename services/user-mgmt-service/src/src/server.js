@@ -21,6 +21,8 @@ import blockUserRoute from "./routes/frontend/block-user-route.js";
 import unblockUserRoute from "./routes/frontend/unblock-user-route.js";
 import getBlockListRoute from "./routes/frontend/get-block-list-route.js";
 import getUserFriendListRoute from "./routes/tournament/get-user-friend-list-route.js";
+import cors from '@fastify/cors';
+
 ////////////////////////////////////////////////////DOCKER CONTAINER start
 import config from './config/config.js';
 import { metricsRoute, addMetricsHook } from './config/metrics.js';

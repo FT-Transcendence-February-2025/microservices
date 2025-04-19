@@ -40,7 +40,7 @@ services:
       - "traefik.http.routers.api-tour-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/tour`)"
       - "traefik.http.routers.api-tour-public.entrypoints=websecure"
       - "traefik.http.routers.api-tour-public.tls=true"
-      - "traefik.http.routers.api-tour-public.priority=90"
+      - "traefik.http.routers.api-tour-public.priority=260"
       # Apply middlewares: one for Host rewriting and one for path rewriting
       - "traefik.http.routers.api-tour-public.middlewares=change-host-to-tour,rewrite-tour-path"
 

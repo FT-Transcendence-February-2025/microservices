@@ -5,7 +5,7 @@ CMD		:= docker compose
 PROJECT_ROOT:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 GIT_REPO	:=$(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 CURRENT		:= $(shell basename $$PWD)
-VOLUMES		:= ./volumes
+VOLUMES		:= $(shell echo $$HOME)/data/volumes
 
 SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
@@ -134,7 +134,8 @@ volumes: #check_os
 #	@systemctl --user status docker;
 	$(call createDir,$(VOLUMES))
 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
-	@chown -R $(id -u):$(id -g) $(VOLUMES) && chmod -R u+rwX $(VOLUMES)
+	@chown -R $(id -u):$(id -g) $(VOLUMES)
+# @chmod -R u+rwX $(VOLUMES)
 
 # @chmod -R 777 $(VOLUMES)
 # @if cat ~/.config/docker/daemon.json | grep -q $(DOCKER_DATA); then \

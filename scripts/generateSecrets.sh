@@ -42,7 +42,7 @@ HOST_USER=$USER
 DOMAIN=$DOMAIN
 IP=$IP
 AUTH_DASHBOARD=$(echo "$AUTH_DASHBOARD" | sed 's/\$/\$\$/g')
-DATA=$PWD/$DATA
+DATA=$HOME/data/$DATA
 # ---------- CERTIFICATES ---------- #
 SSL_PATH=$PWD/$SSL
 SSL_CRT=$PWD/$SSL/$(hostname -s).crt

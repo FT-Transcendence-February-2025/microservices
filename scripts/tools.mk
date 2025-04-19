@@ -172,18 +172,43 @@ rmCert:
 # Generate SSL certificates using mkcert
 cert:
 	$(call createDir,$(SSL))
-	@HOST=$(shell hostname -s) ; \
+	@HOST="$(shell hostname -s)"; \
 	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt ]; then \
-		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
+	  printf "$(LF)  🟢 $(P_BLUE)Certificates already exist $(P_NC)\n"; \
 	else \
-		rm -rf $(SSL)/*; \
-		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c 'apk add --no-cache nss-tools curl ca-certificates && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/$(shell hostname -s).key -cert-file /certs/$(shell hostname -s).crt $(shell hostname) "*.$(shell hostname)" $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem' ; \
+	  rm -rf $(SSL)/*; \
+	  ARCH="$$(uname -m)"; \
+	  if [ "$$ARCH" = "x86_64" ]; then \
+		PLATFORM="linux/amd64"; \
+		MKCERT_URL="https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64"; \
+	  elif [ "$$ARCH" = "aarch64" ]; then \
+		PLATFORM="linux/arm64"; \
+		MKCERT_URL="https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-arm64"; \
+	  else \
+		echo "Unsupported architecture $$ARCH" >&2; exit 1; \
+	  fi; \
+	  echo "Using platform $$PLATFORM and mkcert URL $$MKCERT_URL"; \
+	  docker run --rm --platform $$PLATFORM --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c "\
+		apk add --no-cache nss-tools curl ca-certificates && \
+		curl -JLO \"$$MKCERT_URL\" && \
+		mv mkcert-v1.4.4-linux-* /usr/local/bin/mkcert && \
+		chmod +x /usr/local/bin/mkcert && \
+		mkcert -install && \
+		mkcert -key-file /certs/$(shell hostname -s).key \
+			  -cert-file /certs/$(shell hostname -s).crt \
+			  $(shell hostname) \"*.$(shell hostname)\" \
+			  $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && \
+		cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem"; \
 	fi
 # @curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
 
 # docker rm alpine
 testCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
+
+rmData:
+	 docker run --rm -v /home/lilizarr/data:/data alpine sh -c "rm -rf /data/*"
+
 
 #--------------------COLORS----------------------------#
 # For print

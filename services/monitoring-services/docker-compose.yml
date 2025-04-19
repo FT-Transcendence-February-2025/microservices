@@ -100,25 +100,25 @@ services:
       # ---------------------------------------------------------
       - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`) && PathPrefix(`/dashboard`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard.priority=100"
+      - "traefik.http.routers.traefik-dashboard.priority=60"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
-
       # ---------------------------------------------------------
-      # priority to internal services /api
+      # Traefik API - more specific paths to avoid intercepting microservice API calls
       # ---------------------------------------------------------
-      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"  
       - "traefik.http.routers.traefik-api.entrypoints=websecure"
-      - "traefik.http.routers.traefik-api.priority=150"
+      - "traefik.http.routers.traefik-api.priority=80"
       - "traefik.http.routers.traefik-api.service=api@internal"
-      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth"
+      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,strip-api-traefik-prefix"
+      - "traefik.http.middlewares.strip-api-traefik-prefix.stripprefix.prefixes=/api/traefik"
       # ---------------------------------------------------------
       # metrics redirection
       # ---------------------------------------------------------
       - "traefik.http.routers.traefik-metrics.rule=Host(`${DOMAIN}`) && PathPrefix(`/metrics`)"
       - "traefik.http.routers.traefik-metrics.entrypoints=websecure"
-      - "traefik.http.routers.traefik-metrics.priority=80"  # Adjust priority if needed
-      - "traefik.http.routers.traefik-metrics.middlewares=dashboard-auth"  # if you want to reuse your auth middleware
+      - "traefik.http.routers.traefik-metrics.priority=40"
+      - "traefik.http.routers.traefik-metrics.middlewares=dashboard-auth"  # to be reuse your auth middleware
       - "traefik.http.services.traefik-metrics.loadbalancer.server.port=8082"
 
 include:

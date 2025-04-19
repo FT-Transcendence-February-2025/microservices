@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`)"
       - "traefik.http.routers.api-user-public.entrypoints=websecure"
       - "traefik.http.routers.api-user-public.tls=true"
-      - "traefik.http.routers.api-user-public.priority=90"
+      - "traefik.http.routers.api-user-public.priority=290"
         # Apply middlewares: one for blocking and others for Host and Path rewriting
       - "traefik.http.routers.api-user-public.middlewares=block-new-user,change-host-to-user,rewrite-user-path"
 

@@ -56,7 +56,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`${DOMAIN}`) && (PathPrefix(`/prometheus`) || PathPrefix(`/prometheus/`))"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.routers.prometheus.priority=50"
+      - "traefik.http.routers.prometheus.priority=95"
       - "traefik.http.routers.prometheus.middlewares=prometheus-auth,prometheus-strip"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
       - "traefik.http.middlewares.prometheus-auth.basicauth.users=${AUTH_DASHBOARD}"
@@ -87,6 +87,7 @@ services:
       # Strip the "/grafana" prefix so Grafana sees "/" as its root.
       - "traefik.http.routers.grafana.middlewares=auth-grafana,strip-grafana"
       # Define the internal port for Grafana.
+      - "traefik.http.routers.prometheus.priority=90"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
       - "traefik.http.middlewares.strip-grafana.stripprefix.prefixes=/grafana"
       - "traefik.http.middlewares.auth-grafana.basicauth.users=${AUTH_DASHBOARD}"

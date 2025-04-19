@@ -1,18 +1,18 @@
-import { collectDefaultMetrics, Histogram, Registry } from 'prom-client';
+import { collectDefaultMetrics, Histogram, Registry } from 'prom-client'
 
 // Create a new Prometheus registry
-const register = new Registry();
+const register = new Registry()
 
 // Collect default system metrics (CPU, memory, etc.)
-collectDefaultMetrics({ register });
+collectDefaultMetrics({ register })
 
 // Define a custom histogram to track HTTP request durations
 const httpRequestDuration = new Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
   labelNames: ['method', 'route', 'status_code'],
-  registers: [register],
-});
+  registers: [register]
+})
 
 // Function to expose the /metrics endpoint with silent logging
 export const metricsRoute = (fastify) => {
@@ -26,8 +26,8 @@ export const metricsRoute = (fastify) => {
         reply.status(500).send('Error collecting metrics');
       }
     }
-  });
-};
+  })
+}
 
 export const addMetricsHook = (fastify) => {
   fastify.addHook('onRequest', (request, _reply, done) => {
@@ -61,4 +61,20 @@ export const addMetricsHook = (fastify) => {
   });
 };
 
-export default register;
+  fastify.addHook('onResponse', (request, reply, done) => {
+	  const route = request.routerPath || 'unknown_route'
+	  const method = request.method
+	  const statusCode = reply.statusCode
+
+	  // Calculate the duration of the request
+	  const [seconds, nanoseconds] = process.hrtime(request.startTime)
+	  const duration = seconds + nanoseconds / 1e9 // Convert to seconds
+
+	  // Record the duration in the histogram
+	  httpRequestDuration.labels(method, route, statusCode).observe(duration)
+
+	  done()
+  })
+}
+
+export default register

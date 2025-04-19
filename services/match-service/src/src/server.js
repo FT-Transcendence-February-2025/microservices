@@ -3,32 +3,30 @@ import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
-// import { matchmakingDbRoute } from './routes/database_route.js'
 import { websocketHandler } from './websocket/index.js'
 import { initDatabase } from './db/schema.js'
 import matchesRoute from './routes/match_routes.js'
 import matchmakingRoute from './routes/matchmaking-route.js'
 import tournamentRoute from './routes/tournament_route.js'
 import tournamentResultsRoute from './routes/tournament_results_route.js'
-//////////////DOCKER CONTAINER start
-import config from './config/config.js';
-import { metricsRoute, addMetricsHook } from './config/metrics.js';
-import { addLoggingHooks } from './config/logging.js';
+/// ///////////DOCKER CONTAINER start
+import config from './config/config.js'
+import { metricsRoute, addMetricsHook } from './config/metrics.js'
+import { addLoggingHooks } from './config/logging.js'
 
 const PORT = 3003
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
-  logger: config.logger,
-});
-
+  logger: config.logger
+})
 
 // Add the logging hooks
-addLoggingHooks(fastify);
+addLoggingHooks(fastify)
 // Add the metrics hook to track all requests
-addMetricsHook(fastify);
+addMetricsHook(fastify)
 // Expose the /metrics endpoint
-metricsRoute(fastify);
-////////////////////////////////////////////////////DOCKER CONTAINER end
+metricsRoute(fastify)
+/// /////////////////////////////////////////////////DOCKER CONTAINER end
 
 await fastify.register(fastifySwagger, {
   openapi: {
@@ -39,7 +37,7 @@ await fastify.register(fastifySwagger, {
       version: '1.0.0'
     },
     servers: [
-      { url: `http://localhost:${PORT}`, description: 'Development server' }
+      { url: `${config.endpoints.match}`, description: 'Development server' }
     ]
   }
 })

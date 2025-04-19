@@ -43,51 +43,51 @@ export default class NotificationService {
         //     }
     }
 
-    private _handelMessage(message: MessageEvent<any>) {
-        // type: "notification_friend_request",
-        // invitingUser: {
-        //     id: invitingUser.id,
-        //     displayName: invitingUser.display_name
-        // }
+    // private _handelMessage(message: MessageEvent<any>) {
+    //     // type: "notification_friend_request",
+    //     // invitingUser: {
+    //     //     id: invitingUser.id,
+    //     //     displayName: invitingUser.display_name
+    //     // }
 
-        // type: "notification_game_invite",
-		// invitingUser: {
-		// 	id: invitingUser.id,
-		// 	displayName: invitingUser.display_name
-		// }
+    //     // type: "notification_game_invite",
+	// 	// invitingUser: {
+	// 	// 	id: invitingUser.id,
+	// 	// 	displayName: invitingUser.display_name
+	// 	// }
 
-        // type: "notification_tournament_invite",
-		// tournament: {
-		// 	id: tournamentId,
-		// 	name: tournamentName
-		// }
+    //     // type: "notification_tournament_invite",
+	// 	// tournament: {
+	// 	// 	id: tournamentId,
+	// 	// 	name: tournamentName
+	// 	// }
 
-        // type: "notification_verify_email"
-    }
+    //     // type: "notification_verify_email"
+    // }
 
-    private _gameInviteNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.textContent = '';
-    }
+    // private _gameInviteNotification() {
+    //     const notification = document.createElement('div');
+    //     notification.className = 'notification';
+    //     notification.textContent = '';
+    // }
 
-    private _tournamentInviteNotification() {
+    // private _tournamentInviteNotification() {
 
-    }
+    // }
 
-    private emailVerifyNotification() {
+    // private emailVerifyNotification() {
 
-    }
+    // }
 
-    private _friendRequestNotification() {
+    // private _friendRequestNotification() {
 
-    }
+    // }
 
-    private _renderNotification(notification: HTMLElement) {
-        if (!this._notificationContainer) {
-            console.error("Notifications container not found!")
-            return;
-        }
-        this._notificationContainer.appendChild(notification);
-    }
+    // private _renderNotification(notification: HTMLElement) {
+    //     if (!this._notificationContainer) {
+    //         console.error("Notifications container not found!")
+    //         return;
+    //     }
+    //     this._notificationContainer.appendChild(notification);
+    // }
 }

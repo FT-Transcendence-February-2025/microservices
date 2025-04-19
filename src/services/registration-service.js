@@ -34,7 +34,7 @@ const registrationService = {
 
 		const sendResult = await notifyService.sendEmail({
 			settings: {
-				type: "link",
+				emailType: "link",
 				userId: user.id
 			},
 			receiver: user.email

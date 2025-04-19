@@ -99,15 +99,18 @@ ft_transcendence
 - @VictoriaLizCor
 
 
-<!-- things to DO
+#
+ [] grafana access
  [] health monitoring
  [x] PROMETEUS / TRAEFIK METRIC
  [] restric routes for all services 
- [] include endpoint /metrics in all services
+ [x] include endpoint /metrics in game
  [] chage to production mode
  [] persistant data
- [] include socket to game/match/tournament
+ [] fix remove containers
+ [] include socket to game/match/tournament/notification
  [] include metrics to nginx server
+<!-- things to DO
  
 
 # Authentication (highest priority)

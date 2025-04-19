@@ -1,5 +1,5 @@
 import gameTemplate from './game.html?raw';
-import PongGame from "../../utils/LocalGame.js"
+import PongGame from "./utils/LocalGame.js";
 
 const template = document.createElement('template');
 template.innerHTML = gameTemplate;
@@ -11,7 +11,7 @@ const SERVER_PADDLE_WIDTH = 30;
 const SERVER_PADDLE_HEIGHT = 180;
 const SERVER_BALL_RADIUS = 15;
 
-const COLOR = '#f74fe6';
+const COLOR = '#e1f734';
 const TRAIL_LENGTH = 30;
 
 interface GameState {
@@ -41,8 +41,8 @@ export default class Game extends HTMLElement {
     private _gameState: GameState;
     private _localGame: PongGame | null;
     private _localGameLoop: number | null;
-    private _trail : any;
-    private _card: HTMLElement;
+    private _trail: Array<{ x: number; y: number }>;
+    private _gameResult: HTMLElement;
     private _playerId!: string;
 
     constructor() {
@@ -54,6 +54,9 @@ export default class Game extends HTMLElement {
         this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
         if (!this._ctx)
             throw new Error("Could not get 2d context");
+        this._gameResult = this.querySelector('#gameResult') as HTMLElement;
+        if (!this._gameResult)
+            throw new Error("Could not find gameResult element");
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
         this._isLocal = window.location.hash === '#local' ? true : false;
@@ -87,15 +90,13 @@ export default class Game extends HTMLElement {
             const urlParams = new URLSearchParams(window.location.search);
             const matchId = urlParams.get('matchId');
             const playerId = urlParams.get('playerId');
-            if (!matchId || !playerId) throw new Error("Missing matchId or playerId");
+            if (!matchId || !playerId)
+                throw new Error("Missing matchId or playerId");
             this._playerId = playerId;
             console.log("Parsed matchId:", matchId, "playerId:", playerId);
-            this._socket = new WebSocket(`ws://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
+            this._socket = new WebSocket(`wss://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
             this._addSocketListener();
-        } 
-        this._card = this.querySelector('.card') as HTMLElement;
-        if (!this._card)
-            throw new Error("Could not find '.card' element")
+        }
     }
 
     connectedCallback() {
@@ -117,10 +118,7 @@ export default class Game extends HTMLElement {
     }
 
     private _renderGameResult(gameEndState: GameState) {
-        const gameResult = this.querySelector('#gameResult') as HTMLElement;
-        if (!gameResult)
-            throw new Error("Could not find gameResult element");
-        gameResult.innerHTML = `
+        this._gameResult.innerHTML = `
             <div class="fixed inset-0 flex items-center justify-center z-[9999]">
                 <div class="card text-center w-120">
                     <h1 class="mb-6">- Game Result -</h1>
@@ -481,12 +479,14 @@ export default class Game extends HTMLElement {
         } else {
             resultMessage = `YOU LOST! Score: ${data.loserScore}`;
         }
-        this._card.innerHTML = `
-        <div class="text-lg font-bold mb-6">${resultMessage}</div>
-        <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
+        this._gameResult.innerHTML = `
+        <div class="card absolute z-20 flex flex-col items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style="display: none;">
+            <div class="text-lg font-bold mb-6">${resultMessage}</div>
+            <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
+        </div>
         `;
-        this._card.style.display = 'flex';
-        const homeBtn = this._card.querySelector('#homeButton') as HTMLAnchorElement;
+        this._gameResult.style.display = 'flex';
+        const homeBtn = this._gameResult.querySelector('#homeButton') as HTMLAnchorElement;
         if (homeBtn) {
             homeBtn.addEventListener('click', () => {
                 this._socket?.close();

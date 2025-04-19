@@ -95,6 +95,11 @@ microInfo:
 	-H "Accept: application/vnd.github+json" \
 	`$(MAKE) --no-print microRepo` | jq 
 
+# Get repository URLs from the organization
+orgRepoList:
+	@curl -s -H "Authorization: token `cat $(TOKEN)`" \
+	-H "Accept: application/vnd.github+json" \
+	https://api.github.com/orgs/FT-Transcendence-February-2025/repos | jq -r '.[].html_url'
 # Fetch and display all repositories in the organization
 orgRepos:
 	@curl -s -H "Authorization: token `cat $(TOKEN)`" \

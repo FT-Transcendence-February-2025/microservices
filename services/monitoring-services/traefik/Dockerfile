@@ -33,6 +33,7 @@ RUN --mount=type=secret,id=ssl_key.key,dst=/run/secrets/ssl_key.key \
     --mount=type=secret,id=ssl_pem.pem,dst=/run/secrets/rootCA.pem \
     cp /run/secrets/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt && \
     update-ca-certificates
-CMD ["traefik", "--configFile=/etc/traefik/traefik.yml"]
-# CMD ["sh", "-c", "traefik --configFile=/etc/traefik/traefik.yml | tee /traefik/logs/access.log"]
+
+# ENTRYPOINT ["sh", "-c"]
 # CMD ["sh", "-c", "traefik --configFile=/etc/traefik/traefik.yml | tee /etc/traefik/logs/traefik.log"]
+CMD ["traefik", "--configFile=/etc/traefik/traefik.yml"]

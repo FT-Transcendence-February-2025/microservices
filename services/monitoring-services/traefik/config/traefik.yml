@@ -46,12 +46,14 @@ providers:
 
 metrics:
   prometheus:
-    entryPoint: metrics
     buckets:
-      - 0.1
-      - 0.3
-      - 1.2
-      - 5.0
+      - 0.100000
+      - 0.300000
+      - 1.200000
+      - 5.000000
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    entryPoint: metrics
 
 
 # self certificates
@@ -80,27 +82,15 @@ tcpServersTransport:
   tls:
     rootCAs:
       - "/run/secrets/ssl_pem.pem"
-# acme let's encrypt certificates
-# certificatesResolvers:
-#   myresolver:
-#     acme:
-#       caServer: "https://pebble:14000/dir"
-#       email: "test@example.com"
-#       storage: "/acme.json"
-#       httpChallenge:
-#         entryPoint: websecure
-    # acme:
-    #   email: " lilizarr@student.42wolfsburg.de"
-    #   # email: "/run/secrets/ssl_email"
-    #   storage: "/etc/traefik/acme.json"
-    #   tlsChallenge: {}
 
 log:
   level: DEBUG
-  # filePath: "/traefik/logs/traefik.log"
+  filePath: "/traefik/logs/traefik.log"
+  format: json
 accessLog:
-  # filePath: "/traefik/logs/access.log"
+  filePath: "/traefik/logs/access.log"
   bufferingSize: 100
+  format: json
 global:
   checkNewVersion: false
   sendAnonymousUsage: false

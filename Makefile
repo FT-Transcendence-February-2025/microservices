@@ -134,7 +134,9 @@ volumes: #check_os
 #	@systemctl --user status docker;
 	$(call createDir,$(VOLUMES))
 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
-	@chmod -R 777 $(VOLUMES)
+	@chown -R $(id -u):$(id -g) $(VOLUMES) && chmod -R u+rwX $(VOLUMES)
+
+# @chmod -R 777 $(VOLUMES)
 # @if cat ~/.config/docker/daemon.json | grep -q $(DOCKER_DATA); then \
 # 	echo "\tDocker data-Root correct" ; \
 # 	exit 0; \

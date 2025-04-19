@@ -133,7 +133,7 @@ volumes: #check_os
 #	@systemctl --user status docker;
 	$(call createDir,$(VOLUMES))
 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
-	@chown 777 $(VOLUMES)
+# @chown 777 $(VOLUMES)
 # @chown -R $(id -u):$(id -g) $(VOLUMES)
 # @chmod -R u+rwX $(VOLUMES)
 

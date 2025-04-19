@@ -209,7 +209,7 @@ export default class UserService {
     static async addFriend(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ invitedDisplayName: displayName });
-            const response = await postApiData('/api/user/invite-friends', body);
+            const response = await postApiData('/api/user/invite-friend', body);
 
             if (response.ok) {
                 return true;
@@ -220,7 +220,6 @@ export default class UserService {
                 console.error(`Adding friend failed: ${error}`);
                 return false;
             }
-
         } catch (error: any) {
             console.error(`Adding friend failed: ${error.message}`);
             return false;
@@ -230,7 +229,7 @@ export default class UserService {
     static async removeFriend(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ displayNameToRemove: displayName });
-            const response = await postApiData('/api/user/remove-friends', body);
+            const response = await postApiData('/api/user/remove-friend', body);
 
             if (response.ok) {
                 return true;
@@ -241,9 +240,28 @@ export default class UserService {
                 console.error(`Removing friend failed: ${error}`);
                 return false;
             }
-
         } catch (error: any) {
-            console.error(`AddRemovinging friend failed: ${error.message}`);
+            console.error(`Removing friend failed: ${error.message}`);
+            return false;
+        }
+    }
+
+    static async respondFriend(displayName: string, accepted: boolean): Promise<boolean> {
+        try {
+            const body = JSON.stringify({ invitingDisplayName: displayName, accepted: accepted });
+            const response = await postApiData('/api/user/respond-friend', body);
+
+            if (response.ok) {
+                return true;
+            }
+            else {
+                const data = await response.json();
+                const error = data?.error || response.statusText || "Server returned an error.";
+                console.error(`Respond friend request failed: ${error}`);
+                return false;
+            }
+        } catch (error: any) {
+            console.error(`Respond friend request friend failed: ${error.message}`);
             return false;
         }
     }
@@ -267,4 +285,16 @@ export default class UserService {
             return null;
         }
     }
+
+    // static async blockUser() {
+
+    // }
+
+    // static async unBlockUser() {
+        
+    // }
+
+    // static async getBlockList() {
+        
+    // }
 }

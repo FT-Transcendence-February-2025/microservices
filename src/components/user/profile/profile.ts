@@ -36,7 +36,6 @@ export default class Profile extends HTMLElement {
     private _getProfile() {
         User.getProfile(window.location.hash)
         .then((profile: IProfile) => {
-        
             if (profile) {
                 const displayName = this.querySelector('#displayName');
                 if (displayName)
@@ -65,7 +64,6 @@ export default class Profile extends HTMLElement {
             }
         });
     }
-
 
     private _addMatchToTable(match: IMatch) {
         const rowColor = match.userScore > match.opponentScore ? 'bg-green-200' : 'bg-red-200';

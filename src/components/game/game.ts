@@ -11,7 +11,7 @@ const SERVER_PADDLE_WIDTH = 30;
 const SERVER_PADDLE_HEIGHT = 180;
 const SERVER_BALL_RADIUS = 15;
 
-const COLOR = '#f74fe6';
+const COLOR = '#e1f734';
 const TRAIL_LENGTH = 30;
 
 interface GameState {
@@ -41,7 +41,7 @@ export default class Game extends HTMLElement {
     private _gameState: GameState;
     private _localGame: PongGame | null;
     private _localGameLoop: number | null;
-    private _trail : any;
+    private _trail: Array<{ x: number; y: number }>;
     private _gameResult: HTMLElement;
     private _playerId!: string;
 
@@ -54,6 +54,9 @@ export default class Game extends HTMLElement {
         this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
         if (!this._ctx)
             throw new Error("Could not get 2d context");
+        this._gameResult = this.querySelector('#gameResult') as HTMLElement;
+        if (!this._gameResult)
+            throw new Error("Could not find gameResult element");
         this._canvas.width = this._canvas.clientWidth;
         this._canvas.height = this._canvas.clientHeight;
         this._isLocal = window.location.hash === '#local' ? true : false;
@@ -94,9 +97,6 @@ export default class Game extends HTMLElement {
             this._socket = new WebSocket(`wss://${window.location.hostname}:3005/games/${matchId}?playerId=${playerId}`);
             this._addSocketListener();
         }
-        this._gameResult = this.querySelector('#gameResult') as HTMLElement;
-        if (!this._gameResult)
-            throw new Error("Could not find gameResult element");
     }
 
     connectedCallback() {

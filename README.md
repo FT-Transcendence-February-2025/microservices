@@ -1,5 +1,6 @@
 # Frontend service
 
+![logo](https://github.com/user-attachments/assets/5b91df9c-a2da-41be-b104-5402d04501a4)
 
 ## Description
 

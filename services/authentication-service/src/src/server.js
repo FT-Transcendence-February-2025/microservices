@@ -30,6 +30,7 @@ const { default: fastifyMailer } = await import('fastify-mailer');
 import config from "./config/config.js";
 import { metricsRoute, addMetricsHook } from './config/metrics.js';
 // import { addLoggingHooks } from './config/logging.js';
+import { addLoggingHooks } from './config/logging.js';
 
 const PORT = 3001
 // Create your Fastify instance with the logger configuration from config.

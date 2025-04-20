@@ -127,16 +127,16 @@ you can find commands to use in `scripts/quickRun `
 
 
 #
- [] grafana access
- [] health monitoring
- [x] PROMETEUS / TRAEFIK METRIC
- [] restric routes for all services 
- [x] include endpoint /metrics in game
- [] chage to production mode
- [] persistant data
- [] fix remove containers
- [] include socket to game/match/tournament/notification
- [] include metrics to nginx server
+ -[ ] grafana access
+ -[ ] health monitoring
+ -[x] PROMETEUS / TRAEFIK METRIC
+ -[ ] restric routes for all services 
+ -[x] include endpoint /metrics in game
+ -[ ] chage to production mode
+ -[ ] persistant data
+ -[ ] fix remove containers
+ -[ ] include socket to game/match/tournament/notification
+ -[ ] include metrics to nginx server
 <!-- things to DO
  
 

@@ -125,18 +125,28 @@ you can find commands to use in `scripts/quickRun `
 - @mottjes
 - @VictoriaLizCor
 
+## Project Roadmap
 
-#
- -[ ] grafana access
- -[ ] health monitoring
- -[x] PROMETEUS / TRAEFIK METRIC
- -[ ] restric routes for all services 
- -[x] include endpoint /metrics in game
- -[ ] chage to production mode
- -[ ] persistant data
- -[ ] fix remove containers
- -[ ] include socket to game/match/tournament/notification
- -[ ] include metrics to nginx server
+### Infrastructure & Monitoring
+- [ ] Grafana dashboard implementation
+- [ ] Complete health monitoring setup
+- [x] Prometheus/Traefik metrics integration
+- [ ] Nginx server metrics integration
+- [ ] Change to production mode
+- [ ] Ensure persistent data storage
+- [ ] Fix container removal issues
+
+### Security
+- [ ] Restrict routes for all services
+
+### Feature Implementation
+- [x] Add /metrics endpoint in game service
+- [ ] Implement WebSocket connections for:
+- [ ] Game service
+- [ ] Match service
+- [ ] Tournament service
+- [ ] Notification system
+<!-- things to DO
 <!-- things to DO
  
 

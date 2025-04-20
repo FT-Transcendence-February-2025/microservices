@@ -1,11 +1,12 @@
 import User from "./UserService.js"
+import config from '../config/config';
 
 async function fetchWithToken(url: string, options: any) {
     const response = await fetch(url, options);
 
     if (response.status === 401)
     {
-        const refreshResponse = await fetch('/api/auth/refresh', {
+        const refreshResponse = await fetch(`https://${config.toBackend.auth}/refresh`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",

@@ -1,3 +1,5 @@
+import config from '../config/config.js';
+
 export function webSocketConnection(callbacks?: {
 	onOpen?: (event: Event) => void,
 	onMessage?: (event: MessageEvent) => void,
@@ -6,7 +8,7 @@ export function webSocketConnection(callbacks?: {
 	WebSocket {
 	console.log("Initializing WebSocket connection to matchmaking service");
 
-	const wsUrl = `ws://localhost:3006/ws`;
+	const wsUrl = `ws://${config.toBackend.game}/ws`;
 	const ws = new WebSocket(wsUrl);
 
 	// Backend uses the preHandler(and attaches the trusted userId) so your joinQueue action doesn’t need to supply the userId explicitly.

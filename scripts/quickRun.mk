@@ -1,5 +1,6 @@
 all:
 
+# print logs in docker enviroment continuesly
 w:
 	@while true; do \
 		docker compose logs --follow $$c || { clear; true; }; \
@@ -24,7 +25,70 @@ pr:
 	$(MAKE) --no-print w c=prometheus
 gr:
 	$(MAKE) --no-print w c=grafana
+
+#quick commands
 fd:
 	$(MAKE) --no-print D=1 fclean dcon
 d:
 	$(MAKE) --no-print D=1 dcon
+
+# Check if all services are running
+checkServices:
+	@echo "🔍 Checking if all services are running..."
+	@find . -type d -path "*/src/src" | while read -r dir; do \
+		service=$$(dirname "$$(dirname "$$dir")"/src); \
+		if [ -f "$$service/package.json" ]; then \
+			pids=$$(ps aux | grep "node.*$$service" | grep -v grep | awk '{print $$2}'); \
+			if [ -n "$$pids" ]; then \
+				echo "✅ $$service is running (PID: $$pids)"; \
+			else \
+				echo "❌ $$service is NOT running"; \
+			fi; \
+		fi; \
+	done
+	@echo "📋 Complete service status check finished"
+
+# Modify runLocal to call checkServices after starting everything
+runLocal: secrets stopServices
+	@echo "🔍 Finding all src/src directories and running npm dev in background..."
+	@find . -type d -path "*/src/src" | while read -r dir; do \
+		service=$$(dirname "$$(dirname "$$dir")"/src); \
+		echo "📂 Found src/src in: $$service"; \
+		if [ -f "$$service/package.json" ]; then \
+			echo "📄 Copying .env file to $$service"; \
+			if [ -f ".env" ]; then \
+				cp .env "$$service/.env" && echo "✅ .env copied successfully"; \
+			else \
+				echo "⚠️ No .env file found in root directory"; \
+			fi; \
+			echo "🚀 Starting npm run dev in $$service (background)"; \
+			(touch $$service/dev.log && cd "$$service" && npm install --include=dev && npm run dev  2>&1 & echo "✅ Started $$service [PID: $$!]"); \
+		else \
+			echo "⚠️ No package.json found in $$service, skipping"; \
+		fi; \
+		echo "-----------------------------------"; \
+	done
+	@echo "✅ All services started in background. Check individual logs in each service directory."
+	@echo "⏳ Waiting for services to initialize..."
+	@sleep 5
+	@$(MAKE) checkServices
+
+stopServices:
+	@echo "🛑 Stopping all running Node.js services..."
+	@find . -type d -path "*/src/src" | while read -r dir; do \
+		service=$$(dirname "$$(dirname "$$dir")"/src); \
+		if [ -f "$$service/package.json" ]; then \
+			pids=$$(ps aux | grep "node.*$$service" | grep -v grep | awk '{print $$2}'); \
+			if [ -n "$$pids" ]; then \
+				echo "⏹️ Stopping $$service (PID: $$pids)"; \
+				kill -15 $$pids || kill -9 $$pids; \
+				echo "✅ Stopped $$service"; \
+			else \
+				echo "ℹ️ $$service is not running"; \
+			fi; \
+		fi; \
+	done
+	@echo "📋 All services stopped"
+
+checkPorts:
+	-@netstat -tuln | grep ":3000*"

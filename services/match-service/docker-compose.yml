@@ -3,10 +3,10 @@ volumes:
   match-vol:
     driver: local
     name: match-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/match
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/match
 
 services:
   match:

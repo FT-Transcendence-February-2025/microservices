@@ -55,6 +55,7 @@ fastify.register(fastifyCors, {
         `http://auth.${process.env.DOMAIN}`,
 		`http://${process.env.IP}:${PORT}`,
 		config.endpoints.auth,
+		'localhost',
 		'*'
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -127,6 +128,7 @@ const startServer = async () => {
       }
       console.log(`Server listening at ${address}`);
 	  console.log(`Server listening at ${process.env.IP}`);
+	  console.log(`Server listening at ${config.apiPrefix}`);
     });
   } catch (error) {
     console.error('Error starting server:', error);

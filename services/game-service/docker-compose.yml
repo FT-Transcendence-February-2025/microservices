@@ -3,10 +3,10 @@ volumes:
   game-vol:
     driver: local
     name: game-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/game
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/game
 
 services:
   game:

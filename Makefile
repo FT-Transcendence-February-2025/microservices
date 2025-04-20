@@ -5,8 +5,8 @@ CMD		:= docker compose
 PROJECT_ROOT:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 GIT_REPO	:=$(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 CURRENT		:= $(shell basename $$PWD)
-VOLUMES		:= $(shell echo $$HOME)/data/volumes
-
+# Determine volumes location based on sgoinfre availability
+VOLUMES := $(shell if [ -d "/goinfre" ]; then echo "/goinfre/$(USER)/volumes"; else echo "$(shell echo $(HOME))/volumes"; fi)
 SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
 # SERVICES	:= $(shell docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{})
@@ -73,7 +73,7 @@ remove_volumes:
 	@if [ -n "$$(docker volume ls -q)" ]; then \
 		docker volume rm $$(docker volume ls -q) ; \
 	fi
-	-@rm -rf $(VOLUMES)/
+# -@rm -rf $(VOLUMES)
 
 # Prune Docker images, builders, system, and volumes
 prune:
@@ -98,7 +98,7 @@ fclean: clean remove_networks remove_volumes prune rmData rm-secrets
 	@printf "$(LF)"
 	@echo $(WHITE) "$$TRASH" $(E_NC)
 	@docker container ls -a; docker image ls; docker volume ls
-	-@ls -la $(shell echo $$HOME/data/*)
+	-@ls -la $(VOLUMES)
 
 # Remove secret files
 rm-secrets: #clean_host
@@ -129,10 +129,12 @@ re: fclean all
 
 # Create Docker volumes for the project
 volumes: #check_os
-	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
-#	@systemctl --user status docker;
-	$(call createDir,$(VOLUMES))
-	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
+	echo
+# 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
+# 	@echo $(VOLUMES)
+# #	@systemctl --user status docker;
+# 	$(call createDir,$(VOLUMES))
+# 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
 # @chown 777 $(VOLUMES)
 # @chown -R $(id -u):$(id -g) $(VOLUMES)
 # @chmod -R u+rwX $(VOLUMES)

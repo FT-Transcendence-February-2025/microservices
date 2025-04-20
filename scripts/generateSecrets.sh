@@ -30,9 +30,14 @@ export $(egrep '(SSL|DATA|ADMIN_EMAIL|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.
 export DOMAIN=$(hostname)
 IP=$(ip route get 8.8.8.8 | awk '{print $7}')
 echo "# --- COMPOSE & TRAEFIK SERVICE --- #" >> .env
-grep -vE '^(TOKEN|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.tmp >> .env
+grep -vE '^(TOKEN|AUTH_ENV|AUTH_DASHBOARD|DATA)=' ./secrets/.env.tmp >> .env
 
-
+# Determine DATA path based on whether /sgoinfre exists
+if [ -d "/sgoinfre" ]; then
+    DATA_PATH="/sgoinfre/$USER/$DATA"
+else
+    DATA_PATH="$HOME/data/$DATA"
+fi
 echo $ADMIN_EMAIL > $SSL/adminEmail.txt
 cat <<EOF >> .env
 USER=$USER
@@ -42,7 +47,7 @@ HOST_USER=$USER
 DOMAIN=$DOMAIN
 IP=$IP
 AUTH_DASHBOARD=$(echo "$AUTH_DASHBOARD" | sed 's/\$/\$\$/g')
-DATA=$HOME/data/$DATA
+DATA=$DATA_PATH
 # ---------- CERTIFICATES ---------- #
 SSL_PATH=$PWD/$SSL
 SSL_CRT=$PWD/$SSL/$(hostname -s).crt

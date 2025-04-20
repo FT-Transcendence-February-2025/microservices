@@ -12,10 +12,10 @@ volumes:
   traefik:
     driver: local
     name: traefik-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/traefik
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/traefik
 
 services:
   traefik:

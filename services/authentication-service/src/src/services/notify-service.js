@@ -2,6 +2,7 @@ import fastify from "../server.js";
 import db from "./database-service.js";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
+import config from "../config/config.js"
 
 const notifyService = {
   sendEmail: async ({ settings, receiver }) => {
@@ -9,7 +10,7 @@ const notifyService = {
 		let accessGate, options;
 		switch (settings.emailType) {
 			case "link": {
-				accessGate = `http://localhost:3001/verify-email/${
+				accessGate = `https://${config.toFrontEnd.auth}/verify-email/${
 					generateConfirmationToken(settings.userId, settings.emailType, 10)
 				}`;
 				options = generateEmailConfirmationOptions(receiver, accessGate);

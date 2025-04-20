@@ -6,10 +6,10 @@ volumes:
   auth-vol:
     driver: local
     name: auth-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/auth
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/auth
 
 services:
   auth:

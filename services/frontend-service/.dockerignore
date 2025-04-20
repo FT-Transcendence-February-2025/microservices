@@ -2,3 +2,6 @@
 src/old
 srcOld/
 *.MD
+.env
+
+node_modules/

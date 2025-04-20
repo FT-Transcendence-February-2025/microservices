@@ -2,8 +2,8 @@
 FROM node:20-alpine as builder
 
 
-ARG DOMAIN
-ARG DOMAIN_TEST
+ARG VITE_HOST
+ARG VITE_PORT
 
 WORKDIR /app
 
@@ -14,13 +14,13 @@ RUN npm install --include=dev
 # Copy all source files and build the project (adjust if your build output folder is different)
 COPY src .
 # Create a config file with environment variables
-# RUN mkdir -p /app/src/config/ && \
-# 	echo "window.ENV = { \
-# 		ENV_TYPE: '${NODE_ENV:-production}', \
-# 		VITE_HOST: '${VITE_HOST}', \
-# 		VITE_PORT: '${VITE_PORT}', \
-# 		IS_DOCKER: true \
-# 	};" > /app/src/config/env-config.js
+RUN mkdir -p /app/src/config/ && \
+	echo "window.ENV = { \
+		ENV_TYPE: '${NODE_ENV:-production}', \
+		VITE_HOST: '${VITE_HOST}', \
+		VITE_PORT: '${VITE_PORT}', \
+		IS_DOCKER: true \
+	};" > /app/src/config/env-config.js
 
 RUN npm run build
 
@@ -33,8 +33,8 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then apk update && apk add --no-cache curl opens
 
 # Update package list and install Nginx and OpenSSL
 RUN rm -rf /var/cache/apk/* \
-    && rm /etc/nginx/conf.d/default.conf \
-    && rm /usr/share/nginx/html/index.html
+	&& rm /etc/nginx/conf.d/default.conf \
+	&& rm /usr/share/nginx/html/index.html
 
 # Copy the Vite build output (by default Vite outputs to /dist)
 COPY --from=builder /app/dist /usr/share/nginx/html

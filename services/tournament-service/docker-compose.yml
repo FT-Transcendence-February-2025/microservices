@@ -3,10 +3,10 @@ volumes:
   tour-vol:
     driver: local
     name: tour-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/tour
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/tour
 
 services:
   tour:

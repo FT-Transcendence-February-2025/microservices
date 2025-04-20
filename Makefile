@@ -129,11 +129,12 @@ re: fclean all
 
 # Create Docker volumes for the project
 volumes: #check_os
-	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
-	@echo $(VOLUMES)
-#	@systemctl --user status docker;
-	$(call createDir,$(VOLUMES))
-	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
+	echo
+# 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
+# 	@echo $(VOLUMES)
+# #	@systemctl --user status docker;
+# 	$(call createDir,$(VOLUMES))
+# 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
 # @chown 777 $(VOLUMES)
 # @chown -R $(id -u):$(id -g) $(VOLUMES)
 # @chmod -R u+rwX $(VOLUMES)

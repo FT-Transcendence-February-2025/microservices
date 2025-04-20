@@ -33,7 +33,7 @@ export default class UserService {
 
     static async login(email: string, password: string): Promise<boolean> {
         try {
-            const response = await fetch(`http://${config.toBackend.auth}/login`, {
+            const response = await fetch(`${config.protocol}/${config.toBackend.auth}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export default class UserService {
 
     static async register(displayName: string, email: string, password: string): Promise<boolean> {
         try {
-            const response = await fetch(`http://${config.toBackend.auth}/register`, {
+            const response = await fetch(`${config.protocol}/${config.toBackend.auth}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ export default class UserService {
 
     static async logout(): Promise<boolean> {
         try {
-            const response = await postApiData(`http://${config.toBackend.auth}/logout`, {});
+            const response = await postApiData(`${config.protocol}/${config.toBackend.auth}/logout`, {});
 
             if (response.ok) {
                 localStorage.removeItem('accessToken');
@@ -106,7 +106,7 @@ export default class UserService {
     static async changeDisplayName(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ displayName });
-            const response = await postApiData(`http://${config.toBackend.user}/display-name`, body);
+            const response = await postApiData(`${config.protocol}/${config.toBackend.user}/display-name`, body);
 
             if (response.ok) {
                 UserService.displayName = displayName;
@@ -169,7 +169,7 @@ export default class UserService {
         formData.append('avatar', file);
 
         try {
-            const response = await postApiFormData(`http://${config.toBackend.user}/avatar`, formData);
+            const response = await postApiFormData(`${config.protocol}/${config.toBackend.user}/avatar`, formData);
             const data = await response.json();
 
             if (response.ok) {
@@ -189,7 +189,7 @@ export default class UserService {
 
     static async getFriendList(): Promise<any> {
         try {
-            const response = await getApiData(`http://${config.toBackend.user}/get-friends`);
+            const response = await getApiData(`${config.protocol}/${config.toBackend.user}/get-friends`);
             const data = await response.json();
 
             if (response.ok) {
@@ -210,7 +210,7 @@ export default class UserService {
     static async addFriend(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ invitedDisplayName: displayName });
-            const response = await postApiData(`http://${config.toBackend.user}/invite-friend`, body);
+            const response = await postApiData(`${config.protocol}/${config.toBackend.user}/invite-friend`, body);
 
             if (response.ok) {
                 return true;
@@ -230,7 +230,7 @@ export default class UserService {
     static async removeFriend(displayName: string): Promise<boolean> {
         try {
             const body = JSON.stringify({ displayNameToRemove: displayName });
-            const response = await postApiData(`http://${config.toBackend.user}/remove-friend`, body);
+            const response = await postApiData(`${config.protocol}/${config.toBackend.user}/remove-friend`, body);
 
             if (response.ok) {
                 return true;
@@ -250,7 +250,7 @@ export default class UserService {
     static async respondFriend(displayName: string, accepted: boolean): Promise<boolean> {
         try {
             const body = JSON.stringify({ invitingDisplayName: displayName, accepted: accepted });
-            const response = await postApiData(`http://${config.toBackend.user}/respond-friend`, body);
+            const response = await postApiData(`${config.protocol}/${config.toBackend.user}/respond-friend`, body);
 
             if (response.ok) {
                 return true;
@@ -269,7 +269,7 @@ export default class UserService {
 
     static async getProfile(displayName: string): Promise<any> {
         try {
-            const response = await getApiData(`http://${config.toBackend.user}/profile/${displayName}`);
+            const response = await getApiData(`${config.protocol}/${config.toBackend.user}/profile/${displayName}`);
             const data = await response.json();
 
             if (response.ok) {

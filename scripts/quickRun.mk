@@ -1,5 +1,6 @@
 all:
 
+# print logs in docker enviroment continuesly
 w:
 	@while true; do \
 		docker compose logs --follow $$c || { clear; true; }; \
@@ -24,6 +25,8 @@ pr:
 	$(MAKE) --no-print w c=prometheus
 gr:
 	$(MAKE) --no-print w c=grafana
+
+#quick commands
 fd:
 	$(MAKE) --no-print D=1 fclean dcon
 d:
@@ -77,46 +80,15 @@ stopServices:
 		if [ -f "$$service/package.json" ]; then \
 			pids=$$(ps aux | grep "node.*$$service" | grep -v grep | awk '{print $$2}'); \
 			if [ -n "$$pids" ]; then \
-				echo ; \
-				echo "⏹️  Stopping $$service (PID: $$pids)"; \
+				echo "⏹️ Stopping $$service (PID: $$pids)"; \
 				kill -15 $$pids || kill -9 $$pids; \
-				echo ; \
-				echo "✅  Stopped $$service"; \
+				echo "✅ Stopped $$service"; \
 			else \
-				echo "ℹ️  $$service is not running"; \
+				echo "ℹ️ $$service is not running"; \
 			fi; \
 		fi; \
 	done
 	@echo "📋 All services stopped"
 
-# Check logs for all running services or a specific service
-logsLocal:
-	@if [ -n "$$s" ]; then \
-		echo "🔍 Checking logs for service: $$s"; \
-		if [ -f "$$s/dev.log" ]; then \
-			tail -f "$$s/dev.log"; \
-		else \
-			echo "⚠️ Log file not found for $$s"; \
-			find . -type d -path "*/src/src" | while read -r dir; do \
-				service=$$(dirname "$$(dirname "$$dir")"/src); \
-				if [ "$$service" = "$$s" ] || [ "./$$service" = "$$s" ] || [ "$$(basename $$service)" = "$$s" ]; then \
-					echo "🔎 Found matching service at $$service"; \
-					if [ -f "$$service/dev.log" ]; then \
-						tail -f "$$service/dev.log"; \
-						exit 0; \
-					fi; \
-				fi; \
-			done; \
-			echo "❌ Could not find log file for service $$s"; \
-		fi; \
-	else \
-		echo "📋 Available service logs:"; \
-		find . -name "dev.log" | while read -r log; do \
-			service=$$(dirname "$$log"); \
-			echo "   - $$service ($$log)"; \
-		done; \
-		echo ""; \
-		echo "📝 Use 'make logsLocal s=<service_name>' to view logs for a specific service"; \
-		echo "   For example: make logsLocal s=authentication-service"; \
-		echo "   You can use the full path or just the service name"; \
-	fi
+checkPorts:
+	-@netstat -tuln | grep ":3000*"

@@ -1,7 +1,12 @@
 FROM node:20-alpine
 
-RUN apk update && apk add sqlite
-
+RUN apk update && apk add --no-cache \
+	sqlite-dev \
+	python3 \
+	make \
+	g++ \
+	build-base
+	
 WORKDIR /app
 
 COPY package*.json ./

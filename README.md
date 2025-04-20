@@ -57,37 +57,64 @@ ft_transcendence
    [Rootless Docker Guide](docs/RootlessDocker.MD)
    
 2. Clone the repository:
-   ```
+```
    git clone git@github.com:FT-Transcendence-February-2025/microservices.git
    cd microservices-project
-   ```
+```
 
 3. Build and start the services using Docker Compose:
-   ```bash
-   # secrets generated in tmp_extract, move .env.tmp and .envauthentication to microservices root directory
+```bash
+   # secrets generated in tmp_extract, move secrets folder (contains .env.tmp and .envauthentication) to root directory
    make decrypt
    # RUN ROOTLESS DOCKER
    make runDocker
-   # BUILD AND RUN CONTAINERS 
-   make dcon 
+   # BUILD AND RUN CONTAINERS in debug mode, 
+   make D=1 dcon
    #docker-compose up --build
-   ```
+```
 
 4. Access the application through the Traefik gateway with ${IP} or ${DOMAIN}
-   ```bash
+```bash
    # open private firefox window 
    make browser
    # 127.0.0.1
-   ```
+```
 ## Usage Guidelines
-   ```bash
+```bash
    #check all services status
    make logs
-   # check specific service status
-   make logs c=auth/traefik/fron-end
-   ```
+   # check specific service status (choose only one if variable  'c' is used)
+   make logs c=auth|traefik|front|user|game|tour|match
+```
 - Each service can be accessed through the API gateway, which handles routing and security.
 - Refer to individual service documentation for specific API endpoints and usage instructions.
+5. Rebuild container
+```bash
+   make D=1 rebuild c=auth|traefik|front|user|game|tour|match
+```
+6. Run one container
+```bash
+   make D=1 dcon c=auth|traefik|front|user|game|tour|match
+```
+# Run local enviroment
+you can find commands to use in `scripts/quickRun `
+1. Start services
+```bash
+  make runLocal
+  #it will start all services in same window, printing only when changes happend or server crashes
+```
+2. Stop services
+```bash
+  make stopServices
+```
+3. Check if services are running 
+```bash
+  make checkServices
+```
+4. Check if ports are free
+```bash
+  make checkPorts
+```
 
 
 ## Contributing

@@ -21,7 +21,7 @@ const fastify = Fastify({
 })
 
 // Add the logging hooks
-addLoggingHooks(fastify)
+// addLoggingHooks(fastify)
 // Add the metrics hook to track all requests
 addMetricsHook(fastify)
 // Expose the /metrics endpoint

@@ -14,13 +14,13 @@ RUN npm install --include=dev
 # Copy all source files and build the project (adjust if your build output folder is different)
 COPY src .
 # Create a config file with environment variables
-RUN mkdir -p /app/src/config/ && \
-	echo "window.ENV = { \
-		ENV_TYPE: '${NODE_ENV:-production}', \
-		VITE_HOST: '${VITE_HOST}', \
-		VITE_PORT: '${VITE_PORT}', \
-		IS_DOCKER: true \
-	};" > /app/src/config/env-config.js
+# RUN mkdir -p /app/src/config/ && \
+# 	echo "window.ENV = { \
+# 		ENV_TYPE: '${NODE_ENV:-production}', \
+# 		VITE_HOST: '${VITE_HOST}', \
+# 		VITE_PORT: '${VITE_PORT}', \
+# 		IS_DOCKER: true \
+# 	};" > /app/src/config/env-config.js
 
 RUN npm run build
 

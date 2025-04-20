@@ -2,7 +2,7 @@ import config from '../config/config.js';
 
 const userManagementService = {
 	getUser: async (userId) => {
-		const response = await fetch(`${config.endpoints.user}/get-user/${userId}`, {
+		const response = await fetch(`http://localhost:3002/get-user/${userId}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 		});

@@ -12,13 +12,6 @@ const config = {
     tour: isDocker ? 'http://tour:3004/api' : 'http://localhost:3004',
     game: isDocker ? 'http://game:3005/api' : 'http://localhost:3005',
   },
-  toFrontEnd: {
-    auth: isDocker ? `https://${process.env.DOMAIN}/api/auth` : 'http://localhost:3001',
-    user: isDocker ? `https://${process.env.DOMAIN}/api/user` : 'http://localhost:3002',
-    match: isDocker ? `https://${process.env.DOMAIN}/api/match` : 'http://localhost:3003',
-    tour: isDocker ? `'https://${process.env.DOMAIN}/api/tour` : 'http://localhost:3004',
-    game: isDocker ? `https://${process.env.DOMAIN}/api/game` : 'http://localhost:3005',
-  },
   apiPrefix: isDocker ? '/api' : '',
   logger: isDocker
     ? {

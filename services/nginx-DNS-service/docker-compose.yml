@@ -10,14 +10,14 @@ volumes:
   nginx-logs:
     driver: local
     name: nginx-vol
-    driver_opts:
-      type: bind
-      o: bind
-      device: ${NGINX_VOL}
+    # driver_opts:
+    #   type: bind
+    #   o: bind
+    #   device: ${NGINX_VOL}
 
   dns-logs:
     driver: local
-    # name: dns-vol
+    name: dns-vol
     # driver_opts:
     #   type: none
     #   o: bind

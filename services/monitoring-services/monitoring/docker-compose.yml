@@ -2,17 +2,17 @@ volumes:
   grafana:
     driver: local
     name: grafana-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/grafana
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/grafana
   prometheus:
     driver: local
     name: prometheus-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/prometheus
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ${DATA}/prometheus
 
 services:
   prometheus:

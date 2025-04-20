@@ -203,7 +203,8 @@ checkCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
 
 rmData:
-	 docker run --rm -v /home/lilizarr/data:/data alpine sh -c "rm -rf /data/*"
+	@echo
+# docker run --rm -v $(VOLUMES):/volumes alpine sh -c "rm -rf /volumes/*"
 
 
 #--------------------COLORS----------------------------#

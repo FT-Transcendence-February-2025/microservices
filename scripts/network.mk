@@ -83,7 +83,8 @@ browser:
 #	firefox --private-windows -url  "127.0.0.1" "$(shell hostname)" "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" "localhost:8080" &
 	firefox --private-window "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" &
 #"localhost:8080" &
-
+local:
+	firefox --private-window localhost:3000
 chrome:
 	"/mnt/c/Program Files/Google/Chrome/Application/chrome.exe" --ignore-certificate-errors --user-data-dir="C:\Temp\chrome_dev_profile" "https://$(shell hostname)" &
 

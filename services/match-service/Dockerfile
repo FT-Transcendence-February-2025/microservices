@@ -4,7 +4,12 @@ WORKDIR /app
 
 ARG DEBUG_MODE
 
-RUN apk update && apk add --no-cache sqlite
+RUN apk update && apk add --no-cache \
+	sqlite-dev \
+	python3 \
+	make \
+	g++ \
+	build-base
 
 RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	apk update && apk add --no-cache curl openssl jq; \
@@ -12,7 +17,8 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 
 COPY src/package*.json ./
 
-RUN npm install --include=dev
+RUN rm -f package-lock.json
+RUN npm install --include=dev --build-from-source --no-package-lock
 
 RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	npm install --save-dev pino-pretty; \

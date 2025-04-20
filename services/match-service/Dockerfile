@@ -15,9 +15,13 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	apk update && apk add --no-cache curl openssl jq; \
 	fi
 
+# COPY src .
+
 COPY src/package*.json ./
 
-RUN rm -f package-lock.json
+# RUN rm -f package-lock.json 
+# RUN rm -rf node_modules
+RUN ls -la
 RUN npm install --include=dev --build-from-source --no-package-lock
 
 RUN if [ "$DEBUG_MODE" = "1" ]; then \
@@ -28,7 +32,7 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	fi
 
 COPY src .
-
+RUN ls -la
 EXPOSE 3003
 
 CMD ["npm", "run", "dev"]

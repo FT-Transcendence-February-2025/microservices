@@ -128,6 +128,7 @@ const startServer = async () => {
       }
       console.log(`Server listening at ${address}`);
 	  console.log(`Server listening at ${process.env.IP}`);
+	  console.log(`Server listening at ${config.apiPrefix}`);
     });
   } catch (error) {
     console.error('Error starting server:', error);

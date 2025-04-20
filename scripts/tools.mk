@@ -72,11 +72,6 @@ showAll:
 watchC:
 	@docker ps -a; docker images
 	@docker volume ls; docker network ls 
-w:
-	@while true; do \
-		docker compose logs --follow $$c || { clear; true; }; \
-		sleep 2; \
-	done
 checkDbs:
 	@-while true; do \
 		printf "$(LF)$(D_PURPLE) DB auth-users$(P_NC)\n" ; \
@@ -201,9 +196,10 @@ cert:
 		cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem"; \
 	fi
 # @curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
-
-# docker rm alpine
 testCert:
+	
+# docker rm alpine
+checkCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
 
 rmData:

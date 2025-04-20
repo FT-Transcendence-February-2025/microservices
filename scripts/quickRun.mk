@@ -1,25 +1,30 @@
 all:
 
+w:
+	@while true; do \
+		docker compose logs --follow $$c || { clear; true; }; \
+		sleep 2; \
+	done
 f:
-	$(MAKE) w c=front
+	$(MAKE) --no-print w c=front
 a:
-	$(MAKE) w c=auth
+	$(MAKE) --no-print w c=auth
 u:
-	$(MAKE) w c=user
+	$(MAKE) --no-print w c=user
 m:
-	$(MAKE) w c=match
+	$(MAKE) --no-print w c=match
 t:
-	$(MAKE) w c=tour
+	$(MAKE) --no-print w c=tour
 g:
-	$(MAKE) w c=game
+	$(MAKE) --no-print --no-print w c=game
 tr:
-# $(MAKE) w c=traefik
+# $(MAKE) --no-print w c=traefik
 	watch docker exec -it traefik sh -c "cat /traefik/logs/"
 pr:
-	$(MAKE) w c=prometheus
+	$(MAKE) --no-print w c=prometheus
 gr:
-	$(MAKE) w c=grafana
+	$(MAKE) --no-print w c=grafana
 fd:
-	$(MAKE) D=1 fclean dcon
+	$(MAKE) --no-print D=1 fclean dcon
 d:
-	$(MAKE) D=1 dcon
+	$(MAKE) --no-print D=1 dcon

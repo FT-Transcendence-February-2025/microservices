@@ -1,54 +1,65 @@
+// import Fastify from 'fastify'
+// import cors from '@fastify/cors'
+// import tournamentRoutes from './routes/tournament-routes.js'
+// import { initDatabase } from './db/schema.js'
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import config from './config/config.js';
+// import { metricsRoute, addMetricsHook } from './config/metrics.js';
+// import { addLoggingHooks } from './config/logging.js';
+
+// const PORT = process.env.PORT || 3004
+// // Create your Fastify instance with the logger configuration from config.
+// const fastify = Fastify({
+//   logger: config.logger,
+// });
+
+// // Add the logging hooks
+// addLoggingHooks(fastify);
+// // Add the metrics hook to track all requests
+// addMetricsHook(fastify);
+// // Expose the /metrics endpoint
+// metricsRoute(fastify);
+
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import dotenv from 'dotenv'
 import tournamentRoutes from './routes/tournament-routes.js'
 import { initDatabase } from './db/schema.js'
-import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { deletionController } from './controllers/deletionController.js'
-
-////////////////////////////////////////////////////DOCKER CONTAINER start
 import config from './config/config.js';
-import { metricsRoute, addMetricsHook } from './config/metrics.js';
-import { addLoggingHooks } from './config/logging.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3004
+
 // Create your Fastify instance with the logger configuration from config.
 const fastify = Fastify({
   logger: config.logger,
 });
 
-
-// Add the logging hooks
-addLoggingHooks(fastify);
-// Add the metrics hook to track all requests
-addMetricsHook(fastify);
-// Expose the /metrics endpoint
-metricsRoute(fastify);
-
-////////////////////////////////////////////////////DOCKER CONTAINER end
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// fastify.addHook('onRequest', (request, reply, done) => {
-//   console.log('Raw URL:', request.raw.url);
-//   console.log('Parsed URL:', request.url);
-//   done();
-// });
 fastify.register(cors, {
 	origin: [
         `https://${process.env.DOMAIN}`,
         `http://tour.${process.env.DOMAIN}`,
 		`http://${process.env.IP}:${PORT}`,
-		config.endpoints.tour,
-		'0'
+		config.endpoints.tour
     ],
+  origin: "*",
 	methods: ['GET', 'POST', 'PUT', 'DELETE'],
 	allowedHeaders: ['Content-Type', 'Authorization'], 
 	credentials: true
 })
+// fastify.addHook('onRequest', (request, reply, done) => {
+//   console.log('Raw URL:', request.raw.url);
+//   console.log('Parsed URL:', request.url);
+//   done();
+// });
 
 // fastify.register(fastifyStatic, {
 //   root: path.join(__dirname, 'public'),
@@ -96,9 +107,11 @@ process.on('SIGINT', async () => {
 })
 
 /*TODO:
+  -put preHandler jWT into all routes from tournament that get accessed
   -add active confirm and change to join, update tournament and delete user
   -maybe deactivate route for tournament instead of using delete route
   -add open flag to update tournament
+  -active true till scheduling
 
   -call get friends from um, check who has created a tournament and if ended_at is not filled yet 
   -if not deleting tms we need indacator to know which one is active
@@ -107,10 +120,8 @@ process.on('SIGINT', async () => {
   -handle deleting info via status
 
   meeting:
-  - config mistake
   - active bool in table, needed from matchmaking after ending or quitting
   - open bool
-  - implement getting userId
 
 after push from 42 computer, in order to run on laptop:
 

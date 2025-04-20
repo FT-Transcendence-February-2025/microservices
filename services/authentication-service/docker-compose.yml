@@ -52,7 +52,7 @@ services:
     - "traefik.http.routers.api-auth-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/auth`)"
     - "traefik.http.routers.api-auth-public.entrypoints=websecure"
     - "traefik.http.routers.api-auth-public.tls=true"
-    - "traefik.http.routers.api-auth-public.priority=90"
+    - "traefik.http.routers.api-auth-public.priority=300"
     # Apply middlewares: one for Host rewriting and one for path rewriting
     - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
 

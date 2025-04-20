@@ -1,5 +1,5 @@
 import queueTemplate from './queue.html?raw';
-import MatchmakingSocket from '../../../services/matchmakingSocket';
+import MatchmakingSocket from './utils/matchmakingSocket';
 
 const template = document.createElement('template');
 template.innerHTML = queueTemplate;
@@ -119,7 +119,7 @@ export default class Queue extends HTMLElement {
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.textContent = message;
-        const container = document.querySelector('#notificationContainer');
+        const container = document.getElementById('notifications');
         if (container) {
             container.appendChild(notification);
         } else {

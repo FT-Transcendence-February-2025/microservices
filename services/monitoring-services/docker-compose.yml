@@ -16,20 +16,6 @@ volumes:
       o: bind
       type: none
       device: ${DATA}/traefik
-  grafana:
-    driver: local
-    name: prometheus-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/grafana
-  prometheus:
-    driver: local
-    name: grafana-vol
-    driver_opts:
-      o: bind
-      type: none
-      device: ${DATA}/prometheus
 
 services:
   traefik:
@@ -80,12 +66,12 @@ services:
         max-file: "3"
     labels:
       - "traefik.enable=true"
-      ######################################################
-      # (Metrics configuration is still active – notice no dedicated port)
-      - "--metrics.prometheus=true"
-      ######################################################
+
+            # ---------------------------------------------------------
+
       # GLOBAL REDIRECTION (HTTP → HTTPS, Canonical)
-      ######################################################
+            # ---------------------------------------------------------
+
       - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
@@ -98,9 +84,9 @@ services:
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
 
-      # ----------------------------------------------------------------
+      # ---------------------------------------------------------
       # Redirect Router for /traefik:
-      # ----------------------------------------------------------------
+      # ---------------------------------------------------------
       - "traefik.http.routers.dash-redirect.rule=Host(`${DOMAIN}`) && (Path(`/traefik`) || Path(`/traefik/`))"
       - "traefik.http.routers.dash-redirect.entrypoints=websecure"
       - "traefik.http.routers.dash-redirect.middlewares=dashboard-auth,redirect-to-dashboard"
@@ -109,101 +95,32 @@ services:
       - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.permanent=true"
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=${AUTH_DASHBOARD}"
       - traefik.http.middlewares.auth.basicauth.removeheader=true
-      # ----------------------------------------------------------------
+      # ---------------------------------------------------------
       # Dashboard
-      # ----------------------------------------------------------------
+      # ---------------------------------------------------------
       - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`) && PathPrefix(`/dashboard`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard.priority=100"
+      - "traefik.http.routers.traefik-dashboard.priority=60"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
-
-      # ----------------------------------------------------------------
-      # priority to internal services /api
-      # ----------------------------------------------------------------
-      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      # ---------------------------------------------------------
+      # Traefik API - more specific paths to avoid intercepting microservice API calls
+      # ---------------------------------------------------------
+      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"  
       - "traefik.http.routers.traefik-api.entrypoints=websecure"
-      - "traefik.http.routers.traefik-api.priority=150"
+      - "traefik.http.routers.traefik-api.priority=80"
       - "traefik.http.routers.traefik-api.service=api@internal"
-      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth"
+      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,strip-api-traefik-prefix"
+      - "traefik.http.middlewares.strip-api-traefik-prefix.stripprefix.prefixes=/api/traefik"
+      # ---------------------------------------------------------
+      # metrics redirection
+      # ---------------------------------------------------------
+      - "traefik.http.routers.traefik-metrics.rule=Host(`${DOMAIN}`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.traefik-metrics.entrypoints=websecure"
+      - "traefik.http.routers.traefik-metrics.priority=40"
+      - "traefik.http.routers.traefik-metrics.middlewares=dashboard-auth"  # to be reuse your auth middleware
+      - "traefik.http.services.traefik-metrics.loadbalancer.server.port=8082"
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    hostname: prometheus
-    user: "${UID}:${GID}"
-    environment:
-      DOMAIN: ${DOMAIN}
-      AUTH_DASHBOARD: ${AUTH_DASHBOARD}
-      IP: ${IP}
-      TZ: Europe/Berlin
-    extra_hosts:
-      - "${DOMAIN}:127.0.0.1"
-      - "${DOMAIN}:${IP}"
-    volumes:
-      - "./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
-      - prometheus:/prometheus
-    networks:
-      frontend:
-        ipv4_address: 172.19.0.21
-      backend:
-        ipv4_address: 172.18.0.21
-    restart: unless-stopped
-    depends_on:
-      - traefik
-    healthcheck:
-      test: ["CMD", "curl", "-k", "https://localhost:9090/-/healthy"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.size=256MB
-    labels:
-      #####################################################
-      # ROUTER & MIDDLEWARE
-      #####################################################
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`${DOMAIN}`) && PathPrefix(`/prometheus`)"
-      - "traefik.http.routers.prometheus.entrypoints=websecure"
-
-      - "traefik.http.routers.prometheus.middlewares=dashboard-auth"
-      # Define the backend port where Prometheus serves its web UI.
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    networks:
-      frontend:
-        ipv4_address: 172.19.0.20
-      backend:
-        ipv4_address: 172.18.0.20 
-    restart: unless-stopped
-    labels:
-      #####################################################
-      #ROUTER & MIDDLEWARE (secured with basic auth)
-      #####################################################
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`${DOMAIN}`) && PathPrefix(`/grafana`)"
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      # Strip the "/grafana" prefix so Grafana sees "/" as its root.
-      - "traefik.http.routers.grafana.middlewares=auth-grafana,strip-grafana"
-      # Define the internal port for Grafana.
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.http.middlewares.strip-grafana.stripprefix.prefixes=/grafana"
-      - "traefik.http.middlewares.auth-grafana.basicauth.users=${AUTH_DASHBOARD}"
-  # pebble:
-  #   image: letsencrypt/pebble
-  #   container_name: pebble
-  #   hostname: pebble
-  #   environment:
-  #     - PEBBLE_VA_NOSLEEP=1
-  #   ports:
-  #     - "14000:14000" # Pebble ACME server
-  #     - "15000:15000" # Pebble challenge server
-  #   networks:
-  #     - backend
-  #   labels:
-  #     - "traefik.enable=true"
+include:
+  # - ELK/docker-compose.yml
+  - monitoring/docker-compose.yml

@@ -12,9 +12,9 @@ import Profile from './components/user/profile/profile.js';
 import Game from "./components/game/game.js"
 import Queue from "./components/menu/queue/queue.js"
 import Friends from "./components/user/friends/friends.js"
-import ChangePassword from "./components/user/account/changePassword/changePassword.js"
+import ChangePassword from "./components/user/changePassword/changePassword.js"
 // import User from "./utils/UserManager.js"
-import Router from "./router.js"
+import Router from "./services/RoutingService.js"
 
 const rootElement = document.getElementById('root');
 if (!rootElement)

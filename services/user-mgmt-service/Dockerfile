@@ -13,10 +13,14 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 COPY src/package*.json ./
 
 RUN npm install --include=dev
+RUN npm install @fastify/cors
 
 RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	npm install --save-dev pino-pretty; \
 	npm install --save-dev prom-client; \
+	npm install rimraf@latest --save; \
+	npm install npmlog@latest --save; \
+	npm install --save-dev cron ; \
 	fi
 
 COPY src .

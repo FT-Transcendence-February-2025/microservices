@@ -16,18 +16,29 @@ endef
 hash-pass:
 	htpasswd -nb pongAdmin yourpassword
 restartDocker:
+	@if grep -qi "ubuntu" /etc/os-release; then \
+		echo "Ubuntu detected - skipping Docker restart."; \
+		exit 0; \
+	fi
 	@echo "Stopping rootless Docker..."
-	-pkill -f dockerd-rootless.sh || echo "Docker is not running."
+	-pkill -f "dockerd-rootless.sh" || echo "Docker is not running."
 	@sleep 3
+
 runDocker: restartDocker
+	@if grep -qi "ubuntu" /etc/os-release; then \
+		echo "Ubuntu detected - skipping Docker start."; \
+		exit 0; \
+	fi
+	@echo "Starting rootless Docker..."
 	sh scripts/runDockerRootless.sh
+
 pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
 	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
 	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
 	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
-    docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
+	docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
@@ -161,18 +172,43 @@ rmCert:
 # Generate SSL certificates using mkcert
 cert:
 	$(call createDir,$(SSL))
-	@HOST=$(shell hostname -s) ; \
+	@HOST="$(shell hostname -s)"; \
 	if [ -f $(SSL)/$$HOST.key ] && [ -f $(SSL)/$$HOST.crt ]; then \
-		printf "$(LF)  🟢 $(P_BLUE)Certificates already exists $(P_NC)\n"; \
+	  printf "$(LF)  🟢 $(P_BLUE)Certificates already exist $(P_NC)\n"; \
 	else \
-		rm -rf $(SSL)/*; \
-		docker run --rm --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c 'apk add --no-cache nss-tools curl ca-certificates && curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert && chmod +x /usr/local/bin/mkcert && mkcert -install && mkcert -key-file /certs/$(shell hostname -s).key -cert-file /certs/$(shell hostname -s).crt $(shell hostname) "*.$(shell hostname)" $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem' ; \
+	  rm -rf $(SSL)/*; \
+	  ARCH="$$(uname -m)"; \
+	  if [ "$$ARCH" = "x86_64" ]; then \
+		PLATFORM="linux/amd64"; \
+		MKCERT_URL="https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64"; \
+	  elif [ "$$ARCH" = "aarch64" ]; then \
+		PLATFORM="linux/arm64"; \
+		MKCERT_URL="https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-arm64"; \
+	  else \
+		echo "Unsupported architecture $$ARCH" >&2; exit 1; \
+	  fi; \
+	  echo "Using platform $$PLATFORM and mkcert URL $$MKCERT_URL"; \
+	  docker run --rm --platform $$PLATFORM --privileged --hostname $(shell hostname) -v $(SSL):/certs -it alpine:latest sh -c "\
+		apk add --no-cache nss-tools curl ca-certificates && \
+		curl -JLO \"$$MKCERT_URL\" && \
+		mv mkcert-v1.4.4-linux-* /usr/local/bin/mkcert && \
+		chmod +x /usr/local/bin/mkcert && \
+		mkcert -install && \
+		mkcert -key-file /certs/$(shell hostname -s).key \
+			  -cert-file /certs/$(shell hostname -s).crt \
+			  $(shell hostname) \"*.$(shell hostname)\" \
+			  $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && \
+		cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem"; \
 	fi
 # @curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
 
 # docker rm alpine
 testCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
+
+rmData:
+	 docker run --rm -v /home/lilizarr/data:/data alpine sh -c "rm -rf /data/*"
+
 
 #--------------------COLORS----------------------------#
 # For print

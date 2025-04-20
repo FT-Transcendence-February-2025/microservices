@@ -1,8 +1,8 @@
-import dotenv from 'dotenv';
-import fs from 'fs';
+import dotenv from 'dotenv'
+import fs from 'fs'
 
-dotenv.config();
-const isDocker = fs.existsSync('/.dockerenv');
+dotenv.config()
+const isDocker = fs.existsSync('/.dockerenv')
 
 const config = {
   endpoints: {
@@ -22,15 +22,31 @@ const config = {
             colorize: true,
           },
         },
-		customLogLevel: (req, res, err) => {
-			// Suppress logs for /metrics
+		customLogLevel: (req, res) => {
+			// Only suppress console output for /metrics, don't interfere with the actual endpoint
 			if (req.url === '/metrics') {
 			  return 'silent';
 			}
 			// Default log level
-			return err ? 'error' : 'info';
-		},
-      }
+			return res.statusCode >= 400 ? 'error' : 'info';
+		  },
+		  // Use serializer to control what appears in the logs without affecting data collection
+		  serializers: {
+			req(request) {
+			  if (request.url === '/metrics') {
+				// Return minimal info for metrics requests
+				return undefined;
+			  }
+			  return {
+				method: request.method,
+				url: request.url,
+				host: request.headers ? request.headers.host : undefined,
+				remoteAddress: request.ip,
+				remotePort: request.socket ? request.socket.remotePort : undefined
+			  };
+			}
+		  }
+		}
     : true,
   isDocker,
 };

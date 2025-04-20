@@ -5,7 +5,7 @@ CMD		:= docker compose
 PROJECT_ROOT:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 GIT_REPO	:=$(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 CURRENT		:= $(shell basename $$PWD)
-VOLUMES		:= ./volumes
+VOLUMES		:= $(shell echo $$HOME)/data/volumes
 
 SSL			:= ./secrets/ssl
 export TOKEN=$(shell grep '^TOKEN' secrets/.env.tmp | cut -d '=' -f2 | xargs)
@@ -67,11 +67,13 @@ stop:
 
 # Remove all Docker volumes
 remove_volumes:
+	@printf "$(LF)$(P_RED)  ❗  Stopping and removing all containers $(FG_TEXT)"
+	-@$(CMD) down -v --remove-orphans
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)Volumes $(FG_TEXT)"
-	@rm -rf $(VOLUMES)
 	@if [ -n "$$(docker volume ls -q)" ]; then \
-		docker volume rm $$(docker volume ls -q) > /dev/null; \
+		docker volume rm $$(docker volume ls -q) ; \
 	fi
+	-@rm -rf $(VOLUMES)/
 
 # Prune Docker images, builders, system, and volumes
 prune:
@@ -89,13 +91,14 @@ clean:
 	@rm -rf *.log
 
 # Perform a full clean, removing containers, images, volumes, and networks
-fclean: clean remove_containers remove_images remove_volumes prune remove_networks rm-secrets
+fclean: clean remove_networks remove_volumes prune rmData rm-secrets
 	-@if [ -d "$(VOLUMES)" ]; then	\
 		printf "\n$(LF)🧹 $(P_RED) Clean $(P_YELLOW)Volume's Volume files$(P_NC)\n"; \
 	fi
 	@printf "$(LF)"
 	@echo $(WHITE) "$$TRASH" $(E_NC)
 	@docker container ls -a; docker image ls; docker volume ls
+	-@ls -la $(shell echo $$HOME/data/*)
 
 # Remove secret files
 rm-secrets: #clean_host
@@ -111,12 +114,8 @@ rm-secrets: #clean_host
 secrets: #check_host 
 	@$(call createDir,./secrets)
 	@chmod +x scripts/generateSecrets.sh
-# 	@echo $(WHITE)
-# 	@export $(shell grep '^TMP' srcs/.env.tmp | xargs) && \#
 	@rm -f .env
 	@bash scripts/generateSecrets.sh $(D)
-# 	@bash scripts/generateSecrets.sh
-# 	@echo $(E_NC) > /dev/null
 
 # Show logs for a specific Docker container
 # Usage: make logs c=<container_name>
@@ -134,7 +133,11 @@ volumes: #check_os
 #	@systemctl --user status docker;
 	$(call createDir,$(VOLUMES))
 	@docker compose config --services | xargs -I {} mkdir -p $(VOLUMES)/{}
-	@chmod -R 777 $(VOLUMES)
+# @chown 777 $(VOLUMES)
+# @chown -R $(id -u):$(id -g) $(VOLUMES)
+# @chmod -R u+rwX $(VOLUMES)
+
+# @chmod -R 777 $(VOLUMES)
 # @if cat ~/.config/docker/daemon.json | grep -q $(DOCKER_DATA); then \
 # 	echo "\tDocker data-Root correct" ; \
 # 	exit 0; \
@@ -148,4 +151,4 @@ volumes: #check_os
 #	~/.config/docker/daemon.json
 # $(call createDir,$(DB_VOL))
 # 
-.PHONY: all buildAll set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets
+.PHONY: all buildAll set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_volumes remove_networks prune showData secrets

@@ -13,7 +13,8 @@ t:
 g:
 	$(MAKE) w c=game
 tr:
-	$(MAKE) w c=traefik
+# $(MAKE) w c=traefik
+	watch docker exec -it traefik sh -c "cat /traefik/logs/"
 pr:
 	$(MAKE) w c=prometheus
 gr:

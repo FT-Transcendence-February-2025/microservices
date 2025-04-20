@@ -40,7 +40,7 @@ services:
       - "traefik.http.routers.api-match-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/match`)"
       - "traefik.http.routers.api-match-public.entrypoints=websecure"
       - "traefik.http.routers.api-match-public.tls=true"
-      - "traefik.http.routers.api-match-public.priority=90"
+      - "traefik.http.routers.api-match-public.priority=270"
       # Apply middlewares: one for Host rewriting and one for path rewriting
       - "traefik.http.routers.api-match-public.middlewares=change-host-to-match,rewrite-match-path"
 

@@ -25,12 +25,13 @@ export const inviteController = {
             const ids = userIds
             console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `Sending invite for tournament: ${tournamentName}`);
 
+            const invitingUserId = userId;
             const response = await fetch(`${UM_SERVICE_URL}/invite-tournament`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ tournamentId, tournamentName, ids, userId })
+            body: JSON.stringify({ tournamentId, tournamentName, invitingUserId, ids })
             })
             if (!response.ok) {
                 const userdata = await response.json()

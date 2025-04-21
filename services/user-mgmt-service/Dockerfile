@@ -19,13 +19,12 @@ COPY src/package*.json ./
 
 RUN npm install --include=dev
 
-RUN if [ "$DEBUG_MODE" = "1" ]; then \
-	npm install --save-dev pino-pretty; \
-	npm install --save-dev prom-client; \
-	npm install rimraf@latest --save; \
-	npm install npmlog@latest --save; \
-	npm install --save-dev cron ; \
-	fi
+RUN npm install --save-dev pino-pretty; \
+    npm install --save-dev prom-client; \
+    npm install --save-dev dotenv; \
+    npm install --save-dev cron; \
+    npx npm-check-updates -u; \
+    npm install;
 
 COPY src .
 

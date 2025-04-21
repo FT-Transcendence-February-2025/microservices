@@ -7,8 +7,8 @@ include:
   - services/tournament-service/docker-compose.yml
   - services/monitoring-services/docker-compose.yml
   - services/frontend-service/docker-compose.yml
-  # <--! Deprecrated -->
-  # - services/game-service/docker-compose.yml
+  - services/game-service/docker-compose.yml
+
 
 networks:
   frontend:

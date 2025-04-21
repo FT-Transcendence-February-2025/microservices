@@ -15,7 +15,7 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 	apk update && apk add --no-cache curl openssl jq; \
 	fi
 
-COPY src/backend/package*.json ./
+COPY src/package*.json ./
 
 RUN npm install --include=dev
 
@@ -26,7 +26,7 @@ RUN npm install --save-dev pino-pretty; \
     npx npm-check-updates -u; \
     npm install;
 
-COPY src/backend .
+COPY src .
 
 EXPOSE 3005
 

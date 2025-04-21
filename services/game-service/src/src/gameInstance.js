@@ -166,7 +166,7 @@ class GameInstanceManager {
 			const winnerId = player1Score > player2Score ? player1Id :
 				(player2Score > player1Score ? player2Id : null);
 			
-			const response = await fetch(`${config.endpoints.tour}/tournament/matches/results`, {
+			const response = await fetch(`${config.endpoints.match}/tournament/matches/results`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -191,7 +191,7 @@ class GameInstanceManager {
 			const winnerId = player1Score > player2Score ? player1Id :
 							(player2Score > player1Score ? player2Id : null);
 
-			const response = await fetch(`${config.endpoints.tour}/matches/results`, {
+			const response = await fetch(`${config.endpoints.match}/matches/results`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

@@ -118,24 +118,25 @@ export default class Game extends HTMLElement {
     }
 
     private _renderGameResult(gameEndState: GameState) {
+        this._canvas.style.display = 'none';
         this._gameResult.innerHTML = `
             <div class="fixed inset-0 flex items-center justify-center z-[9999]">
-                <div class="card text-center w-120">
-                    <h1 class="mb-6">- Game Result -</h1>
-                    <div class="flex justify-around mb-6 text-xl font-semibold">
-                        <div>
-                            <div>Left Player</div>
-                            <div id="left-score" class="text-4xl text-blue-600">${gameEndState.paddleLeft.score}</div>
-                        </div>
-                        <div>
-                            <div>Right Player</div>
-                            <div id="right-score" class="text-4xl text-red-600">${gameEndState.paddleRight.score}</div>
-                        </div>
+            <div class="card text-center max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+                <h1 class="text-3xl font-bold mb-4 text-gray-900">Game Over</h1>
+                <div class="flex justify-around gap-8 mb-6 text-xl font-semibold">
+                    <div>
+                        <div class="mb-2 text-gray-700">Left Player</div>
+                        <div id="left-score" class="text-3xl text-blue-600">${gameEndState.paddleLeft.score}</div>
                     </div>
-                    <button class="btn-primary w-full mb-4" onClick="window.navigateTo('/home')">Home</a>
-                    <button class="btn-primary w-full" onClick="window.navigateTo('/game#local')">Rematch</a>
+                    <div>
+                        <div class="mb-2 text-gray-700">Right Player</div>
+                        <div id="right-score" class="text-3xl text-red-600">${gameEndState.paddleRight.score}</div>
+                    </div>
                 </div>
+                <button class="btn-primary w-3/4 mx-auto mb-4" onClick="window.navigateTo('/game#local')">Rematch</button>
+                <button class="btn-primary w-3/4 mx-auto" onClick="window.navigateTo('/home')">Home</button>
             </div>
+        </div>
         `;
     }
 
@@ -346,7 +347,7 @@ export default class Game extends HTMLElement {
                 const parsedData = JSON.parse(message.data);
                 if (parsedData.type == 'matchFinished') {
                     console.log('Received finishMessage:', parsedData);
-                    this.updateUIForMatchFinished({
+                    this.renderMatchOutcome({
                         winnerId: parsedData.winnerId,
                         winnerScore: parsedData.winnerScore,
                         loserScore: parsedData.loserScore
@@ -470,21 +471,19 @@ export default class Game extends HTMLElement {
         this._drawScore(paddleLeft.score, paddleRight.score);
     }
 
-    private updateUIForMatchFinished(data: {winnerId: number, winnerScore: number, loserScore: number }): void {
+    private renderMatchOutcome(data: { winnerId: number, winnerScore: number, loserScore: number }): void {
         const currentUserId = Number(this._playerId);
         let resultMessage = "";
+        let borderColor = "";
 
         if (currentUserId === data.winnerId) {
-            resultMessage = `YOU WON! Score: ${data.winnerScore}`;
+            resultMessage = `<strong>Victory!</strong><br><br>Your Score: ${data.winnerScore}`;
+            borderColor = "#39ff14";
         } else {
-            resultMessage = `YOU LOST! Score: ${data.loserScore}`;
+            resultMessage = `<strong>Defeat!</strong><br><br>Your Score: ${data.loserScore}`;
+            borderColor = "#ff073a";
         }
-        this._gameResult.innerHTML = `
-        <div class="card absolute z-20 flex flex-col items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style="display: none;">
-            <div class="text-lg font-bold mb-6">${resultMessage}</div>
-            <a href="/home" class="btn-primary w-full text-center" id="homeButton">Back Home</a>
-        </div>
-        `;
+        this._gameResult.innerHTML = this._renderOnlineGameResult(resultMessage, borderColor);
         this._gameResult.style.display = 'flex';
         const homeBtn = this._gameResult.querySelector('#homeButton') as HTMLAnchorElement;
         if (homeBtn) {
@@ -496,6 +495,26 @@ export default class Game extends HTMLElement {
         } else {
             throw new Error("Could not find '#homeButton element");
         }
+    }
+
+    private _renderOnlineGameResult(resultMessage: string, borderColor: string): string {
+        this._canvas.style.display = 'none';
+        return `
+            <div class="fixed inset-0 flex items-center justify-center z-[9999]">
+            <div class="card text-center max-w-lg w-full bg-white p-8 rounded-lg shadow-lg" style="
+                border: 2px solid ${borderColor};
+                box-shadow: 0 0 20px ${borderColor};
+            ">
+                <div class="flex flex-col space-y-8">
+                    <h1 class="text-2xl font-bold mb-4 text-black">Game Over</h1>
+                    <div class="text-lg mb-6 text-gray-800">
+                        ${resultMessage}
+                    </div>
+                    <a href="/home" class="btn-primary w-3/4 mx-auto" id="homeButton">Return Home</a>
+                </div>
+            </div>
+        </div>
+        `;
     }
 }
 

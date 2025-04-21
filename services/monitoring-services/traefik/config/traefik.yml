@@ -85,10 +85,10 @@ tcpServersTransport:
 
 log:
   level: DEBUG
-  filePath: "/traefik/logs/traefik.log"
+  # filePath: "/traefik/logs/traefik.log"
   format: json
 accessLog:
-  filePath: "/traefik/logs/access.log"
+  # filePath: "/traefik/logs/access.log"
   bufferingSize: 100
   format: json
 global:

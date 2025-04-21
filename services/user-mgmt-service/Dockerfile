@@ -23,6 +23,7 @@ RUN npm install --save-dev pino-pretty; \
     npm install --save-dev prom-client; \
     npm install --save-dev dotenv; \
     npm install --save-dev cron; \
+    npm install --save @fastify/cors; \
     npx npm-check-updates -u; \
     npm install;
 

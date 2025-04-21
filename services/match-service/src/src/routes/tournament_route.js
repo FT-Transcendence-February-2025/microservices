@@ -4,7 +4,7 @@ const tournamentMatchSchema = {
   body: {
     type: 'object',
     properties: {
-      tournamentId: { type: 'number', multipleOf: 1 },
+      tournamentId: { type: 'string', minLength: 1 },
       schedule: {
         type: 'array',
         items: {

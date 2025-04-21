@@ -12,8 +12,10 @@ update-submodules:
 	@git submodule update --recursive --remote
 	@echo "✅ All submodules updated successfully!"
 
+#list all branches
 subList:
 	git submodule foreach 'echo "$$path:"; git branch -r'
+#check status in submodule
 subStatus:
 	git submodule foreach 'echo "$$path:"; git fetch; git status'
 

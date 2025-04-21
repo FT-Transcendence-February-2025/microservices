@@ -20,7 +20,7 @@ services:
     container_name: match
     hostname: match
     volumes:
-      - match-vol:/usr/src/app
+      - match-vol:/app
     restart: unless-stopped
     environment:
       NODE_ENV: development

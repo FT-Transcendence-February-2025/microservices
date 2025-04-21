@@ -23,7 +23,7 @@ services:
     container_name: auth
     hostname: auth
     volumes:
-      - auth-vol:/usr/src/app
+      - auth-vol:/app
     restart: unless-stopped
     secrets:
       - envFile

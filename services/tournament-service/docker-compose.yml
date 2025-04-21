@@ -20,7 +20,7 @@ services:
     container_name: tour
     hostname: tour
     volumes:
-      - tour-vol:/usr/src/app
+      - tour-vol:/app
     restart: unless-stopped
     environment:
       NODE_ENV: development

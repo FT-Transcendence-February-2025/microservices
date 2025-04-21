@@ -20,7 +20,7 @@ services:
     container_name: game
     hostname: game
     volumes:
-      - game-vol:/usr/src/app
+      - game-vol:/app
     restart: unless-stopped
     environment:
       NODE_ENV: development
@@ -32,7 +32,7 @@ services:
       - 1.1.1.1
     networks:
       backend:
-        ipv4_address: 172.18.0.5
+        ipv4_address: 172.18.0.6
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---

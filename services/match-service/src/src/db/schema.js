@@ -21,7 +21,7 @@ export function initDatabase () {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS tournament_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tournament_id INTEGER NOT NULL,
+      tournament_id TEXT NOT NULL,
       round INTEGER NOT NULL,
       player1_id INTEGER NOT NULL,
       player2_id INTEGER NOT NULL,

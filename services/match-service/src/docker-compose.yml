@@ -1,9 +1,0 @@
-services:
-  sqlite:
-    image: nouchka/sqlite3
-    container_name: sqlite3
-    stdin_open: true # Keep container running
-    tty: true # Keep container running
-    volumes:
-      - ./data:/data
-    command: sh # Use shell to keep container

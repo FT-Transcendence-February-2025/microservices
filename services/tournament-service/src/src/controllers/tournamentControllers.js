@@ -3,7 +3,7 @@ import { databaseService } from '../db/databaseService.js'
 import db from '../db/database.js'
 import { v4 as uuidv4 } from 'uuid';
 import config from '../config/config.js'
-const UM_SERVICE_URL = config.endpoints.user;
+const UM_SERVICE_URL = config.endpoints.match;
 
 export const tournamentController = {
 

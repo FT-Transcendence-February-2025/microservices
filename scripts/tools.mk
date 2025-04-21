@@ -1,4 +1,3 @@
-
 # Default target, does nothing
 all:
 
@@ -45,12 +44,43 @@ load-Img:
 		echo "One or more tar files are missing. Running pull-Img..."; \
 		$(MAKE) pull-Img; \
 	fi
-	-@docker load -i alpine.tar && \
-	docker load -i node-20-alpine.tar && \
-	docker load -i traefik-v3.3.3.tar && \
-	docker load -i nginx-alpine.tar && \
-	docker load -i prometheus.tar && \
-	docker load -i grafana.tar
+	@echo "Checking for existing Docker images..."
+	@if ! docker images | grep -q "^alpine[[:space:]]\+latest"; then \
+		echo "Loading alpine image..."; \
+		docker load -i alpine.tar; \
+	else \
+		echo "🟢 alpine image already loaded"; \
+	fi
+	@if ! docker images | grep -q "^node[[:space:]]\+20-alpine"; then \
+		echo "Loading node:20-alpine image..."; \
+		docker load -i node-20-alpine.tar; \
+	else \
+		echo "🟢 node:20-alpine image already loaded"; \
+	fi
+	@if ! docker images | grep -q "^traefik[[:space:]]\+v3.3.3"; then \
+		echo "Loading traefik:v3.3.3 image..."; \
+		docker load -i traefik-v3.3.3.tar; \
+	else \
+		echo "🟢 traefik:v3.3.3 image already loaded"; \
+	fi
+	@if ! docker images | grep -q "^nginx[[:space:]]\+alpine"; then \
+		echo "Loading nginx:alpine image..."; \
+		docker load -i nginx-alpine.tar; \
+	else \
+		echo "🟢 nginx:alpine image already loaded"; \
+	fi
+	@if ! docker images | grep -q "^prom/prometheus[[:space:]]\+latest"; then \
+		echo "Loading prometheus image..."; \
+		docker load -i prometheus.tar; \
+	else \
+		echo "🟢 prom/prometheus image already loaded"; \
+	fi
+	@if ! docker images | grep -q "^grafana/grafana[[:space:]]\+latest"; then \
+		echo "Loading grafana image..."; \
+		docker load -i grafana.tar; \
+	else \
+		echo "🟢 grafana/grafana image already loaded"; \
+	fi
 
 # Show list of all running Docker containers
 show:
@@ -70,8 +100,8 @@ showAll:
 
 # Show all Docker containers, images, volumes, and networks every second
 watchC:
-	@docker ps -a; docker images
-	@docker volume ls; docker network ls 
+	@docker ps --format "table {{.Names}}\t {{.Image}}\t{{.Command}}\t{{.Status}}\t{{.Ports}}"; \
+	docker images; docker volume ls; docker network ls 
 checkDbs:
 	@-while true; do \
 		printf "$(LF)$(D_PURPLE) DB auth-users$(P_NC)\n" ; \

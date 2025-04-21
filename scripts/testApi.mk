@@ -24,8 +24,19 @@ login:init-log
 	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
 	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
+login21:init-log # Should return error
+	curl -k -X GET https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'
+
+profile:
+	curl -k -X GET "https://$(shell hostname)/api/user/profile/#vico" \
+		-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI1LCJkaXNwbGF5TmFtZSI6IlZ0ZXN0MSIsImlhdCI6MTc0NTI1NzA3MSwiZXhwIjoxNzQ1MjU3OTcxfQ.A99kK8DYhP0CpD3p5lp86gVM_7PXVbR_tJAXaf4hxBg"
+
+my-profile:
+	@curl -sk -X GET "https://$(shell hostname)/api/user/profile" \
+        -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI1LCJkaXNwbGF5TmFtZSI6IlZ0ZXN0MSIsImlhdCI6MTc0NTI1NzA3MSwiZXhwIjoxNzQ1MjU3OTcxfQ.A99kK8DYhP0CpD3p5lp86gVM_7PXVbR_tJAXaf4hxBg"
+
 login2:init-log # Should return error
-	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password"}' | jq
+	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'
 
 register:init-log
 	-docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
@@ -42,6 +53,7 @@ register:init-log
 	curl -k -X POST https://$(shell hostname)/api/auth/register \
 		-H "Content-Type: application/json" \
 		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$NAME\", \"password\": \"$$PASS\"}" | jq
+
 
 u-register: # should not #user-exist #user-logout
 	curl -k -X POST https://$(shell hostname)/api/user/new-user \

@@ -1,0 +1,18 @@
+[submodule "services/authentication-service/src"]
+	path = services/authentication-service/src
+	url = git@github.com:FT-Transcendence-February-2025/authentication-service.git
+[submodule "services/frontend-service/src"]
+	path = services/frontend-service/src
+	url = git@github.com:FT-Transcendence-February-2025/frontend.git
+[submodule "services/game-service/src"]
+	path = services/game-service/src
+	url = git@github.com:FT-Transcendence-February-2025/game-logic.git
+[submodule "services/match-service/src"]
+	path = services/match-service/src
+	url = git@github.com:FT-Transcendence-February-2025/matchmaking-service.git
+[submodule "services/tournament-service/src"]
+	path = services/tournament-service/src
+	url = git@github.com:FT-Transcendence-February-2025/tournament-service.git
+[submodule "services/user-mgmt-service/src"]
+	path = services/user-mgmt-service/src
+	url = git@github.com:FT-Transcendence-February-2025/user-management.git

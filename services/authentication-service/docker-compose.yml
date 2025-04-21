@@ -55,15 +55,6 @@ services:
     - "traefik.http.routers.api-auth-public.priority=300"
     # Apply middlewares: one for Host rewriting and one for path rewriting
     - "traefik.http.routers.api-auth-public.middlewares=change-host-to-auth,rewrite-auth-path"
-
-    # # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
-    # # Matches any request coming from wildcard subdomains with /api/auth prefix
-    # - "traefik.http.routers.api-auth-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/auth`)"
-    # - "traefik.http.routers.api-auth-internal.entrypoints=websecure"
-    # - "traefik.http.routers.api-auth-internal.tls=true"
-    # # Use the same middlewares to rewrite Host and Path
-    # - "traefik.http.routers.api-auth-internal.middlewares=change-host-to-auth,rewrite-auth-path"
-    # Middleware: Change the Host header to the internal hostname (auth.domain)
     - "traefik.http.middlewares.change-host-to-auth.headers.customrequestheaders.Host=auth.${DOMAIN}"
     # Middleware: Rewrite the incoming path. Strips the /api/auth prefix so that:
     #   /api/auth/login  →  /api/login

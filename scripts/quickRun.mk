@@ -48,8 +48,22 @@ checkServices:
 	done
 	@echo "📋 Complete service status check finished"
 
+install-deps:
+	@echo "🚀 Installing Node dependencies for all services..."
+	@find . -name "package.json" -not -path "*/node_modules/*" | while read -r package_file; do \
+		service_dir=$$(dirname "$$package_file"); \
+		echo "📦 Installing dependencies for $$service_dir"; \
+		(cd "$$service_dir" && \
+			echo "⏳ Running npm install --include-dev" && \
+			npm install --include-dev && \
+			echo "✅ Dependencies installed successfully for $$service_dir") || \
+			echo "❌ Failed to install dependencies for $$service_dir"; \
+		echo "-----------------------------------"; \
+	done
+	@echo "🏁 Dependency installation process completed!"
+
 # Modify runLocal to call checkServices after starting everything
-runLocal: secrets stopServices
+runLocal: secrets stopLocal
 	@echo "🔍 Finding all src/src directories and running npm dev in background..."
 	@find . -type d -path "*/src/src" | while read -r dir; do \
 		service=$$(dirname "$$(dirname "$$dir")"/src); \
@@ -73,7 +87,7 @@ runLocal: secrets stopServices
 	@sleep 5
 	@$(MAKE) checkServices
 
-stopServices:
+stopLocal:
 	@echo "🛑 Stopping all running Node.js services..."
 	@find . -type d -path "*/src/src" | while read -r dir; do \
 		service=$$(dirname "$$(dirname "$$dir")"/src); \
@@ -91,4 +105,4 @@ stopServices:
 	@echo "📋 All services stopped"
 
 checkPorts:
-	-@netstat -tuln | grep ":3000*"
+	-@netstat -tuln | grep ":3000*" || echo  "All free"

@@ -43,7 +43,7 @@ services:
       - frontend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend-router.rule=Host(`${DOMAIN}`) && !PathPrefix(`/api/`)"
       - "traefik.http.routers.frontend-router.entrypoints=websecure"
       - "traefik.http.routers.frontend-router.tls=true"
       - "traefik.http.routers.frontend.priority=40"

@@ -105,11 +105,11 @@ you can find commands to use in `scripts/quickRun `
 ```
 2. Stop services
 ```bash
-  make stopServices
+  make stopLocal
 ```
 3. Check if services are running 
 ```bash
-  make checkServices
+  make checkLocal
 ```
 4. Check if ports are free
 ```bash

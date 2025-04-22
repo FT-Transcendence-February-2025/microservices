@@ -129,7 +129,7 @@ re: fclean all
 
 # Create Docker volumes for the project
 volumes: #check_os
-	echo
+	@echo
 # 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
 # 	@echo $(VOLUMES)
 # #	@systemctl --user status docker;

@@ -24,16 +24,9 @@ login:init-log
 	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
 	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
-login21:init-log # Should return error
+login21:init-log # Should pass
 	curl -k -X GET https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'
 
-profile:
-	curl -k -X GET "https://$(shell hostname)/api/user/profile/#vico" \
-		-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI1LCJkaXNwbGF5TmFtZSI6IlZ0ZXN0MSIsImlhdCI6MTc0NTI1NzA3MSwiZXhwIjoxNzQ1MjU3OTcxfQ.A99kK8DYhP0CpD3p5lp86gVM_7PXVbR_tJAXaf4hxBg"
-
-my-profile:
-	@curl -sk -X GET "https://$(shell hostname)/api/user/profile" \
-        -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI1LCJkaXNwbGF5TmFtZSI6IlZ0ZXN0MSIsImlhdCI6MTc0NTI1NzA3MSwiZXhwIjoxNzQ1MjU3OTcxfQ.A99kK8DYhP0CpD3p5lp86gVM_7PXVbR_tJAXaf4hxBg"
 
 login2:init-log # Should return error
 	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'

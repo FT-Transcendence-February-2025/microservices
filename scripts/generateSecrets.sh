@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+# set -x
 if [ -f .secrets/.env.tmp ]; then
 	echo "File with secrets not found. Please contact microservices Admin for further information"
 	exit 1

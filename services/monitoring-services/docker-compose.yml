@@ -103,15 +103,16 @@ services:
       - "traefik.http.routers.traefik-dashboard.priority=60"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
-      # ---------------------------------------------------------
-      # Traefik API - more specific paths to avoid intercepting microservice API calls
-      # ---------------------------------------------------------
-      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"  
-      - "traefik.http.routers.traefik-api.entrypoints=websecure"
-      - "traefik.http.routers.traefik-api.priority=80"
-      - "traefik.http.routers.traefik-api.service=api@internal"
-      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,strip-api-traefik-prefix"
-      - "traefik.http.middlewares.strip-api-traefik-prefix.stripprefix.prefixes=/api/traefik"
+      # # ---------------------------------------------------------
+      # # Traefik API - more specific paths to avoid intercepting microservice API calls
+      # # ---------------------------------------------------------
+      # - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"  
+      # - "traefik.http.routers.traefik-api.entrypoints=websecure"
+      # - "traefik.http.routers.traefik-api.priority=80"
+      # - "traefik.http.routers.traefik-api.service=api@internal"
+      # - "traefik.http.routers.traefik-dashboard.tls=true"
+      # - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,strip-api-traefik-prefix"
+      # - "traefik.http.middlewares.strip-api-traefik-prefix.stripprefix.prefixes=/api/traefik"
       # ---------------------------------------------------------
       # metrics redirection
       # ---------------------------------------------------------

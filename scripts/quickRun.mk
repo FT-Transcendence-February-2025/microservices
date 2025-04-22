@@ -1,5 +1,8 @@
 all:
 
+du:
+	@docker-compose down
+	@docker-compose up -d
 # print logs in docker enviroment continuesly
 w:
 	@while true; do \
@@ -19,8 +22,8 @@ t:
 g:
 	$(MAKE) --no-print --no-print w c=game
 tr:
-# $(MAKE) --no-print w c=traefik
-	watch docker exec -it traefik sh -c "cat /traefik/logs/"
+	$(MAKE) --no-print w c=traefik
+# watch docker exec -it traefik sh -c "cat /traefik/logs/"
 pr:
 	$(MAKE) --no-print w c=prometheus
 gr:

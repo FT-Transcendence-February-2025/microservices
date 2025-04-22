@@ -5,19 +5,13 @@ import { usersController } from '../controllers/usersController.js';
 import { playersController } from '../controllers/playersController.js';
 import { joinController } from '../controllers/joinController.js';
 import { deletionController } from '../controllers/deletionController.js';
+import jwtTr from "jwt-validator-tr";
 
 export default async function (fastify) {
   
   //add to users table
   fastify.post('/addUser', {
     schema: {
-      body: {
-        type: 'object',
-        required: ['userId'],
-        properties: {
-          userId: { type: 'string' }
-        }
-      },
       response: {
         200: {
           type: 'object',
@@ -26,14 +20,16 @@ export default async function (fastify) {
             usersPos: { type: 'number' }
           }
         },
-        500: {
+        400: {
           type: 'object',
           properties: {
             error: { type: 'string' }
           }
         }
       }
-    }, handler: usersController.addUser
+    }, 
+    preHandler: jwtTr.verifyAccessToken,
+    handler: usersController.addUser
   })
   
   // Invite players

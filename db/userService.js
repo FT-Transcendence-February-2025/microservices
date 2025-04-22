@@ -1,6 +1,7 @@
 import db from './database.js'
 import config from '../config/config.js'
 const UM_SERVICE_URL = config.endpoints.user;
+// const UM_SERVICE_URL = `http://192.168.178.139:3002`;
 
 export const userService = {
     async addUser(userId){
@@ -44,7 +45,7 @@ export const userService = {
             }
         }
         catch (error) {
-            console.log(`Failed to add User`);
+            console.log(`Failed to add User`, error.message);
             return {
                 success: false,
                 message: error.message,

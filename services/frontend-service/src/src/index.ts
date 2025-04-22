@@ -6,6 +6,7 @@ import NotFound from './components/menu/notFound/notFound.js';
 import MainMenu from "./components/menu/mainMenu/mainMenu.js"
 import PlayMenu from "./components/menu/playMenu/playMenu.js"
 import TournamentMenu from "./components/menu/tournamentMenu/tournamentMenu.js"
+import TournamentHost from "./components/menu/tournamentMenu/tournamentHost.js"
 import Avatar from "./components/user/avatar/avatar.js"
 import Account from './components/user/account/account.js';
 import Profile from './components/user/profile/profile.js';
@@ -54,6 +55,12 @@ router.addRoute({
 router.addRoute({
     path: '/tournament',
     view: [TournamentMenu, Avatar],
+    preHandler: isLoggedIn,
+    redirectOnFail: '/login'
+});
+router.addRoute({
+    path: '/tournament/host',
+    view: [TournamentHost, Avatar],
     preHandler: isLoggedIn,
     redirectOnFail: '/login'
 });

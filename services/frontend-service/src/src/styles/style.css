@@ -28,6 +28,15 @@
         @apply text-white hover:text-gray-300 transition duration-300;
     }
     .notification {
-        @apply fixed inset-0 flex items-center justify-center bg-gray-800/75 text-white text-lg px-6 py-4 rounded-lg z-50;
+        @apply fixed inset-0 flex items-center justify-center bg-gray-800/75 text-white text-lg px-6 py-4 rounded-lg z-50;    
+    }
+    .custom-checkbox {
+        @apply appearance-none h-4 w-4 border-2 border-pink-600 rounded mr-2 relative cursor-pointer;
+    }
+    .custom-checkbox:checked {
+        @apply bg-pink-600 bg-pink-600;
+    }
+    .custom-checkbox:checked::after {
+        @apply text-white text-xs absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
     }
 }

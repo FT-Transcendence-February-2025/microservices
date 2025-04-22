@@ -5,7 +5,7 @@ const UM_SERVICE_URL = config.endpoints.user;
 export const usersController = {
 
     async addUser (request, reply) {
-        const { userId } = request.body
+        const { userId } = request.user.id
         console.log('\x1b[1m\x1b[42m\x1b[30m%s\x1b[0m', `${userId} entered tournament-service`);
 
         const result = await userService.addUser(userId)

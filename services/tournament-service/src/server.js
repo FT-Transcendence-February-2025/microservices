@@ -1,17 +1,31 @@
-import Fastify from 'fastify'
+// import Fastify from 'fastify'
 // import cors from '@fastify/cors'
 // import tournamentRoutes from './routes/tournament-routes.js'
 // import { initDatabase } from './db/schema.js'
 // import path from 'path';
 // import { fileURLToPath } from 'url';
-import { metricsRoute, addMetricsHook } from './config/metrics.js';
-import { addLoggingHooks } from './config/logging.js';
+// import config from './config/config.js';
+// import { metricsRoute, addMetricsHook } from './config/metrics.js';
+// import { addLoggingHooks } from './config/logging.js';
+
+// const PORT = process.env.PORT || 3004
+// // Create your Fastify instance with the logger configuration from config.
+// const fastify = Fastify({
+//   logger: config.logger,
+// });
+
+// // Add the logging hooks
+// addLoggingHooks(fastify);
+// // Add the metrics hook to track all requests
+// addMetricsHook(fastify);
+// // Expose the /metrics endpoint
+// metricsRoute(fastify);
 
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
-// import Fastify from 'fastify'
+import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import tournamentRoutes from './routes/tournament-routes.js'
 import { initDatabase } from './db/schema.js'
@@ -29,17 +43,14 @@ const fastify = Fastify({
   logger: config.logger,
 });
 
-addMetricsHook(fastify);
-// // Expose the /metrics endpoint
-metricsRoute(fastify);
 fastify.register(cors, {
 	origin: [
         `https://${process.env.DOMAIN}`,
         `http://tour.${process.env.DOMAIN}`,
 		`http://${process.env.IP}:${PORT}`,
-		config.endpoints.tour,
-		'*'
+		config.endpoints.tour
     ],
+  origin: "*",
 	methods: ['GET', 'POST', 'PUT', 'DELETE'],
 	allowedHeaders: ['Content-Type', 'Authorization'], 
 	credentials: true

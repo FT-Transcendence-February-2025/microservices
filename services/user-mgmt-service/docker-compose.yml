@@ -6,10 +6,7 @@ volumes:
   user-vol:
     driver: local
     name: user-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/user
+
 
 services:
   user:
@@ -60,8 +57,9 @@ services:
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user/(.*)"
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api/$1"
       # Middleware: Debug headers to help with troubleshooting
-      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-Path=${URL}"
-      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Transformed-Path=${PATH}"
+      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-Host={{ request.host }}"
+      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-Path={{ request.path }}"
+      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-URL={{ request.url }}"
       - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Router=user-service"
       # Service Definition: user microservice backend
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"

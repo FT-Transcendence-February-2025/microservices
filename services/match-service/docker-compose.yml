@@ -3,10 +3,7 @@ volumes:
   match-vol:
     driver: local
     name: match-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/match
+
 
 services:
   match:
@@ -44,14 +41,6 @@ services:
       # Apply middlewares: one for Host rewriting and one for path rewriting
       - "traefik.http.routers.api-match-public.middlewares=change-host-to-match,rewrite-match-path"
 
-      # --- Internal Router: Dynamic Wildcard Matching for Subdomains ---
-      # Matches any request coming from wildcard subdomains with /api/match prefix
-      # - "traefik.http.routers.api-match-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/match`)"
-      # - "traefik.http.routers.api-match-internal.entrypoints=websecure"
-      # - "traefik.http.routers.api-match-internal.tls=true"
-      # # Use the same middlewares to rewrite Host and Path
-      # - "traefik.http.routers.api-match-internal.middlewares=change-host-to-match,rewrite-match-path"
-      # # Middleware: Change the Host header to the internal hostname (match.domain)
       - "traefik.http.middlewares.change-host-to-match.headers.customrequestheaders.Host=match.${DOMAIN}"
       # Middleware: Rewrite the incoming path. Strips the /api/match prefix so that:
       #   /api/match/task  →  /api/task

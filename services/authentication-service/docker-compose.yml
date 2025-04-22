@@ -6,10 +6,6 @@ volumes:
   auth-vol:
     driver: local
     name: auth-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/auth
 
 services:
   auth:
@@ -43,7 +39,6 @@ services:
     networks:
       backend:
         ipv4_address: 172.18.0.2
-    # command: sh -c 'echo "$(hostname -i) auth.$DOMAIN" >> /etc/hosts && exec npm run dev'
     labels:
     - "traefik.enable=true"
 

@@ -3,11 +3,6 @@ volumes:
   tour-vol:
     driver: local
     name: tour-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/tour
-
 services:
   tour:
     build:
@@ -44,14 +39,6 @@ services:
       # Apply middlewares: one for Host rewriting and one for path rewriting
       - "traefik.http.routers.api-tour-public.middlewares=change-host-to-tour,rewrite-tour-path"
 
-      # --- Internal Router: Dynamic Wildcard touring for Subdomains ---
-      # toures any request coming from wildcard subdomains with /api/tour prefix
-      # - "traefik.http.routers.api-tour-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/tour`)"
-      # - "traefik.http.routers.api-tour-internal.entrypoints=websecure"
-      # - "traefik.http.routers.api-tour-internal.tls=true"
-      # # Use the same middlewares to rewrite Host and Path
-      # - "traefik.http.routers.api-tour-internal.middlewares=change-host-to-tour,rewrite-tour-path"
-      # # Middleware: Change the Host header to the internal hostname (tour.domain)
       - "traefik.http.middlewares.change-host-to-tour.headers.customrequestheaders.Host=tour.${DOMAIN}"
       # Middleware: Rewrite the incoming path. Strips the /api/tour prefix so that:
       #   /api/tour/task  →  /api/task

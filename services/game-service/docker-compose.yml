@@ -3,10 +3,7 @@ volumes:
   game-vol:
     driver: local
     name: game-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/game
+
 
 services:
   game:
@@ -44,14 +41,6 @@ services:
       # Apply middlewares: one for Host rewriting and one for path rewriting
       - "traefik.http.routers.api-game-public.middlewares=change-host-to-game,rewrite-game-path"
 
-      # --- Internal Router: Dynamic Wildcard gameing for Subdomains ---
-      # gamees any request coming from wildcard subdomains with /api/game prefix
-      # - "traefik.http.routers.api-game-internal.rule=HostRegexp(`{subdomain:[a-z]+}.domain`) && PathPrefix(`/api/game`)"
-      # - "traefik.http.routers.api-game-internal.entrypoints=websecure"
-      # - "traefik.http.routers.api-game-internal.tls=true"
-      # # Use the same middlewares to rewrite Host and Path
-      # - "traefik.http.routers.api-game-internal.middlewares=change-host-to-game,rewrite-game-path"
-      # # Middleware: Change the Host header to the internal hostname (game.domain)
       - "traefik.http.middlewares.change-host-to-game.headers.customrequestheaders.Host=game.${DOMAIN}"
       # Middleware: Rewrite the incoming path. Strips the /api/game prefix so that:
       #   /api/game/task  →  /api/task

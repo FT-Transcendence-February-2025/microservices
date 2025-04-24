@@ -19,12 +19,12 @@ COPY src/package*.json ./
 
 RUN npm install --include=dev
 
-RUN npm install --save-dev pino-pretty; \
-    npm install --save-dev prom-client; \
-    npm install --save-dev dotenv; \
-    npm install --save-dev cron; \
-    npx npm-check-updates -u; \
-    npm install;
+# RUN npm install --save-dev pino-pretty; \
+#     npm install --save-dev prom-client; \
+#     npm install --save-dev dotenv; \
+#     npm install --save-dev cron; \
+#     npx npm-check-updates -u; \
+#     npm install;
 
 
 COPY src .

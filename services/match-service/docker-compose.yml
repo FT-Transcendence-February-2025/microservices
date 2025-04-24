@@ -1,10 +1,4 @@
 
-volumes:
-  match-vol:
-    driver: local
-    name: match-vol
-
-
 services:
   match:
     build:

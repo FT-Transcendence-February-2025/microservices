@@ -1,9 +1,4 @@
 
-volumes:
-  game-vol:
-    driver: local
-    name: game-vol
-
 
 services:
   game:

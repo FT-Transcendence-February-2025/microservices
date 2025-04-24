@@ -1,12 +1,16 @@
 all:
 
-usersDB:
-	@echo "-----------------AUTH------------------"
-	-docker exec -it auth sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
-#	-docker exec -it auth sh-c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM match_history;'"
-	@echo "------------------USER-----------------"
-	-docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
+watchDB:
+	@watch -c -n 1 'echo  && \
+	echo "-----------------AUTH------------------" && \
+	echo "--- users table  ---" && \
+	docker exec -i auth sh -c "sqlite3 /app/src/database/database.sqlite \"SELECT * FROM users;\"" 2>/dev/null || echo "Cannot access auth users table" && \
+	echo "--- devices table ---" && \
+	docker exec -i auth sh -c "sqlite3 /app/src/database/database.sqlite \"SELECT * FROM devices;\"" 2>/dev/null || echo "Cannot access auth devices table" && \
+	echo "------------------USER-----------------" && \
+	docker exec -i user sh -c "sqlite3 /app/src/database/database.sqlite \"SELECT * FROM users;\"" 2>/dev/null || echo "Cannot access user table"'
 # -docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM match_history;'"
+#	-docker exec -it auth sh-c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM match_history;'"
 
 localDB:
 	@echo "🔍 Searching for database files..."

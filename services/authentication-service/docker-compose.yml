@@ -1,11 +1,3 @@
-secrets:
-  envFile:
-    file: ${AUTH_ENV}
-
-volumes:
-  auth-vol:
-    driver: local
-    name: auth-vol
 
 services:
   auth:

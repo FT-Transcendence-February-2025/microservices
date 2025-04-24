@@ -34,13 +34,13 @@ runDocker: restartDocker
 pull-Img:
 	docker pull alpine && docker save alpine -o alpine.tar && \
 	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
-	docker pull traefik:v3.3.3 && docker save traefik:v3.3.3 -o traefik-v3.3.3.tar && \
+	docker pull traefik:v3.3.6 && docker save traefik:v3.3.6 -o traefik-v3.3.6.tar && \
 	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
 	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
 	docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
-	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.3.tar ]; then \
+	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.6.tar ]; then \
 		echo "One or more tar files are missing. Running pull-Img..."; \
 		$(MAKE) pull-Img; \
 	fi
@@ -57,9 +57,9 @@ load-Img:
 	else \
 		echo "🟢 node:20-alpine image already loaded"; \
 	fi
-	@if ! docker images | grep -q "^traefik[[:space:]]\+v3.3.3"; then \
-		echo "Loading traefik:v3.3.3 image..."; \
-		docker load -i traefik-v3.3.3.tar; \
+	@if ! docker images | grep -q "^traefik[[:space:]]\+v3.3.6"; then \
+		echo "Loading traefik:v3.3.6 image..."; \
+		docker load -i traefik-v3.3.6.tar; \
 	else \
 		echo "🟢 traefik:v3.3.3 image already loaded"; \
 	fi
@@ -99,9 +99,9 @@ showAll:
 	@docker network ls
 
 # Show all Docker containers, images, volumes, and networks every second
-watchC:
-	@docker ps --format "table {{.Names}}\t {{.Image}}\t{{.Command}}\t{{.Status}}\t{{.Ports}}"; \
-	docker images; docker volume ls; docker network ls 
+watch:
+	@watch -c 'docker ps --format "table {{.Names}}\t {{.Image}}\t{{.Command}}\t{{.Status}}\t{{.Ports}}"; \
+	docker images; docker volume ls; docker network ls'
 checkDbs:
 	@-while true; do \
 		printf "$(LF)$(D_PURPLE) DB auth-users$(P_NC)\n" ; \
@@ -180,8 +180,9 @@ decrypt:
 
 # List all service directories and volumes
 list:
-	@find services/ -type d -name '*-service'
-	@ls -Rla $(VOLUMES)
+	@find services/ -type d -name '*-service*'
+	@find services -path "*service*/docker-compose.yml" -not -path "*/node_modules/*"
+
 
 # Show user and group IDs
 id:
@@ -224,14 +225,15 @@ cert:
 			  $(shell hostname) \"*.$(shell hostname)\" \
 			  $(shell ip route get 8.8.8.8 | awk '{print $$7}') localhost 127.0.0.1 && \
 		cp /root/.local/share/mkcert/rootCA.pem /certs/rootCA.pem"; \
+		chmod 644 $(SSL)/*.key ; \
 	fi
 # @curl -s -o secrets/ssl/rootCA.pem https://raw.githubusercontent.com/letsencrypt/pebble/main/test/certs/pebble.minica.pem
-testCert:
+# testCert:
 	
 # docker rm alpine
 checkCert:
 	@openssl x509 -in $(SSL)/*.crt -text -noout
-
+	@echo | openssl s_client -connect ${DOMAIN}:443 -servername ${DOMAIN} | openssl x509 -noout -text | grep "Subject:"
 rmData:
 	@echo
 # docker run --rm -v $(VOLUMES):/volumes alpine sh -c "rm -rf /volumes/*"

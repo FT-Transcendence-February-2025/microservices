@@ -1,9 +1,4 @@
 
-volumes:
-  front-vol:
-    driver: local
-    name: front-vol
-
 services:
   front:
     build:

@@ -24,15 +24,8 @@ COPY src/package*.json ./
 RUN ls -la
 RUN npm install --include=dev --build-from-source --no-package-lock
 
-RUN npm install --save-dev pino-pretty; \
-    npm install --save-dev prom-client; \
-    npm install --save-dev dotenv; \
-    npm install --save-dev cron; \
-    npx npm-check-updates -u; \
-    npm install;
-
 COPY src .
-RUN ls -la
+
 EXPOSE 3003
 
 CMD ["npm", "run", "dev"]

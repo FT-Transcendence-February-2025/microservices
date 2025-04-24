@@ -82,6 +82,8 @@ testWeb:
 browser:
 #	firefox --private-windows -url  "127.0.0.1" "$(shell hostname)" "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" "localhost:8080" &
 	firefox --private-window "$(shell ip route get 8.8.8.8 | awk '{print $$7}')" &
+domain:
+	firefox --private-window "$(shell hostname)" &
 #"localhost:8080" &
 local:
 	firefox --private-window localhost:3000
@@ -111,3 +113,7 @@ pingClient:
 # Run a Docker container with specific DNS settings and perform nslookup
 pingDNS:
 	docker run --rm --dns 10.51.1.253 --dns-search 42wolfsburg.de ft_transcendence-fastify:latest /bin/sh -c "nslookup 10.12.1.1"
+
+checkMetrics:
+	@PASS=$(shell cat secrets/metrics); \
+	curl -sk -u "pong:$$PASS" https://$(shell hostname)/metrics

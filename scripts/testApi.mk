@@ -12,46 +12,48 @@ init-log:
 
 sh: 
 	docker exec -it $$c sh
-login:init-log
-	NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
-	EMAIL=vico1989@gmail.com; \
-	PASS=!Fastify0; \
-	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
-	echo "Registering user:"; \
-	echo "	Email: $$EMAIL"; \
-	echo "	Name:  $$NAME"; \
-	echo " Password: $$PASS"; \
-	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
+
+loginAdmin:
+	@EMAIL=Vtest2@test.com \
+	PASS=$(shell cat secrets/userPass); \
+	echo $$PASS $$EMAIL
 	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
-login21:init-log # Should pass
-	curl -k -X GET https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'
-
-
-login2:init-log # Should return error
-	curl -k -X POST https://auth.$(shell hostname)/api/login -H "Content-Type: application/json" -d '{"email":"Vtest2@test.com","password":"!pongGame1"}'
+login:init-log # Should return error
+	@ID=$$(shuf -i 1-50 -n 1); \
+	DISPLAY=Vtest$$ID; \
+	EMAIL=$$DISPLAY@test.com; \
+	PASS=$(shell cat secrets/userPass); \
+	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
+	echo "$$TIMESTAMP,$$DISPLAY" >> $(LOG_FILE); \
+	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
 
 register:init-log
-	-docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
-	@echo
-	NAME=User$$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
-	EMAIL=$$NAME@test.com; \
-	PASS=$$NAME.123; \
+	@ID=$$(shuf -i 1-50 -n 1); \
+	DISPLAY=Vtest$$ID; \
+	EMAIL=$$DISPLAY@test.com; \
+	echo $$EMAIL ; \
+	PASS=$(shell cat secrets/userPass); \
 	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
-	echo "Registering user:"; \
-	echo "	Email: $$EMAIL"; \
-	echo "	Name:  $$NAME"; \
-	echo " Password: $$PASS"; \
-	echo "$$TIMESTAMP,$$EMAIL,$$NAME,$$PASS" >> $(LOG_FILE); \
+	echo "$$TIMESTAMP,$$DISPLAY,$$EMAIL" >> $(LOG_FILE); \
 	curl -k -X POST https://$(shell hostname)/api/auth/register \
 		-H "Content-Type: application/json" \
-		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$NAME\", \"password\": \"$$PASS\"}" | jq
+		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq
 
 
 u-register: # should not #user-exist #user-logout
+	@ID=$$(shuf -i 1-50 -n 1); \
+	DISPLAY=Vtest$$ID; \
+	EMAIL=$$DISPLAY@test.com; \
+	PASS=$(shell cat secrets/userPass); \
+	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
+	echo "Registering user:"; \
+	echo " Name:  $$DISPLAY"; \
+	echo "$$TIMESTAMP,$$DISPLAY=" >> $(LOG_FILE); \
 	curl -k -X POST https://$(shell hostname)/api/user/new-user \
 	-H "Content-Type: application/json" \
-	-d '{"userId": 8, "displayName": "test"}'
+	-d '{"userId": "$$ID", "displayName": "$$DISPLAY"}'
+	@echo
 
 
 fc-login:

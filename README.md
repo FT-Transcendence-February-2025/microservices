@@ -140,7 +140,8 @@ you can find commands to use in `scripts/quickRun `
 - [ ] Restrict routes for all services
 
 ### Feature Implementation
-- [x] Add /metrics endpoint in game service
+- [ ] health monitoring
+<!-- - [x] Add /metrics endpoint in game service -->
 - [ ] Implement WebSocket connections for:
 - [ ] Game service
 - [ ] Match service

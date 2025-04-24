@@ -1,13 +1,4 @@
 
-volumes:
-  front-vol:
-    driver: local
-    name: front-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/front
-
 services:
   front:
     build:

@@ -1,5 +1,9 @@
 #!/bin/bash
-# set -x
+DEBUG="$1"
+if [ "$DEBUG" -eq 1 ]; then
+	echo "########### ---- Debug mode is enabled ---- ###########3"
+	set -x
+fi
 if [ -f .secrets/.env.tmp ]; then
 	echo "File with secrets not found. Please contact microservices Admin for further information"
 	exit 1
@@ -22,10 +26,7 @@ fi
 
 
 # ---------- .env ---------- #
-DEBUG="$1"
-if [ "$DEBUG" -eq 1 ]; then
-	echo "########### ---- Debug mode is enabled ---- ###########3"
-fi
+
 export $(egrep '(SSL|DATA|ADMIN_EMAIL|AUTH_ENV|AUTH_DASHBOARD)=' ./secrets/.env.tmp)
 export DOMAIN=$(hostname)
 IP=$(ip route get 8.8.8.8 | awk '{print $7}')

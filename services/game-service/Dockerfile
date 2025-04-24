@@ -26,6 +26,7 @@ RUN npm install --save-dev pino-pretty; \
     npx npm-check-updates -u; \
     npm install;
 
+
 COPY src .
 
 EXPOSE 3005

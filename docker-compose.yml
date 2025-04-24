@@ -1,15 +1,107 @@
-# name: ft_transcendence
+name: ft_transcendence
 
-include:
-  - services/authentication-service/docker-compose.yml
-  - services/user-mgmt-service/docker-compose.yml
-  - services/match-service/docker-compose.yml
-  - services/tournament-service/docker-compose.yml
-  - services/monitoring-services/docker-compose.yml
-  - services/frontend-service/docker-compose.yml
-  - services/game-service/docker-compose.yml
+services:
+  auth:
+    extends:
+      service: auth
+      file: services/authentication-service/docker-compose.yml
+    #profiles: ["auth", "backend", "all", "default"]
+
+  user:
+    extends: 
+      service: user
+      file: services/user-mgmt-service/docker-compose.yml
+    depends_on:
+      - auth
+    #profiles: ["user", "backend", "all", "default"]
+
+  game:
+    extends:
+      service: game
+      file: services/game-service/docker-compose.yml
+    #profiles: ["game", "all", "default"]
+
+  match:
+    extends:
+      service: match
+      file: services/match-service/docker-compose.yml
+    depends_on:
+      - game
+    #profiles: ["match", "game", "all", "default"]
+  tour:
+    extends:
+      service: tour
+      file: services/tournament-service/docker-compose.yml
+    depends_on:
+      - match
+    #profiles: ["tour", "game", "all", "default"]
+
+  front:
+    extends:
+      service: front
+      file: services/frontend-service/docker-compose.yml
+    depends_on:
+      - user
+      - tour
+    #profiles: ["front", "ui", "all", "default"]
+  
+  prometheus:
+    extends:
+      service: prometheus
+      file: services/monitoring-services/monitoring/docker-compose.yml
+
+  traefik:
+    extends:
+      service: traefik
+      file: services/monitoring-services/docker-compose.yml
+    depends_on:
+      - front
+      - prometheus
+    #profiles: ["infra", "all", "default"]
 
 
+  #   #profiles: ["monitoring", "infra", "all", "default"]
+
+  # grafana:
+  #   extends:
+  #     service: grafana
+  #     file: services/monitoring-services/monitoring/docker-compose.yml
+  #   depends_on:
+  #     - prometheus
+  #   #profiles: ["monitoring", "infra", "all", "default"]
+
+  # elasticsearch:
+  #   extends:
+  #     service: elasticsearch
+  #     file: services/monitoring-services/ELK/docker-compose.yml
+  #   #profiles: ["elk", "monitoring", "all", "default"]
+  
+  # logstash:
+  #   extends:
+  #     service: logstash
+  #     file: services/monitoring-services/ELK/docker-compose.yml
+  #   depends_on:
+  #     - elasticsearch
+  #   #profiles: ["elk", "monitoring", "all", "default"]
+  
+  # kibana:
+  #   extends:
+  #     service: kibana
+  #     file: services/monitoring-services/ELK/docker-compose.yml
+  #   depends_on:
+  #     - elasticsearch
+  #   #profiles: ["elk", "monitoring", "all", "default"]
+  
+  # filebeat:
+  #   extends:
+  #     service: filebeat
+  #     file: services/monitoring-services/ELK/docker-compose.yml
+  #   depends_on:
+  #     - elasticsearch
+  #     - logstash
+  #   #profiles: ["elk", "monitoring", "all", "default"]
+
+# Define shared networks
 networks:
   frontend:
     driver: bridge
@@ -25,7 +117,66 @@ networks:
       config:
         - subnet: 172.18.0.0/24 
           gateway: 172.18.0.1
+  # monitoring:
+  #   driver: bridge
+  #   name: monitoring
+  #   ipam:
+  #     config:
+  #       - subnet: 172.20.0.0/24
+  #         gateway: 172.20.0.1
+  # elk:
+  #   driver: bridge
+  #   name: elk
+  #   ipam:
+  #     config:
+  #       - subnet: 172.21.0.0/24
+  #         gateway: 172.21.0.1
+# shared volumes
+# volumes:
+#   prometheus-data:
+#     name: prometheus-data
+#   grafana-data:
+#     name: grafana-data
+#   elasticsearch-data:
+#     name: elasticsearch-data
+#   traefik-certs:
+#     name: traefik-certs
 
-#   - "traefik.http.routers.tournament.priority=70"
-#   - "traefik.http.routers.match.priority=60
-#   - "traefik.http.routers.game.priority=50""
+# shared secrets
+secrets:
+  envFile:
+    file: ${AUTH_ENV}
+  ssl_key.key:
+    file: ${SSL_KEY}
+  ssl_crt.crt:
+    file: ${SSL_CRT}
+  ssl_pem.pem:
+    file: ${SSL_PEM}
+  ssl_email:
+    file: ${SSL_EMAIL}
+
+volumes:
+  front-vol:
+    driver: local
+    name: front-vol
+  user-vol:
+    driver: local
+    name: user-vol
+  auth-vol:
+    driver: local
+    name: auth-vol
+  game-vol:
+    driver: local
+    name: game-vol
+  match-vol:
+    driver: local
+    name: match-vol
+  tour-vol:
+    driver: local
+    name: tour-vol
+  traefik:
+    driver: local
+    name: traefik-vol
+  prometheus:
+    driver: local
+    name: prometheus-vol

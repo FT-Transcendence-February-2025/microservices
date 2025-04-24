@@ -20,3 +20,12 @@ groups:
     annotations:
       summary: "Instance {{ $labels.instance }} under high load"
       description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."
+# Add to alert.rules
+  - alert: game_service_high_latency
+    expr: histogram_quantile(0.95, sum(rate(traefik_service_request_duration_seconds_bucket{service="game-service"}[5m])) by (le)) > 0.5
+    for: 2m
+    labels:
+        severity: warning
+    annotations:
+      summary: "Game service has high latency"
+      description: "95th percentile latency for game service is above 500ms"

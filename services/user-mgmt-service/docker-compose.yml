@@ -1,15 +1,5 @@
-secrets:
-  envFile:
-    file: ${AUTH_ENV}
 
-volumes:
-  user-vol:
-    driver: local
-    name: user-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/user
+
 
 services:
   user:
@@ -38,6 +28,12 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    # healthcheck:
+    #   test: ["CMD", "wget", "--spider", "-q", "http://user:3002/api/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
     expose:
       - "3002"
     networks:
@@ -46,80 +42,34 @@ services:
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---
-      # Matches any request coming to the public domain with the /api/user prefix
       - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`)"
       - "traefik.http.routers.api-user-public.entrypoints=websecure"
       - "traefik.http.routers.api-user-public.tls=true"
       - "traefik.http.routers.api-user-public.priority=300"
-      # Apply middlewares: one for Host rewriting, one for path rewriting, and debug middleware
-      - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path,user-debug"
-      # Middleware: Change host header for internal routing
+      
+      # Service-specific middleware for routing
       - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user"
-      # Middleware: Rewrite the incoming path. Strips the /api/user prefix so that:
-      #   /api/user/profile  →  /api/profile
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user/(.*)"
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api/$1"
-      # Middleware: Debug headers to help with troubleshooting
-      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-Path=${URL}"
-      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Transformed-Path=${PATH}"
-      - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Router=user-service"
-      # Service Definition: user microservice backend
+      
+      # Service identifier - adds to the global debug middleware
+      - "traefik.http.middlewares.service-identifier.headers.customresponseheaders.X-Router=user-service"
+
+      # --- Internal Router: For backend-only endpoints ---
+      #   /api/user/new-user
+      #   /api/user/user-exists
+      #   /api/user/get-user/:userId
+      #   /api/user/match-history/:userId
+      #   /api/user/update-match-history
+      #   /api/user/invite-game
+      #   /api/user/invite-tournament
+      #   /api/user/friend-list/:userId
+      - "traefik.http.routers.api-user-internal.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api/user/new-user`) || PathPrefix(`/api/user/user-exists`) || PathPrefix(`/api/user/get-user`) || PathPrefix(`/api/user/match-history`) || PathPrefix(`/api/user/update-match-history`) || PathPrefix(`/api/user/invite-game`) || PathPrefix(`/api/user/invite-tournament`) || PathPrefix(`/api/user/friend-list`))"
+      - "traefik.http.routers.api-user-internal.entrypoints=websecure"
+      - "traefik.http.routers.api-user-internal.tls=true"
+      - "traefik.http.routers.api-user-internal.priority=400"
+      # Use the API-specific chain instead of the general one
+      - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path,service-identifier,global-debug"
+
+      # --- Service Definition ---
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"
-      # # --- Router for blocked paths ---
-      # - "traefik.http.routers.api-user-blocked.rule=Host(`${DOMAIN}`) && Path(`/api/user/new-user`)"
-      # - "traefik.http.routers.api-user-blocked.entrypoints=websecure"
-      # - "traefik.http.routers.api-user-blocked.tls=true"
-      # - "traefik.http.routers.api-user-blocked.priority=300" 
-      # - "traefik.http.routers.api-user-blocked.middlewares=deny-access"
-      
-      # # Middleware for blocking specific paths
-      # - "traefik.http.middlewares.deny-access.customResponse.statusCode=403"
-      # - "traefik.http.middlewares.deny-access.customResponse.contentType=text/plain"
-      # - "traefik.http.middlewares.deny-access.customResponse.body=Access Denied"
-      
-      # # --- Router for display-name endpoint ---
-      # - "traefik.http.routers.api-user-displayname.rule=Host(`${DOMAIN}`) && Path(`/api/user/display-name`)"
-      # - "traefik.http.routers.api-user-displayname.entrypoints=websecure"
-      # - "traefik.http.routers.api-user-displayname.tls=true"
-      # - "traefik.http.routers.api-user-displayname.priority=295"
-      # - "traefik.http.routers.api-user-displayname.middlewares=change-host-to-user,rewrite-user-path,user-debug"
-      # - "traefik.http.routers.api-user-displayname.service=user-service@docker"
-      
-      # # --- Router for avatar endpoint ---
-      # - "traefik.http.routers.api-user-avatar.rule=Host(`${DOMAIN}`) && Path(`/api/user/avatar`)"
-      # - "traefik.http.routers.api-user-avatar.entrypoints=websecure"
-      # - "traefik.http.routers.api-user-avatar.tls=true"
-      # - "traefik.http.routers.api-user-avatar.priority=295"
-      # - "traefik.http.routers.api-user-avatar.middlewares=change-host-to-user,rewrite-user-path,user-debug"
-      # - "traefik.http.routers.api-user-avatar.service=user-service@docker"
-      
-      # # --- Router for profile endpoint ---
-      # - "traefik.http.routers.api-user-profile.rule=Host(`${DOMAIN}`) && Path(`/api/user/profile`)"
-      # - "traefik.http.routers.api-user-profile.entrypoints=websecure"
-      # - "traefik.http.routers.api-user-profile.tls=true"
-      # - "traefik.http.routers.api-user-profile.priority=295"
-      # - "traefik.http.routers.api-user-profile.middlewares=change-host-to-user,rewrite-user-path,user-debug"
-      # - "traefik.http.routers.api-user-profile.service=user-service@docker"
-      
-      # # --- Public Router: All other user API paths ---
-      # - "traefik.http.routers.api-user-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user`) && !Path(`/api/user/new-user`,`/api/user/avatar`,`/api/user/display-name`,`/api/user/profile`)"
-      # - "traefik.http.routers.api-user-public.entrypoints=websecure"
-      # - "traefik.http.routers.api-user-public.tls=true"
-      # - "traefik.http.routers.api-user-public.priority=290"
-      # - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path,user-debug"
-      # - "traefik.http.routers.api-user-public.service=user-service@docker"
-      
-      # # Middleware: Debug headers
-      # - "traefik.http.middlewares.user-debug.headers.customrequestheaders.X-Debug-Router=api-user-router"
-      # - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Original-Path=${URL}"
-      # - "traefik.http.middlewares.user-debug.headers.customresponseheaders.X-Transformed-Path=${PATH}"
-      
-      # # Middleware: Change the Host header to the internal hostname
-      # - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user"
-      
-      # # Middleware: General path rewrite (one middleware for all paths)
-      # - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user/(.*)"
-      # - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api/$1"
-      
-      # # Service Definition: user microservice backend
-      # - "traefik.http.services.user-service.loadbalancer.server.port=3002"

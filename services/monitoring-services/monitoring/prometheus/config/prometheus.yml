@@ -11,6 +11,10 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ['traefik:8082']  # 'traefik' is the service name; port must match the entryPoint in traefik.yml
+    # basic_auth:
+    #   username: "${PROM_USER}"
+    #   password: "${PROM_PASSWORD}"
+
 
   - job_name: 'prometheus'
     static_configs:
@@ -26,6 +30,11 @@ scrape_configs:
           - 'tour:3004'
           - 'game:3005'
           # - 'front:3000'
+  - job_name: 'websocket_services'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['game:3005']
+    scrape_interval: 5s
     # Replace PORT with the correct port numbers your services expose metrics on.
   # - job_name: "node"	
   #   static_configs:

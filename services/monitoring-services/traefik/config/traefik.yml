@@ -1,7 +1,6 @@
 entryPoints:
   web:
     address: ":80"
-    # allowACMEByPass: true
     http:
       redirections:
         entryPoint:
@@ -10,29 +9,23 @@ entryPoints:
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
-  # dashboard:
-  #   address: ":8080"
-    # http:
-    #   tls: {}
   websecure:
     address: ":443"
-    # allowACMEByPass: true
     http2:
       maxConcurrentStreams: 250
     http:
       tls:
-        # certResolver: myresolver
         domains:
-          - main: "{{ env \"DOMAIN\" }}"
-            sans:
-              - "{{ env \"IP\" }}"
-              - "localhost"
-              - "127.0.0.1"
-              - "*.{{ env \"DOMAIN\" }}"
-            #   - "*.{{ env `DNS_SERVER` }}"
+        - main: "${DOMAIN}"
+          sans:
+            - "${IP}"
+            - "localhost"
+            - "127.0.0.1"
+            - "*.${DOMAIN}"
     forwardedHeaders:
       trustedIPs:
         - "0.0.0.0/0"
+
   metrics:
     address: ":8082" 
 
@@ -40,9 +33,7 @@ providers:
   docker:
     exposedByDefault: false
     endpoint: "unix:///var/run/docker.sock"
-  # file:
-  #   filename: /etc/traefik/dynamic_conf.yml
-  #   watch: true
+
 
 metrics:
   prometheus:
@@ -53,21 +44,22 @@ metrics:
       - 5.000000
     addEntryPointsLabels: true
     addServicesLabels: true
+    manualRouting: false
     entryPoint: metrics
 
 
 # self certificates
 tls:
   certificates:
-    - certFile: "/run/secrets/ssl_crt.crt"
-      keyFile: "/run/secrets/ssl_key.key"
+    - certFile: "/certs/ssl_crt.crt"
+      keyFile: "/certs/ssl_key.key"
       stores:
         - default
   stores:
     default:
       defaultCertificate:
-        certFile: "/run/secrets/ssl_crt.crt"
-        keyFile: "/run/secrets/ssl_key.key"
+        certFile: "/certs/ssl_crt.crt"
+        keyFile: "/certs/ssl_key.key"
   options:
     default:
       minVersion: VersionTLS13
@@ -84,9 +76,9 @@ tcpServersTransport:
       - "/run/secrets/ssl_pem.pem"
 
 log:
+  format: json
   level: DEBUG
   # filePath: "/traefik/logs/traefik.log"
-  format: json
 accessLog:
   # filePath: "/traefik/logs/access.log"
   bufferingSize: 100

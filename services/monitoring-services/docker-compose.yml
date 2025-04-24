@@ -1,21 +1,3 @@
-secrets:
-  ssl_key.key:
-    file: ${SSL_KEY}
-  ssl_crt.crt:
-    file: ${SSL_CRT}
-  ssl_pem.pem:
-    file: ${SSL_PEM}
-  ssl_email:
-    file: ${SSL_EMAIL}
-
-volumes:
-  traefik:
-    driver: local
-    name: traefik-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/traefik
 
 services:
   traefik:
@@ -44,7 +26,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      # - "8080:8080"
     secrets:
       - ssl_key.key
       - ssl_crt.crt
@@ -53,7 +34,6 @@ services:
     volumes:
       - "${XDG_RUNTIME_DIR}/docker.sock:/var/run/docker.sock:ro"
       - "traefik:/etc/traefik/logs"
-      # (Static configuration file is assumed to be mounted inside Traefik if needed)
     networks:
       frontend:
       backend:
@@ -66,12 +46,9 @@ services:
         max-file: "3"
     labels:
       - "traefik.enable=true"
-
+        # ---------------------------------------------------------
+        # GLOBAL REDIRECTION (HTTP → HTTPS, Canonical)
             # ---------------------------------------------------------
-
-      # GLOBAL REDIRECTION (HTTP → HTTPS, Canonical)
-            # ---------------------------------------------------------
-
       - "traefik.http.routers.http-catchall.rule=Host(`${DOMAIN}`) || Host(`${IP}`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
@@ -83,45 +60,83 @@ services:
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.regex=^https?://(?:${IP}|127\\.0\\.0\\.1)(.*)"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.replacement=https://${DOMAIN}$$1"
       - "traefik.http.middlewares.redirect-to-canonical.redirectregex.permanent=true"
+      # ---------------------------------------------------------
+      # Global Debug Middleware (available to all services)
+      # ---------------------------------------------------------
+      - "traefik.http.middlewares.global-debug.headers.customresponseheaders.X-Original-Host={{ request.host }}"
+      - "traefik.http.middlewares.global-debug.headers.customresponseheaders.X-Original-Path={{ request.path }}"
+      - "traefik.http.middlewares.global-debug.headers.customresponseheaders.X-Original-URL={{ request.url }}"
+      - "traefik.http.middlewares.global-debug.headers.customresponseheaders.X-Debug-Enabled=true"
 
       # ---------------------------------------------------------
-      # Redirect Router for /traefik:
+      # Redirect Router for /traefik endpoint (to /dashboard/)
       # ---------------------------------------------------------
       - "traefik.http.routers.dash-redirect.rule=Host(`${DOMAIN}`) && (Path(`/traefik`) || Path(`/traefik/`))"
       - "traefik.http.routers.dash-redirect.entrypoints=websecure"
       - "traefik.http.routers.dash-redirect.middlewares=dashboard-auth,redirect-to-dashboard"
       - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.regex=^https?://(.*)/traefik/?$"
-      - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.replacement=https://$1/dashboard/#"
+      - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.replacement=https://$1/dashboard/#/"
       - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.permanent=true"
-      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${AUTH_DASHBOARD}"
-      - traefik.http.middlewares.auth.basicauth.removeheader=true
+
       # ---------------------------------------------------------
-      # Dashboard
+      # Basic Auth Middleware for Dashboard Protection
+      # ---------------------------------------------------------
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${AUTH_DASHBOARD}"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.removeheader=true"
+      # ---------------------------------------------------------
+      # Dashboard Redirect from /traefik
+      # ---------------------------------------------------------
+      - "traefik.http.routers.dash-redirect.rule=Host(`${DOMAIN}`) && (Path(`/traefik`) || Path(`/traefik/`))"
+      - "traefik.http.routers.dash-redirect.entrypoints=websecure"
+      - "traefik.http.routers.dash-redirect.middlewares=dashboard-auth,redirect-to-dashboard"
+      - "traefik.http.routers.dash-redirect.priority=300"
+      - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.regex=^https?://(.*)/traefik/?$"
+      - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.replacement=https://$${1}/dashboard/"
+      - "traefik.http.middlewares.redirect-to-dashboard.redirectregex.permanent=true"
+    
+      # ---------------------------------------------------------
+      # Dashboard UI Router
       # ---------------------------------------------------------
       - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`) && PathPrefix(`/dashboard`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard.priority=60"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth"
-      # # ---------------------------------------------------------
-      # # Traefik API - more specific paths to avoid intercepting microservice API calls
-      # # ---------------------------------------------------------
-      # - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"  
-      # - "traefik.http.routers.traefik-api.entrypoints=websecure"
-      # - "traefik.http.routers.traefik-api.priority=80"
-      # - "traefik.http.routers.traefik-api.service=api@internal"
-      # - "traefik.http.routers.traefik-dashboard.tls=true"
-      # - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,strip-api-traefik-prefix"
-      # - "traefik.http.middlewares.strip-api-traefik-prefix.stripprefix.prefixes=/api/traefik"
+      - "traefik.http.routers.traefik-dashboard.priority=200"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+    
       # ---------------------------------------------------------
-      # metrics redirection
+      # Direct API Router (needed for dashboard to work)
+      # ---------------------------------------------------------
+      - "traefik.http.routers.api-direct.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`) && !PathPrefix(`/api/auth`) && !PathPrefix(`/api/user`) && !PathPrefix(`/api/game`) && !PathPrefix(`/api/match`) && !PathPrefix(`/api/tour`)"
+      - "traefik.http.routers.api-direct.entrypoints=websecure"
+      - "traefik.http.routers.api-direct.service=api@internal"
+      - "traefik.http.routers.api-direct.middlewares=dashboard-auth"
+      - "traefik.http.routers.api-direct.priority=150"
+      - "traefik.http.routers.api-direct.tls=true"
+    
+      # ---------------------------------------------------------
+      # Traefik API Router (for /api/traefik/* paths)
+      # ---------------------------------------------------------
+      - "traefik.http.routers.traefik-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/traefik`)"
+      - "traefik.http.routers.traefik-api.entrypoints=websecure"
+      - "traefik.http.routers.traefik-api.service=api@internal"
+      - "traefik.http.routers.traefik-api.middlewares=dashboard-auth,rewrite-api-path"
+      - "traefik.http.routers.traefik-api.priority=170"
+      - "traefik.http.routers.traefik-api.tls=true"
+      - "traefik.http.middlewares.rewrite-api-path.replacepathregex.regex=^/api/traefik/(.*)"
+      - "traefik.http.middlewares.rewrite-api-path.replacepathregex.replacement=/api/$${1}"
+    
+      # ---------------------------------------------------------
+      # Metrics Router
       # ---------------------------------------------------------
       - "traefik.http.routers.traefik-metrics.rule=Host(`${DOMAIN}`) && PathPrefix(`/metrics`)"
       - "traefik.http.routers.traefik-metrics.entrypoints=websecure"
-      - "traefik.http.routers.traefik-metrics.priority=40"
-      - "traefik.http.routers.traefik-metrics.middlewares=dashboard-auth"  # to be reuse your auth middleware
+      - "traefik.http.routers.traefik-metrics.priority=180"
+      - "traefik.http.routers.traefik-metrics.middlewares=dashboard-auth"
       - "traefik.http.services.traefik-metrics.loadbalancer.server.port=8082"
+      - "traefik.http.routers.traefik-metrics.tls=true"
 
-include:
-  # - ELK/docker-compose.yml
-  - monitoring/docker-compose.yml
+
+# include:
+#   # - ELK/docker-compose.yml
+#   - monitoring/docker-compose.yml

@@ -31,3 +31,4 @@ coverage/
 logs/
 **/node_modules
 **/*.log
+users.csv

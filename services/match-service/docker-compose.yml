@@ -10,6 +10,8 @@ services:
     image: img_match:latest
     container_name: match
     hostname: match
+    env_file:
+      ${AUTH_ENV}
     volumes:
       - match-vol:/app
     restart: unless-stopped

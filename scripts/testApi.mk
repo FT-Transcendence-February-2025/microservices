@@ -43,8 +43,7 @@ register:init-log
 	echo "$$TIMESTAMP,$$DISPLAY,$$EMAIL" >> $(LOG_FILE); \
 	curl -k -X POST https://$(shell hostname)/api/auth/register \
 		-H "Content-Type: application/json" \
-		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq ; \
-	$(MAKE) 
+		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq ;
 
 
 u-register: # should not #user-exist #user-logout

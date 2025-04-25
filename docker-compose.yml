@@ -11,8 +11,8 @@ services:
     extends: 
       service: user
       file: services/user-mgmt-service/docker-compose.yml
-    # depends_on:
-    #   - minio
+    depends_on:
+      - minio
     #profiles: ["user", "backend", "all", "default"]
   auth:
     extends:
@@ -48,12 +48,12 @@ services:
       service: front
       file: services/frontend-service/docker-compose.yml
     depends_on:
+      - minio
       - user
       - auth
       - game
       - match
       - tour
-      - minio
     #profiles: ["front", "ui", "all", "default"]
   traefik:
     extends:
@@ -122,7 +122,7 @@ networks:
           gateway: 172.19.0.1
   backend:
     driver: bridge
-    internal: true
+    # internal: true
     name: backend
     ipam:
       config:

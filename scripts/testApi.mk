@@ -41,7 +41,7 @@ register:init-log
 	PASS=$(shell cat secrets/userPass); \
 	TIMESTAMP=$$(date +"%Y-%m-%d %H:%M:%S"); \
 	echo "$$TIMESTAMP,$$DISPLAY,$$EMAIL" >> $(LOG_FILE); \
-	curl -k -X POST https://$(shell hostname)/api/auth/register \
+	curl -sk -X POST https://$(shell hostname)/api/auth/register \
 		-H "Content-Type: application/json" \
 		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq ;
 

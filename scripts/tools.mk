@@ -32,12 +32,13 @@ runDocker: restartDocker
 	sh scripts/runDockerRootless.sh
 
 pull-Img:
-	docker pull alpine && docker save alpine -o alpine.tar && \
-	docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar && \
-	docker pull traefik:v3.3.6 && docker save traefik:v3.3.6 -o traefik-v3.3.6.tar && \
-	docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
-	docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar && \
-	docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
+	-docker pull alpine && docker save alpine -o alpine.tar
+	-docker pull node:20-alpine && docker save node:20-alpine -o node-20-alpine.tar
+	-docker pull traefik:v3.3.6 && docker save traefik:v3.3.6 -o traefik-v3.3.6.tar
+	-docker pull nginx:alpine && docker save nginx:alpine -o nginx-alpine.tar
+	-docker pull minio/minio:latest && docker save minio/minio:latest -o minio-latest.tar
+#	-docker pull prom/prometheus:latest && docker save prom/prometheus:latest -o prometheus.tar
+#	-docker pull grafana/grafana:latest && docker save grafana/grafana:latest -o grafana.tar
 
 load-Img:
 	@if [ ! -f alpine.tar ] || [ ! -f node-20-alpine.tar ] || [ ! -f traefik-v3.3.6.tar ]; then \
@@ -69,13 +70,19 @@ load-Img:
 	else \
 		echo "🟢 nginx:alpine image already loaded"; \
 	fi
-	@if ! docker images | grep -q "^prom/prometheus[[:space:]]\+latest"; then \
+	@if ! docker images | grep -q "^minio/minio[[:space:]]\+latest"; then \
+		echo "Loading minio/minio image..."; \
+		docker load -i minio-latest.tar; \
+	else \
+		echo "🟢 minio/minio image already loaded"; \
+	fi
+#	@if ! docker images | grep -q "^prom/prometheus[[:space:]]\+latest"; then \
 		echo "Loading prometheus image..."; \
 		docker load -i prometheus.tar; \
 	else \
 		echo "🟢 prom/prometheus image already loaded"; \
 	fi
-	@if ! docker images | grep -q "^grafana/grafana[[:space:]]\+latest"; then \
+#	@if ! docker images | grep -q "^grafana/grafana[[:space:]]\+latest"; then \
 		echo "Loading grafana image..."; \
 		docker load -i grafana.tar; \
 	else \

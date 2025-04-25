@@ -19,7 +19,6 @@ COPY src/package*.json ./
 
 RUN npm install --include=dev
 
-
 RUN npm install --save-dev pino-pretty; \
     npm install --save-dev prom-client; \
     npm install --save-dev dotenv; \

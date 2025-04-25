@@ -29,7 +29,8 @@ switchMicro:
 	git submodule foreach --recursive 'git checkout microservices-integration'
 switchMain:
 	git submodule foreach --recursive 'git checkout main'
-
+restore:
+	git submodule foreach --recursive 'git restore ./'
 sub-checkB:
 	@if [ -z "$(s)" ]; then \
 		echo "Error: s parameter is required"; \

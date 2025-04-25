@@ -14,7 +14,7 @@ services:
       - "${DOMAIN}:${IP}"
     volumes:
       - "./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
-      - prometheus:/prometheus
+      - prometheus-vol:/prometheus
     networks:
       frontend:
         ipv4_address: 172.19.0.21

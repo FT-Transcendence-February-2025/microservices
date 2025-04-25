@@ -1,126 +1,303 @@
-docker compose logs $c
-auth  | 
-auth  | > authentication@1.0.0 dev
-auth  | > nodemon src/server.js
-auth  | 
-auth  | [33m[nodemon] 3.1.9[39m
-auth  | [33m[nodemon] to restart at any time, enter `rs`[39m
-auth  | [33m[nodemon] watching path(s): *.*[39m
-auth  | [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
-auth  | [32m[nodemon] starting `node src/server.js`[39m
-auth  | Running scheduled expired token removal...
-auth  | Deleted 0 expired tokens.
-auth  | Server listening at http://127.0.0.1:3001
-auth  | [2025-03-30 19:52:03.639 +0000] [32mINFO[39m (30): [36mServer listening at http://127.0.0.1:3001[39m
-auth  | [2025-03-30 19:52:03.640 +0000] [32mINFO[39m (30): [36mServer listening at http://172.18.0.2:3001[39m
-echo 
+// avatarService.js
+import * as Minio from 'minio';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { pipeline } from 'stream/promises';
+import config from './config.js';
+import db from './database-service.js'; // Your module for user data (getUser, updateAvatarPath, etc.)
 
-docker compose logs $c
-user  | 
-user  | > user-management@1.0.0 dev
-user  | > nodemon src/server.js
-user  | 
-user  | [33m[nodemon] 3.1.9[39m
-user  | [33m[nodemon] to restart at any time, enter `rs`[39m
-user  | [33m[nodemon] watching path(s): *.*[39m
-user  | [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
-user  | [32m[nodemon] starting `node src/server.js`[39m
-user  | Server listening at http://127.0.0.1:3002
-user  | [2025-03-30 19:52:03.457 +0000] [32mINFO[39m (30): [36mServer listening at http://127.0.0.1:3002[39m
-user  | [2025-03-30 19:52:03.457 +0000] [32mINFO[39m (30): [36mServer listening at http://172.18.0.3:3002[39m
-echo 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-docker exec -it user sh -c "sqlite3 /app/src/database/database.sqlite 'SELECT * FROM users;'"
-Error: in prepare, no such table: users
+// Constants for default avatar and bucket name
+const DEFAULT_AVATAR_FILENAME = 'avatar-default.png';
+const AVATAR_BUCKET = 'avatars';
 
-NAME=User$(cat /dev/urandom | tr -dc 'A-Za-z' | head -c 3); \
-EMAIL=$NAME@test.com; \
-PASS=$NAME.123; \
-TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S"); \
-echo "Registering user:"; \
-echo "	Email: $EMAIL"; \
-echo "	Name:  $NAME"; \
-echo " Password: $PASS"; \
-echo "$TIMESTAMP,$EMAIL,$NAME,$PASS" >> users.csv; \
-curl -k -X POST https://LVLC-FX502/api/auth/register \
-	-H "Content-Type: application/json" \
-	-d "{\"email\": \"$EMAIL\", \"displayName\": \"$NAME\", \"password\": \"$PASS\"}" | jq
-Registering user:
-	Email: UseriMS@test.com
-	Name:  UseriMS
- Password: UseriMS.123
-{
-  "error": "Internal Server Error"
-}
-docker compose logs $c
-auth  | 
-auth  | > authentication@1.0.0 dev
-auth  | > nodemon src/server.js
-auth  | 
-auth  | [33m[nodemon] 3.1.9[39m
-auth  | [33m[nodemon] to restart at any time, enter `rs`[39m
-auth  | [33m[nodemon] watching path(s): *.*[39m
-auth  | [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
-auth  | [32m[nodemon] starting `node src/server.js`[39m
-auth  | Running scheduled expired token removal...
-auth  | Deleted 0 expired tokens.
-auth  | Server listening at http://127.0.0.1:3001
-auth  | [2025-03-30 19:52:03.639 +0000] [32mINFO[39m (30): [36mServer listening at http://127.0.0.1:3001[39m
-auth  | [2025-03-30 19:52:03.640 +0000] [32mINFO[39m (30): [36mServer listening at http://172.18.0.2:3001[39m
-auth  | Error in function userManagementService.displayNameExists: Error validating display name
-auth  | Internal Server Error
-auth  | [2025-03-30 19:58:28.990 +0000] [32mINFO[39m (30): [36mincoming request[39m
-auth  |     reqId: "req-1"
-auth  |     req: {
-auth  |       "method": "POST",
-auth  |       "url": "/api/register",
-auth  |       "host": "auth.LVLC-FX502",
-auth  |       "remoteAddress": "172.18.0.4",
-auth  |       "remotePort": 47604
-auth  |     }
-auth  | [2025-03-30 19:58:29.109 +0000] [32mINFO[39m (30): [36mrequest completed[39m
-auth  |     reqId: "req-1"
-auth  |     res: {
-auth  |       "statusCode": 500
-auth  |     }
-auth  |     responseTime: 118.51011600345373
-echo 
+// In a local development scenario you may store default assets together with uploads.
+// Adjust this if you prefer to separate them.
+const DEFAULT_AVATAR_PATH = path.join(config.localStorage.uploadDir, DEFAULT_AVATAR_FILENAME);
 
-docker compose logs $c
-user  | 
-user  | > user-management@1.0.0 dev
-user  | > nodemon src/server.js
-user  | 
-user  | [33m[nodemon] 3.1.9[39m
-user  | [33m[nodemon] to restart at any time, enter `rs`[39m
-user  | [33m[nodemon] watching path(s): *.*[39m
-user  | [33m[nodemon] watching extensions: js,mjs,cjs,json[39m
-user  | [32m[nodemon] starting `node src/server.js`[39m
-user  | Server listening at http://127.0.0.1:3002
-user  | [2025-03-30 19:52:03.457 +0000] [32mINFO[39m (30): [36mServer listening at http://127.0.0.1:3002[39m
-user  | [2025-03-30 19:52:03.457 +0000] [32mINFO[39m (30): [36mServer listening at http://172.18.0.3:3002[39m
-user  | [Error: select * from `users` where `display_name` = 'UseriMS' limit 1 - SQLITE_ERROR: no such table: users] {
-user  |   errno: 1,
-user  |   code: 'SQLITE_ERROR'
-user  | }
-user  | Error while checking for display name existence:  [Error: select * from `users` where `display_name` = 'UseriMS' limit 1 - SQLITE_ERROR: no such table: users] {
-user  |   errno: 1,
-user  |   code: 'SQLITE_ERROR'
-user  | }
-user  | [2025-03-30 19:58:29.080 +0000] [32mINFO[39m (30): [36mincoming request[39m
-user  |     reqId: "req-1"
-user  |     req: {
-user  |       "method": "POST",
-user  |       "url": "/api/user-exists",
-user  |       "host": "user:3002",
-user  |       "remoteAddress": "172.18.0.2",
-user  |       "remotePort": 33024
-user  |     }
-user  | [2025-03-30 19:58:29.097 +0000] [32mINFO[39m (30): [36mrequest completed[39m
-user  |     reqId: "req-1"
-user  |     res: {
-user  |       "statusCode": 500
-user  |     }
-user  |     responseTime: 16.5529880002141
-echo 
+// Configure the MinIO client for remote storage (when not using local fallback)
+const minioClient = new Minio.Client({
+  endPoint: process.env.STORAGE_ENDPOINT || 'storage', // Use container name "storage"
+  port: parseInt(process.env.STORAGE_PORT || '9000', 10),
+  useSSL: process.env.STORAGE_USE_SSL === 'true',
+  accessKey: process.env.STORAGE_USER || 'minioadmin',
+  secretKey: process.env.STORAGE_PASSWORD || 'minioadmin'
+});
 
+// Helper function: constructs base URL for storage when using remote storage.
+const getStorageBaseUrl = () => {
+  return config.toFrontEnd.storage
+};
+
+const avatarService = {
+  /**
+   * Initializes the avatar storage service.
+   * For remote storage, it creates the bucket and applies public read policy.
+   * Then, it ensures the default avatar is present.
+   */
+  initialize: async () => {
+    try {
+      console.log('Initializing avatar storage service...');
+      if (!config.localStorage.useLocal) {
+        // Check if bucket exists in MinIO; if not, create it.
+        const bucketExists = await minioClient.bucketExists(AVATAR_BUCKET);
+        if (!bucketExists) {
+          console.log(`Creating bucket: ${AVATAR_BUCKET}`);
+          await minioClient.makeBucket(AVATAR_BUCKET, 'us-east-1');
+          // Set public read policy for all objects in the bucket
+          const publicPolicy = {
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Effect: 'Allow',
+                Principal: { AWS: ['*'] },
+                Action: ['s3:GetObject'],
+                Resource: [`arn:aws:s3:::${AVATAR_BUCKET}/*`]
+              }
+            ]
+          };
+          await minioClient.setBucketPolicy(AVATAR_BUCKET, JSON.stringify(publicPolicy));
+          console.log('Bucket created and public policy set.');
+        }
+      }
+      await avatarService.ensureDefaultAvatar();
+      console.log('Avatar storage service initialized.');
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize avatar storage service:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Ensures the default avatar exists.
+   * When using remote storage, checks if the default avatar is in the bucket;
+   * if not, it uploads the default avatar from disk.
+   * When using local storage, it assumes the default avatar is already present
+   * in the upload directory.
+   */
+  ensureDefaultAvatar: async () => {
+    try {
+      if (!config.localStorage.useLocal) {
+        // Check remote storage (MinIO) if default avatar is present.
+        try {
+          await minioClient.statObject(AVATAR_BUCKET, DEFAULT_AVATAR_FILENAME);
+          console.log('Default avatar already exists in remote storage.');
+        } catch (err) {
+          if (err.code === 'NotFound') {
+            console.log('Default avatar not found in remote storage, uploading...');
+          } else {
+            throw err;
+          }
+        }
+      }
+      // For both remote and local, ensure the default avatar file exists on disk.
+      await fs.ensureDir(config.localStorage.uploadDir);
+      if (!(await fs.pathExists(DEFAULT_AVATAR_PATH))) {
+        throw new Error(
+          'Default avatar not found. Please place avatar-default.png in the uploads/avatars directory.'
+        );
+      }
+      // If using remote storage, upload the default avatar.
+      if (!config.localStorage.useLocal) {
+        const fileBuffer = await fs.readFile(DEFAULT_AVATAR_PATH);
+        await minioClient.putObject(
+          AVATAR_BUCKET,
+          DEFAULT_AVATAR_FILENAME,
+          fileBuffer,
+          { 'Content-Type': 'image/png' }
+        );
+        console.log('Default avatar uploaded to remote storage.');
+      }
+    } catch (error) {
+      console.error('Error ensuring default avatar exists:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Returns the public URL for the default avatar.
+   */
+  getDefaultAvatarUrl: () => {
+    if (config.localStorage.useLocal) {
+      return `/uploads/avatars/${DEFAULT_AVATAR_FILENAME}`;
+    } else {
+      return `${getStorageBaseUrl()}/${AVATAR_BUCKET}/${DEFAULT_AVATAR_FILENAME}`;
+    }
+  },
+  
+  /**
+   * Validates the uploaded file.
+   */
+  validateFile: (file) => {
+    if (!file) {
+      return { error: 'No file provided' };
+    }
+    const allowedMimeTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      return { error: 'Invalid file type. Only JPG, JPEG, PNG are allowed.' };
+    }
+    // File size check (if provided)
+    if (file.size && file.size > 5 * 1024 * 1024) {
+      return { error: 'File size exceeds the 5MB limit.' };
+    }
+    return { success: true };
+  },
+  
+  /**
+   * Ensures that the local upload directory exists.
+   */
+  ensureUploadsDirExists: async () => {
+    if (!(await fs.pathExists(config.localStorage.uploadDir))) {
+      await fs.mkdir(config.localStorage.uploadDir, { recursive: true });
+    }
+  },
+  
+  /**
+   * Stores a file buffer in remote storage via MinIO.
+   * Returns the public URL for the stored object.
+   */
+  storeAvatar: async (fileBuffer, objectName, contentType) => {
+    try {
+      if (!fileBuffer || !objectName) {
+        throw new Error('Missing required parameters for storing avatar.');
+      }
+      await minioClient.putObject(AVATAR_BUCKET, objectName, fileBuffer, {
+        'Content-Type': contentType || 'image/png'
+      });
+      return `${getStorageBaseUrl()}/${AVATAR_BUCKET}/${objectName}`;
+    } catch (error) {
+      console.error('Error storing avatar in remote storage:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Removes an avatar from remote storage (MinIO).
+   */
+  removeAvatar: async (avatarUrl) => {
+    try {
+      if (!avatarUrl || avatarUrl.includes(DEFAULT_AVATAR_FILENAME)) return false;
+      const objectName = avatarUrl.split('/').pop();
+      await minioClient.removeObject(AVATAR_BUCKET, objectName);
+      console.log(`Removed avatar: ${objectName}`);
+      return true;
+    } catch (error) {
+      console.error('Error removing avatar from remote storage:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * Saves the file buffer to the local filesystem.
+   * Returns an object with the stored file path.
+   */
+  saveToLocalStorage: async (fileBuffer, fileName, userId, mimeType, oldAvatarPath) => {
+    await avatarService.ensureUploadsDirExists();
+    const filePath = path.join(config.localStorage.uploadDir, fileName);
+    const writeStream = fs.createWriteStream(filePath);
+    try {
+      const readableStream = require('stream').Readable.from(fileBuffer);
+      await pipeline(readableStream, writeStream);
+      // Update the user’s avatar path in the database to use the local path.
+      const updateResult = await db.updateAvatarPath(userId, filePath);
+      if (updateResult.error) {
+        return { error: 'Failed to update avatar in database' };
+      }
+      // Remove the old avatar if it exists and isn’t the default.
+      if (
+        oldAvatarPath &&
+        !oldAvatarPath.includes('avatar-default') &&
+        (await fs.pathExists(oldAvatarPath))
+      ) {
+        await fs.remove(oldAvatarPath);
+      }
+      return { filePath };
+    } catch (error) {
+      console.error('Error saving avatar to local storage:', error);
+      await fs.remove(filePath).catch(console.error);
+      return { error: 'Failed to save avatar locally' };
+    }
+  },
+  
+  /**
+   * Uploads an avatar for a user.
+   * It validates the file, reads it into a buffer, then attempts to store the file.
+   * If using remote storage (Docker), it uses MinIO; otherwise, it falls back to local storage.
+   * Updates the user's avatar path in the database accordingly.
+   */
+  uploadAvatar: async (file, userId) => {
+    // Validate file first.
+    const validation = avatarService.validateFile(file);
+    if (validation.error) return validation;
+    
+    try {
+      // Retrieve user data (and current avatar path) from the database.
+      const user = await db.getUser(userId);
+      if (!user) return { error: 'User not found' };
+      if (user.error) return { error: 'Database error' };
+      const oldAvatarPath = user.avatar_path;
+      
+      // Generate a unique file name.
+      const fileExtension = path.extname(file.filename);
+      const uniqueFileName = `${userId}-${Date.now()}${fileExtension}`;
+      
+      // Read file chunks into a buffer.
+      const chunks = [];
+      for await (const chunk of file.file) {
+        chunks.push(chunk);
+      }
+      const fileBuffer = Buffer.concat(chunks);
+      
+      // Determine which storage method to use.
+      if (!config.localStorage.useLocal) {
+        // Attempt remote storage via MinIO.
+        try {
+          const avatarUrl = await avatarService.storeAvatar(
+            fileBuffer,
+            uniqueFileName,
+            file.mimetype
+          );
+          const updateResult = await db.updateAvatarPath(userId, avatarUrl);
+          if (updateResult.error) return { error: 'Failed to update avatar in database' };
+          
+          // Remove old avatar if needed.
+          if (oldAvatarPath && !oldAvatarPath.includes('avatar-default')) {
+            if (oldAvatarPath.includes('http')) {
+              await avatarService.removeAvatar(oldAvatarPath);
+            } else if (await fs.pathExists(oldAvatarPath)) {
+              await fs.remove(oldAvatarPath);
+            }
+          }
+          return { filePath: avatarUrl };
+        } catch (storageError) {
+          console.error('Remote storage failed, falling back to local storage:', storageError);
+          return await avatarService.saveToLocalStorage(
+            fileBuffer,
+            uniqueFileName,
+            userId,
+            file.mimetype,
+            oldAvatarPath
+          );
+        }
+      } else {
+        // Use local storage.
+        return await avatarService.saveToLocalStorage(
+          fileBuffer,
+          uniqueFileName,
+          userId,
+          file.mimetype,
+          oldAvatarPath
+        );
+      }
+    } catch (error) {
+      console.error('Error in uploadAvatar:', error);
+      return { error: 'Avatar upload failed' };
+    }
+  }
+};
+
+export default avatarService;

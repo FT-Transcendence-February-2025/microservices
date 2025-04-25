@@ -12,7 +12,7 @@ services:
       service: user
       file: services/user-mgmt-service/docker-compose.yml
     depends_on:
-      - auth
+      - minio
     #profiles: ["user", "backend", "all", "default"]
 
   game:

@@ -19,9 +19,6 @@ RUN if [ "$DEBUG_MODE" = "1" ]; then \
 
 COPY src/package*.json ./
 
-# RUN rm -f package-lock.json 
-# RUN rm -rf node_modules
-RUN ls -la
 RUN npm install --include=dev --build-from-source --no-package-lock
 
 COPY src .

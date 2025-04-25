@@ -25,6 +25,8 @@ services:
       IP: ${IP}
       ENV_FILE_PATH: /run/secrets/envFile
       DEBUG_MODE: ${DEBUG_MODE:-0}
+      STORAGE_USER: ${STORAGE_USER}
+      STORAGE_PASSWORD: ${STORAGE_PASSWORD}
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -39,6 +41,13 @@ services:
     networks:
       backend:
         ipv4_address: 172.18.0.3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "user-mgmt-service"
+        tag: "{{.Name}}"
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---
@@ -46,15 +55,20 @@ services:
       - "traefik.http.routers.api-user-public.entrypoints=websecure"
       - "traefik.http.routers.api-user-public.tls=true"
       - "traefik.http.routers.api-user-public.priority=300"
-      
       # Service-specific middleware for routing
-      - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user"
+      - "traefik.http.middlewares.change-host-to-user.headers.customrequestheaders.Host=user.${DOMAIN}" # Modified domain was missing
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.regex=^/api/user/(.*)"
       - "traefik.http.middlewares.rewrite-user-path.replacePathRegex.replacement=/api/$1"
-      
+      - "traefik.http.routers.user-ws.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/user/ws`)"
+      # websocket route 
+      - "traefik.http.routers.user-ws.entrypoints=websecure"
+      - "traefik.http.routers.user-ws.tls=true"
+      - "traefik.http.routers.user-ws.priority=310"
+      # Apply middlewares specific to WebSockets
+      - "traefik.http.routers.user-ws.middlewares=change-host-to-user,rewrite-user-path"
+      #ws-headers,ws-timeout,ws-ratelimit,ws-compress,ws-circuit-breaker"
       # Service identifier - adds to the global debug middleware
       - "traefik.http.middlewares.service-identifier.headers.customresponseheaders.X-Router=user-service"
-
       # --- Internal Router: For backend-only endpoints ---
       #   /api/user/new-user
       #   /api/user/user-exists
@@ -70,6 +84,8 @@ services:
       - "traefik.http.routers.api-user-internal.priority=400"
       # Use the API-specific chain instead of the general one
       - "traefik.http.routers.api-user-public.middlewares=change-host-to-user,rewrite-user-path,service-identifier,global-debug"
-
+      # Load balancing
+      - "traefik.http.services.user-service.loadbalancer.sticky.cookie=true"
+      - "traefik.http.services.user-service.loadbalancer.sticky.cookie.name=user_session"
       # --- Service Definition ---
       - "traefik.http.services.user-service.loadbalancer.server.port=3002"

@@ -1,0 +1,37 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    hostname: minio
+    expose:
+      - "9000"
+      - "9001" 
+    environment:
+      DOMAIN: ${DOMAIN}
+      MINIO_ROOT_USER: ${STORAGE_USER}
+      MINIO_ROOT_PASSWORD: ${STORAGE_PASSWORD}
+    extra_hosts:
+      - "${DOMAIN}:127.0.0.1"
+      - "${DOMAIN}:${IP}"
+    volumes:
+      - minio-vol:/data
+    networks:
+      backend:
+        ipv4_address: 172.18.0.7
+    command: server /data --console-address ":9001"
+    labels:
+      - "traefik.enable=true"
+      # --- Public Router: Externally facing ---
+      # Matches any request coming to the public domain with the /api/minio prefix
+      - "traefik.http.routers.api-minio-public.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/storage`)"
+      - "traefik.http.routers.api-minio-public.entrypoints=websecure"
+      - "traefik.http.routers.api-minio-public.tls=true"
+      - "traefik.http.routers.api-minio-public.priority=310"
+      # Apply middlewares: one for Host rewriting and one for path rewriting
+      - "traefik.http.routers.api-minio-public.middlewares=change-host-to-minio,rewrite-minio-path"
+      - "traefik.http.middlewares.change-host-to-minio.headers.customrequestheaders.Host=minio.${DOMAIN}"
+      # Middleware: Rewrite the incoming path. Strips the /api/minio prefix so that:
+      - "traefik.http.middlewares.rewrite-minio-path.replacePathRegex.regex=^/api/storage(.*)"
+      - "traefik.http.middlewares.rewrite-minio-path.replacePathRegex.replacement=$1"
+      # Service Definition: minio microservice backend
+      - "traefik.http.services.minio-service.loadbalancer.server.port=9000"

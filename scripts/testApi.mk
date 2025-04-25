@@ -16,8 +16,13 @@ sh:
 loginAdmin:
 	@EMAIL=Vtest2@test.com \
 	PASS=$(shell cat secrets/userPass); \
-	echo $$PASS $$EMAIL
 	curl -sk -X POST https://$(shell hostname)/api/auth/login -H "Content-Type: application/json" -d '{"email":"$$EMAIL","password":"$$PASS"}' | jq
+loginAdmin2:
+	@EMAIL=$(shell cat secrets/adminEmail); \
+	PASS=$(shell cat secrets/userPass); \
+	curl -sk -X POST https://$(shell hostname)/api/auth/login \
+	-H "Content-Type: application/json" -d \
+	"{\"email\": \"$$EMAIL\", \"password\": \"$$PASS\"}" | jq 
 
 login:init-log # Should return error
 	@ID=$$(shuf -i 1-50 -n 1); \
@@ -38,7 +43,8 @@ register:init-log
 	echo "$$TIMESTAMP,$$DISPLAY,$$EMAIL" >> $(LOG_FILE); \
 	curl -k -X POST https://$(shell hostname)/api/auth/register \
 		-H "Content-Type: application/json" \
-		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq
+		-d "{\"email\": \"$$EMAIL\", \"displayName\": \"$$DISPLAY\", \"password\": \"$$PASS\"}" | jq ; \
+	$(MAKE) 
 
 
 u-register: # should not #user-exist #user-logout
@@ -90,3 +96,20 @@ tf-auth:
 	-H "Host: auth.$(shell hostname)" \
 	-d '{"email": "user@example.com", "password": "securePassword123"}'
 # -----------------------------------
+
+match-ws:
+	@echo "Logging in and extracting token..."
+	@TOKEN=$$(curl -sk -X POST https://$$(hostname)/api/auth/login \
+		-H "Content-Type: application/json" \
+		-d '{"email": "'$$(cat secrets/adminEmail)'", "password": "'$$(cat secrets/userPass)'"}' | jq -r '.token'); \
+	echo "Token: $$TOKEN"; \
+	echo "Connecting to WebSocket with token..."; \
+	curl -k -v -N \
+		-H "Connection: Upgrade" \
+		-H "Upgrade: websocket" \
+		-H "Host: $$(hostname)" \
+		-H "Origin: https://$$(hostname)" \
+		-H "Sec-WebSocket-Key: $$(openssl rand -base64 16)" \
+		-H "Sec-WebSocket-Version: 13" \
+		-H "Authorization: Bearer $$TOKEN" \
+		https://$$(hostname)/api/match/ws

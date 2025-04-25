@@ -1,19 +1,26 @@
 name: ft_transcendence
 
 services:
-  auth:
+  minio:
     extends:
-      service: auth
-      file: services/authentication-service/docker-compose.yml
-    #profiles: ["auth", "backend", "all", "default"]
+      service: minio
+      file: services/storage-service/docker-compose.yml
+    #profiles: ["minio", "backend", "all", "default"]
 
   user:
     extends: 
       service: user
       file: services/user-mgmt-service/docker-compose.yml
-    depends_on:
-      - auth
+    # depends_on:
+    #   - minio
     #profiles: ["user", "backend", "all", "default"]
+  auth:
+    extends:
+      service: auth
+      file: services/authentication-service/docker-compose.yml
+    # depends_on:
+    #   - user
+    #profiles: ["auth", "backend", "all", "default"]
 
   game:
     extends:
@@ -25,15 +32,15 @@ services:
     extends:
       service: match
       file: services/match-service/docker-compose.yml
-    depends_on:
-      - game
+    # depends_on:
+    #   - game
     #profiles: ["match", "game", "all", "default"]
   tour:
     extends:
       service: tour
       file: services/tournament-service/docker-compose.yml
-    depends_on:
-      - match
+    # depends_on:
+    #   - match
     #profiles: ["tour", "game", "all", "default"]
 
   front:
@@ -42,21 +49,24 @@ services:
       file: services/frontend-service/docker-compose.yml
     depends_on:
       - user
+      - auth
+      - game
+      - match
       - tour
+      - minio
     #profiles: ["front", "ui", "all", "default"]
-  
-  prometheus:
-    extends:
-      service: prometheus
-      file: services/monitoring-services/monitoring/docker-compose.yml
-
   traefik:
     extends:
       service: traefik
       file: services/monitoring-services/docker-compose.yml
-    depends_on:
-      - front
-      - prometheus
+  # prometheus:
+  #   extends:
+  #     service: prometheus
+  #     file: services/monitoring-services/monitoring/docker-compose.yml
+
+    # depends_on:
+    #   - front
+    #   - prometheus
     #profiles: ["infra", "all", "default"]
 
 
@@ -112,6 +122,7 @@ networks:
           gateway: 172.19.0.1
   backend:
     driver: bridge
+    internal: true
     name: backend
     ipam:
       config:
@@ -174,9 +185,12 @@ volumes:
   tour-vol:
     driver: local
     name: tour-vol
-  traefik:
+  traefik-vol:
     driver: local
     name: traefik-vol
-  prometheus:
+  minio-vol:
     driver: local
-    name: prometheus-vol
+    name: minio-vol
+  # prometheus-vol:
+  #   driver: local
+  #   name: prometheus-vol

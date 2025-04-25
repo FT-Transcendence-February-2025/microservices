@@ -24,6 +24,10 @@ services:
     networks:
       backend:
         ipv4_address: 172.18.0.4
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
     labels:
       - "traefik.enable=true"
       # --- Public Router: Externally facing ---

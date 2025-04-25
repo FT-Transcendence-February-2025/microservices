@@ -6,3 +6,5 @@ srcOld/
 
 node_modules/
 **/node_modules
+
+/src/src/components/menu/tournamentMenu

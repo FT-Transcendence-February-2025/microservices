@@ -1,0 +1,71 @@
+{
+	"annotations": {
+	  "list": []
+	},
+	"editable": true,
+	"gnetId": null,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"panels": [
+	  {
+		"datasource": "Prometheus",
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": []
+			}
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 8,
+		  "w": 12,
+		  "x": 0,
+		  "y": 0
+		},
+		"id": 2,
+		"options": {
+		  "legend": {
+			"calcs": [],
+			"displayMode": "list",
+			"placement": "bottom"
+		  },
+		  "tooltip": {
+			"mode": "single"
+		  }
+		},
+		"title": "Request Rate",
+		"type": "timeseries",
+		"targets": [
+		  {
+			"exemplar": true,
+			"expr": "sum(rate(traefik_entrypoint_requests_total[5m])) by (entrypoint)",
+			"interval": "",
+			"legendFormat": "{{entrypoint}}",
+			"refId": "A"
+		  }
+		]
+	  }
+	],
+	"schemaVersion": 30,
+	"style": "dark",
+	"tags": ["traefik"],
+	"templating": {
+	  "list": []
+	},
+	"time": {
+	  "from": "now-6h",
+	  "to": "now"
+	},
+	"timepicker": {},
+	"timezone": "",
+	"title": "Traefik Dashboard",
+	"uid": "traefik",
+	"version": 1
+  }

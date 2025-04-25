@@ -1,8 +1,0 @@
-# volumes:
-#   grafana:
-#     driver: local
-#     name: prometheus-vol
-    # driver_opts:
-    #   o: bind
-    #   type: none
-    #   device: ${DATA}/grafana

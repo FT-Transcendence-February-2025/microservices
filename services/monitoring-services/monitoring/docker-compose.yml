@@ -30,44 +30,65 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.size=256MB
-      # - --web.external-url=https://${DOMAIN}/prometheus  
+      - --web.external-url=https://${DOMAIN}/prometheus  
     labels:
-      # ---------------------------------------------------------
-      # Prometheus Dashboard Router (for accessing /prometheus)
-      # ---------------------------------------------------------
-      - "traefik.http.routers.prometheus.rule=Host(`${DOMAIN}`) && (PathPrefix(`/prometheus`) || PathPrefix(`/prometheus/`))"
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`${DOMAIN}`) && PathPrefix(`/prometheus`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.routers.prometheus.priority=95"
       - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.routers.prometheus.middlewares=prometheus-auth,prometheus-strip"
+      - "traefik.http.middlewares.prometheus-strip.stripprefix.prefixes=/prometheus"
+      - "traefik.http.middlewares.prometheus-auth.basicauth.users=${AUTH_DASHBOARD}"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
   
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   networks:
-  #     frontend:
-  #       ipv4_address: 172.19.0.20
-  #     backend:
-  #       ipv4_address: 172.18.0.20 
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - prometheus
-  #   environment:
-  #     GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
-  #     GF_INSTALL_PLUGINS: grafana-piechart-panel
-  #   labels:
-  #     #####################################################
-  #     #ROUTER & MIDDLEWARE (secured with basic auth)
-  #     #####################################################
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.grafana.rule=Host(`${DOMAIN}`) && PathPrefix(`/grafana`)"
-  #     - "traefik.http.routers.grafana.entrypoints=websecure"
-  #     # Strip the "/grafana" prefix so Grafana sees "/" as its root.
-  #     - "traefik.http.routers.grafana.middlewares=auth-grafana,strip-grafana"
-  #     # Define the internal port for Grafana.
-  #     - "traefik.http.routers.prometheus.priority=90"
-  #     - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-  #     - "traefik.http.middlewares.strip-grafana.stripprefix.prefixes=/grafana"
-  #     - "traefik.http.middlewares.auth-grafana.basicauth.users=${AUTH_DASHBOARD}"
-
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    networks:
+      frontend:
+        ipv4_address: 172.19.0.20
+      backend:
+        ipv4_address: 172.18.0.20 
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-vol:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      DOMAIN: ${DOMAIN}
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+      # Authentication settings
+      GF_SECURITY_ADMIN_USER: ${PROM_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${PROM_PASSWORD}
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "false"
+      # Plugin settings
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-clock-panel,grafana-worldmap-panel"
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "grafana-worldmap-panel"
+      # Server settings
+      # Authentication settings
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_LOG_LEVEL: "debug"
+      GF_LOG_MODE: "console"
+      # Provisioning
+      GF_PATHS_PROVISIONING: "/etc/grafana/provisioning"
+      GF_SERVER_ROOT_URL: "https://${DOMAIN}/grafana"  # Include the subpath
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"           # Tell Grafana it's under a subpath
+      GF_SERVER_DOMAIN: "${DOMAIN}"                   # Use your actual domain
+    labels:
+      - "traefik.enable=true"
+      # Main router for /grafana path
+      - "traefik.http.routers.grafana.rule=Host(`${DOMAIN}`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true" 
+      - "traefik.http.routers.grafana.priority=90"
+      # DO NOT use the stripprefix middleware
+      - "traefik.http.routers.grafana.middlewares=add-grafana-prefix"
+      # Keep the security headers
+      - "traefik.http.middlewares.add-grafana-prefix.headers.customresponseheaders.Content-Security-Policy=default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http: https: ws: wss:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://secure.gravatar.com;"
+      - "traefik.http.middlewares.add-grafana-prefix.headers.customresponseheaders.X-Frame-Options=SAMEORIGIN"
+      # Port definition
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"

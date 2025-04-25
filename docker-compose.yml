@@ -5,7 +5,7 @@ services:
     extends:
       service: minio
       file: services/storage-service/docker-compose.yml
-    #profiles: ["minio", "backend", "all", "default"]
+
 
   user:
     extends: 
@@ -13,28 +13,24 @@ services:
       file: services/user-mgmt-service/docker-compose.yml
     depends_on:
       - minio
-    #profiles: ["user", "backend", "all", "default"]
+
   auth:
     extends:
       service: auth
       file: services/authentication-service/docker-compose.yml
-    # depends_on:
-    #   - user
-    #profiles: ["auth", "backend", "all", "default"]
+
 
   game:
     extends:
       service: game
       file: services/game-service/docker-compose.yml
-    #profiles: ["game", "all", "default"]
+
 
   match:
     extends:
       service: match
       file: services/match-service/docker-compose.yml
-    # depends_on:
-    #   - game
-    #profiles: ["match", "game", "all", "default"]
+
   tour:
     extends:
       service: tour
@@ -54,62 +50,24 @@ services:
       - game
       - match
       - tour
-    #profiles: ["front", "ui", "all", "default"]
+
   traefik:
     extends:
       service: traefik
       file: services/monitoring-services/docker-compose.yml
-  # prometheus:
-  #   extends:
-  #     service: prometheus
-  #     file: services/monitoring-services/monitoring/docker-compose.yml
+  prometheus:
+    extends:
+      service: prometheus
+      file: services/monitoring-services/monitoring/docker-compose.yml
 
-    # depends_on:
-    #   - front
-    #   - prometheus
-    #profiles: ["infra", "all", "default"]
+  grafana:
+    extends:
+      service: grafana
+      file: services/monitoring-services/monitoring/docker-compose.yml
+    depends_on:
+      - prometheus
+    #profiles: ["monitoring", "infra", "all", "default"]
 
-
-  #   #profiles: ["monitoring", "infra", "all", "default"]
-
-  # grafana:
-  #   extends:
-  #     service: grafana
-  #     file: services/monitoring-services/monitoring/docker-compose.yml
-  #   depends_on:
-  #     - prometheus
-  #   #profiles: ["monitoring", "infra", "all", "default"]
-
-  # elasticsearch:
-  #   extends:
-  #     service: elasticsearch
-  #     file: services/monitoring-services/ELK/docker-compose.yml
-  #   #profiles: ["elk", "monitoring", "all", "default"]
-  
-  # logstash:
-  #   extends:
-  #     service: logstash
-  #     file: services/monitoring-services/ELK/docker-compose.yml
-  #   depends_on:
-  #     - elasticsearch
-  #   #profiles: ["elk", "monitoring", "all", "default"]
-  
-  # kibana:
-  #   extends:
-  #     service: kibana
-  #     file: services/monitoring-services/ELK/docker-compose.yml
-  #   depends_on:
-  #     - elasticsearch
-  #   #profiles: ["elk", "monitoring", "all", "default"]
-  
-  # filebeat:
-  #   extends:
-  #     service: filebeat
-  #     file: services/monitoring-services/ELK/docker-compose.yml
-  #   depends_on:
-  #     - elasticsearch
-  #     - logstash
-  #   #profiles: ["elk", "monitoring", "all", "default"]
 
 # Define shared networks
 networks:
@@ -142,16 +100,7 @@ networks:
   #     config:
   #       - subnet: 172.21.0.0/24
   #         gateway: 172.21.0.1
-# shared volumes
-# volumes:
-#   prometheus-data:
-#     name: prometheus-data
-#   grafana-data:
-#     name: grafana-data
-#   elasticsearch-data:
-#     name: elasticsearch-data
-#   traefik-certs:
-#     name: traefik-certs
+
 
 # shared secrets
 secrets:
@@ -191,6 +140,8 @@ volumes:
   minio-vol:
     driver: local
     name: minio-vol
-  # prometheus-vol:
-  #   driver: local
-  #   name: prometheus-vol
+  prometheus-vol:
+    driver: local
+    name: prometheus-vol
+  grafana-vol:
+    name: grafana-vol

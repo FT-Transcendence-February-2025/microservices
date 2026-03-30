@@ -50,7 +50,7 @@ ft_transcendence
 ├── docker-compose.yml        # Defines services, networks, and volumes for Docker services
 ├── services
 │   ├── authentication-service
-│   ├── traefik               # Traefik configuration (static + dynamic)
+│   ├── monitoring-service (traefik, grafana, prometheus)               # Traefik configuration (static + dynamic)
 │   ├── user-service
 │   ├── tournament-service
 │   ├── matchmaking-service
@@ -82,6 +82,25 @@ ft_transcendence
 6. **Frontend**
    - SPA UI served by Nginx, built with Vite + TypeScript + Tailwind
    - Uses Web Components + a custom router
+
+## Monitoring & Observability (optional)
+
+This repository contains an optional monitoring stack at:
+
+- `services/monitoring-services`
+
+What’s included (based on `services/monitoring-services/docker-compose.yml`):
+
+- **Traefik gateway container** configured for:
+  - HTTP → HTTPS redirection and canonical host redirection
+  - **Traefik Dashboard** protected by **Basic Auth** (`AUTH_DASHBOARD`)
+  - **Traefik API** routes (rewritten under `/api/traefik/*`)
+  - A **metrics endpoint** exposed through Traefik routing (protected by the same auth middleware)
+  - TLS setup using Docker **secrets** (e.g. `ssl_key.key`, `ssl_crt.crt`, `ssl_pem.pem`, `ssl_email`)
+  - Network separation (`frontend` and `backend`) and Docker socket read-only mount for provider discovery
+
+Recommended Traefik router priority values for services live in:
+- `services/monitoring-services/traefik.MD`
 
 ## Setup Instructions
 
